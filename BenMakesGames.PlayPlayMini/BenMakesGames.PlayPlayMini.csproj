@@ -5,8 +5,8 @@
     <Version>0.9.0</Version>
     <Authors>Ben Hendel-Doying</Authors>
     <Company>Ben Hendel-Doying</Company>
-    <Description>A game framework for MonoGame</Description>
-    <Copyright>2021 Ben Hendel-Doying</Copyright>
+    <Description>An opinionated framework for making smallish games with MonoGame.</Description>
+    <Copyright>2021-2022 Ben Hendel-Doying</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
     <PackageTags>monogame game engine framework di state</PackageTags>
