@@ -72,9 +72,7 @@ namespace MyGame.GameStates
             // the MouseManager requires some setup before it can be used for the first time.
             // this is a great opportunity to do it. this assumes you've actually loaded an image
             // called "Cursor"; more on how this is done, later!
-            Mouse.PictureName = "Cursor";
-            Mouse.HotspotX = 3;
-            Mouse.HotspotY = 1;
+            Mouse.UseCustomCursor("Cursor", (3, 1));
 
             // we have nothing to wait for, so let's just GET STARTED by going to the TitleMenu
             Game.ChangeState<TitleMenu>();
@@ -332,23 +330,23 @@ gsmBuilder
     .AddPictures(new PictureMeta[] // load some graphics
     {
         // immediately loaded
-        new PictureMeta("Loading", "Graphics/Loading", true),
-        new PictureMeta("Cursor", "Graphics/Cursor", true),
+        new("Loading", "Graphics/Loading", true),
+        new()"Cursor", "Graphics/Cursor", true),
 
         // deferred
-        new PictureMeta("Terrain", "Graphics/Terrain"),
-        new PictureMeta("Title", "Graphics/Title"),
-        new PictureMeta("TitleBackground", "Graphics/TitleBackground"),
+        new("Terrain", "Graphics/Terrain"),
+        new("Title", "Graphics/Title"),
+        new("TitleBackground", "Graphics/TitleBackground"),
     })
     .AddSpriteSheets(new SpriteSheetMeta[] // load some more graphics
     {
         // deferred
-        new SpriteSheetMeta("Treasure", "Graphics/Treasure", 16, 16),
-        new SpriteSheetMeta("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
+        new("Treasure", "Graphics/Treasure", 16, 16),
+        new("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
     })
     .AddFonts(new FontMeta[] // and yet more graphics:
     {
-        new FontMeta("Font", "Graphics/Font", 6, 8),
+        new("Font", "Graphics/Font", 6, 8),
     })
 ;
 
@@ -362,7 +360,7 @@ If your project has any deferred images, you need to make sure to wait for them 
 
 Let's modify the `Startup` game state class from before to check for this, and move on to the title menu only once all the graphics are ready!
 
-```
+```c#
 namespace MyGame.GameStates
 {
     class Startup : IGameState, IGameStateLifecycleEnter
