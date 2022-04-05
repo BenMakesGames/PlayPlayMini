@@ -42,7 +42,7 @@ A "game state" is something like "the title menu", "exploring a town", "lock-pic
 
 In `PlayPlayMini`, you are always in at least one game state. Let's make one:
 
-```
+```c#
 // you don't HAVE to put your GameStates in their own folder/namespace, but it helps keep things tidy:
 namespace MyGame.GameStates
 {
@@ -130,7 +130,7 @@ First of all, if you understand what all the methods in `IGameState` are for, th
 
 Second, you may have noticed:
 
-```
+```c#
 Game.ChangeState<NEW_GAME_STATE_CLASS_NAME_HERE>();
 ```
 
@@ -163,7 +163,7 @@ First: as your game states grow in number and complexity, you'll want to give th
 `new`ing up the game states "manually", then every time you added a new service to a constructor,
 you'd have to find all the places you made a `new` one, and give them the new things they need.
 
-```
+```c#
 new Startup(new MouseManager(...???), new GameStateManager(?!!?!?));
 ```
 
@@ -190,7 +190,7 @@ Alright, so you've made a game state - maybe more; maybe you've even put some lo
 
 For that, open up the default `Program.cs`. You need to completely rewrite `static void Main`... but don't worry: it's pretty easy!
 
-```
+```c#
 using BenMakesGames.PlayPlayMini; // don't forget this part!
 using MyGame.GameStates; // assuming you put your game state classes here
 using System;
@@ -252,7 +252,7 @@ The dependency injection system has to get started somehow. That's actually one 
 
 (Also, if you're new to DI, only objects filled with "business logic" get registered with DI. Data-only objects like `PictureMeta` should still be `new`ed up manually, and should never ask for a service in their constructor.)
 
-```
+```c#
 .SetInitialGameState<Startup>() // define the starting game state
 .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
 ```
@@ -261,7 +261,7 @@ Hopefully those are pretty self-explanatory. The final `2` in `SetWindowSize` in
 
 Next up:
 
-```
+```c#
 .AddPictures(new PictureMeta[] {
     ...
 })
@@ -269,7 +269,7 @@ Next up:
 
 And:
 
-```
+```c#
 .AddSpriteSheets(new SpriteSheetMeta[] {
     ...
 })
@@ -285,7 +285,7 @@ It's a super-useful tool!
 
 Moving on:
 
-```
+```c#
 // immediately loaded
 new PictureMeta("Loading", "Graphics/Loading", true),
 new PictureMeta("Cursor", "Graphics/Cursor", true),
