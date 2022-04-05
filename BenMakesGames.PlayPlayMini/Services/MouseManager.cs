@@ -121,7 +121,7 @@ namespace BenMakesGames.PlayPlayMini.Services
         public void UseSystemCursor()
         {
             DrawingMode = MouseDrawingMode.System;
-            GSM.IsMouseVisible = false;
+            GSM.IsMouseVisible = true;
         }
 
         public void UseNoCursor()
