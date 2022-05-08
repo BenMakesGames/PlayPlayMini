@@ -1,58 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace BenMakesGames.PlayPlayMini.Services
+namespace BenMakesGames.PlayPlayMini.Services;
+
+public class ServiceWatcher
 {
-    public class ServiceWatcher
+    private List<IServiceLoadContent> ServiceWithLoadContentEvents { get; } = new List<IServiceLoadContent>();
+    private List<IServiceInitialize> ServicesWithInitializeEvents { get; } = new List<IServiceInitialize>();
+    private List<IServiceInput> ServicesWithInputEvents { get; } = new List<IServiceInput>();
+    private List<IServiceUpdate> ServicesWithUpdateEvents { get; } = new List<IServiceUpdate>();
+    private List<IServiceDraw> ServicesWithDrawEvents { get; } = new List<IServiceDraw>();
+
+    public IReadOnlyCollection<IServiceLoadContent> ContentLoadingServices => ServiceWithLoadContentEvents;
+    public IReadOnlyCollection<IServiceInitialize> InitializedServices => ServicesWithInitializeEvents;
+    public IReadOnlyCollection<IServiceInput> InputServices => ServicesWithInputEvents;
+    public IReadOnlyCollection<IServiceUpdate> UpdatedServices => ServicesWithUpdateEvents;
+    public IReadOnlyCollection<IServiceDraw> DrawnServices => ServicesWithDrawEvents;
+
+    public void RegisterService(object service)
     {
-        private List<IServiceLoadContent> ServiceWithLoadContentEvents { get; } = new List<IServiceLoadContent>();
-        private List<IServiceInitialize> ServicesWithInitializeEvents { get; } = new List<IServiceInitialize>();
-        private List<IServiceInput> ServicesWithInputEvents { get; } = new List<IServiceInput>();
-        private List<IServiceUpdate> ServicesWithUpdateEvents { get; } = new List<IServiceUpdate>();
-        private List<IServiceDraw> ServicesWithDrawEvents { get; } = new List<IServiceDraw>();
+        if (service is IServiceLoadContent hasLoadContent)
+            ServiceWithLoadContentEvents.Add(hasLoadContent);
 
-        public IReadOnlyCollection<IServiceLoadContent> ContentLoadingServices => ServiceWithLoadContentEvents;
-        public IReadOnlyCollection<IServiceInitialize> InitializedServices => ServicesWithInitializeEvents;
-        public IReadOnlyCollection<IServiceInput> InputServices => ServicesWithInputEvents;
-        public IReadOnlyCollection<IServiceUpdate> UpdatedServices => ServicesWithUpdateEvents;
-        public IReadOnlyCollection<IServiceDraw> DrawnServices => ServicesWithDrawEvents;
+        if (service is IServiceInitialize hasInitialize)
+            ServicesWithInitializeEvents.Add(hasInitialize);
 
-        public void RegisterService(object service)
-        {
-            if (service is IServiceLoadContent hasLoadContent)
-                ServiceWithLoadContentEvents.Add(hasLoadContent);
+        if (service is IServiceInput hasInput)
+            ServicesWithInputEvents.Add(hasInput);
 
-            if (service is IServiceInitialize hasInitialize)
-                ServicesWithInitializeEvents.Add(hasInitialize);
+        if (service is IServiceUpdate hasUpdate)
+            ServicesWithUpdateEvents.Add(hasUpdate);
 
-            if (service is IServiceInput hasInput)
-                ServicesWithInputEvents.Add(hasInput);
+        if (service is IServiceDraw hasDraw)
+            ServicesWithDrawEvents.Add(hasDraw);
+    }
 
-            if (service is IServiceUpdate hasUpdate)
-                ServicesWithUpdateEvents.Add(hasUpdate);
+    public void UnregisterService(object service)
+    {
+        if (service is IServiceLoadContent hasLoadContent)
+            ServiceWithLoadContentEvents.Remove(hasLoadContent);
 
-            if (service is IServiceDraw hasDraw)
-                ServicesWithDrawEvents.Add(hasDraw);
-        }
+        if (service is IServiceInitialize hasInitialize)
+            ServicesWithInitializeEvents.Remove(hasInitialize);
 
-        public void UnregisterService(object service)
-        {
-            if (service is IServiceLoadContent hasLoadContent)
-                ServiceWithLoadContentEvents.Remove(hasLoadContent);
+        if (service is IServiceInput hasInput)
+            ServicesWithInputEvents.Remove(hasInput);
 
-            if (service is IServiceInitialize hasInitialize)
-                ServicesWithInitializeEvents.Remove(hasInitialize);
+        if (service is IServiceUpdate hasUpdate)
+            ServicesWithUpdateEvents.Remove(hasUpdate);
 
-            if (service is IServiceInput hasInput)
-                ServicesWithInputEvents.Remove(hasInput);
-
-            if (service is IServiceUpdate hasUpdate)
-                ServicesWithUpdateEvents.Remove(hasUpdate);
-
-            if (service is IServiceDraw hasDraw)
-                ServicesWithDrawEvents.Remove(hasDraw);
-        }
+        if (service is IServiceDraw hasDraw)
+            ServicesWithDrawEvents.Remove(hasDraw);
     }
 }

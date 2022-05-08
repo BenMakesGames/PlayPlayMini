@@ -1,13 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace BenMakesGames.PlayPlayMini
+namespace BenMakesGames.PlayPlayMini;
+
+public interface IGameState
 {
-    public interface IGameState
-    {
-        void ActiveInput(GameTime gameTime);
-        void ActiveUpdate(GameTime gameTime);
-        void AlwaysUpdate(GameTime gameTime);
-        void ActiveDraw(GameTime gameTime);
-        void AlwaysDraw(GameTime gameTime);
-    }
+    void ActiveInput(GameTime gameTime);
+    void ActiveUpdate(GameTime gameTime);
+    void AlwaysUpdate(GameTime gameTime);
+    void ActiveDraw(GameTime gameTime);
+    void AlwaysDraw(GameTime gameTime);
 }

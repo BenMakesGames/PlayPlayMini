@@ -1,12 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BenMakesGames.PlayPlayMini
+namespace BenMakesGames.PlayPlayMini;
+
+public interface IServiceInput
 {
-    public interface IServiceInput
-    {
-        void Input(GameTime gameTime);
-    }
+    void Input(GameTime gameTime);
 }

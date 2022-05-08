@@ -1,9 +1,8 @@
-﻿namespace BenMakesGames.PlayPlayMini.Model
+﻿namespace BenMakesGames.PlayPlayMini.Model;
+
+public enum MouseDrawingMode
 {
-    public enum MouseDrawingMode
-    {
-        None,
-        System,
-        Custom
-    }
+    None,
+    System,
+    Custom
 }

@@ -1,7 +1,6 @@
-﻿namespace BenMakesGames.PlayPlayMini
+﻿namespace BenMakesGames.PlayPlayMini;
+
+public interface IGameStateLifecycleEnter
 {
-    public interface IGameStateLifecycleEnter
-    {
-        void Enter();
-    }
+    void Enter();
 }
