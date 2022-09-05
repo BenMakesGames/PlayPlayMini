@@ -49,7 +49,7 @@ public class GameStateManager: Game
     {
         base.LoadContent();
 
-        foreach (IServiceLoadContent s in ServiceWatcher.ContentLoadingServices)
+        foreach (var s in ServiceWatcher.ContentLoadingServices)
             s.LoadContent(this);
     }
 
@@ -128,7 +128,7 @@ public class GameStateManager: Game
     {
         if (NextState != null)
         {
-            if (CurrentState != null && CurrentState is IGameStateLifecycleLeave leaving)
+            if (CurrentState is IGameStateLifecycleLeave leaving)
                 leaving.Leave();
 
             CurrentState = NextState;
@@ -156,6 +156,9 @@ public class GameStateManager: Game
 
         return NextState;
     }
+
+    public bool IsCurrentState(IGameState state) => CurrentState == state;
+    public bool IsCurrentState<T>() where T : IGameState => CurrentState is T;
 
     public T ChangeState<T>() where T : IGameState
     {
