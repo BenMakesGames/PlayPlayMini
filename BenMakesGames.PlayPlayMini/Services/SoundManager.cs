@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace BenMakesGames.PlayPlayMini.Services;
 
 [AutoRegister(Lifetime.Singleton)]
-public class SoundManager : IServiceLoadContent
+public sealed class SoundManager : IServiceLoadContent
 {
     private ILogger<SoundManager> Logger { get; }
 

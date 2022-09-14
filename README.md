@@ -6,13 +6,20 @@
 
 It provides a state engine with lifecycle events, a `GraphicsManager` that provides methods for easily drawing sprites & fonts with a variety of effects, and dependency injection using `Autofac`.
 
-If you don't know what all of those things are, don't worry: they're awesome, and this guide will show you how to use them with code examples, and explain their benefits.
+If you don't know what all of those things are, don't worry: they're awesome, and this readme will show you how to use them (with code examples!), and explain their benefits.
 
 ## What Does "Opinionated" Mean?
 
-It means the framework has strong opinions about how you structure your code. For example, `PlayPlayMini`  doesn't just provide a state engine, it DEMANDS that you use it.
+It means the framework has some hard requirements about how you architect your code. For example, `PlayPlayMini`  doesn't just provide a state engine, it DEMANDS that you use it.
 
-If you've never used an opinionated framework before, it can sometimes feel like they're getting in your way until you understand how they work, and why they're doing what they're doing. When an opinionated framework feels this way, it's often because it has already solved the problem you're trying to solve, but you just haven't yet learned the framework's solution.
+Some examples you may have run into:
+
+| Type        | Opinionated      | Unopinionated |
+| ----------- | ---------------- | ------------- |
+| HTTP server | ASP.NET, Symfony | Express       |
+| web client  | Angular, Vue     | React, jQuery |
+
+If you've never used opinionated frameworks before, it can sometimes feel like they're getting in your way until you understand how they work, and why they're doing what they're doing. When an opinionated framework feels this way, it's often because it has already solved the problem you're trying to solve, but you just haven't yet learned the framework's solution.
 
 There are pros and cons to using opinionated frameworks:
 
@@ -24,7 +31,7 @@ Opinionated frameworks are lame when:
 Opinionated frameworks are great when:
 * You, or others on your team, aren't aware of best-practices and design patterns, such as dependency injection. The framework is already using these things, and tries its best to make using them easy and automatic!
 * You're writing something quick, and don't want to waste time implementing basic features like a state engine, font sheets, zoom levels for chunky pixels, etc.
-* You've never written something with the underlying technologies before (in this case, `MonoGame`). A good opinionated framework makes it easy to use the best features of its underlying technology, and hides the bad features so you don't use them accidentally.
+* You've never written something with the underlying technologies before (in this case, `MonoGame`). A good opinionated framework makes it easy to use the best features of its underlying technology.
 
 Is `PlayPlayMini` a *good* opinionated framework? I can only say that I've tried my best to make it one!
 
@@ -38,6 +45,8 @@ Is `PlayPlayMini` a *good* opinionated framework? I can only say that I've tried
 4. Create your first game state (more on this in a sec)
 5. Rewrite the default `Program.cs` (more on this later)
 
+(PlayPlayMini project templates are also available - https://github.com/BenMakesGames/PlayPlayMiniTemplates - but for the purposes of this readme, we're gonna build things a little more from scratch!)
+
 ## Game States
 
 A "game state" is something like "the title menu", "exploring a town", "lock-picking mini-game", etc.
@@ -46,89 +55,87 @@ In `PlayPlayMini`, you are always in at least one game state. Let's make one:
 
 ```c#
 // you don't HAVE to put your GameStates in their own folder/namespace, but it helps keep things tidy:
-namespace MyGame.GameStates
+namespace MyGame.GameStates;
+
+// it's common to have a game state for starting up your game. later, when you're loading TONS of
+// assets, you can show some loading animation here to keep your users entertained while they wait.
+// GameState is required for any game state class. bonus: it's recommended to seal most classes,
+// for better performance (search the internet to learn more about this).
+sealed class Startup : GameState
 {
-    // it's common to have a game state for starting up your game. later, when you're loading TONS of
-    // assets, you can show some loading animation here to keep your users entertained while they wait.
-    // IGameState is required for any game state class. IGameStateLifecycleEnter is optional, and
-    // adds the Enter method. all of this will be explained more, later!
-    class Startup : IGameState, IGameStateLifecycleEnter
+    private MouseManager Mouse { get; }
+    private GameStateManager Game { get; }
+
+    // if you're not familiar with "dependency injection", don't worry about the details too much,
+    // but basically, if something in the game "wants" a class, like the MouseManager here, you
+    // simply it as an arguments in the constructor, and it magically gets them. YOU'LL never
+    // write "new Startup(...)"; it's all handled automatically by PlayPlayMini (via Autofac).
+    public Startup(MouseManager mouse, GameStateManager game)
     {
-        private MouseManager Mouse { get; }
-        private GameStateManager Game { get; }
-
-        // if you're not familiar with "dependency injection", don't worry about the details too much,
-        // but basically, if something in the game "wants" a class, like the MouseManager here, you
-        // simply it as an arguments in the constructor, and it magically gets them. YOU'LL never
-        // write "new Startup(...)"; it's all handled automatically by PlayPlayMini (via Autofac).
-        public Startup(MouseManager mouse, GameStateManager game)
-        {
-            Mouse = mouse;
-            Game = game;
-        }
-
-        // Enter() is automatically called when the player first enters this game state, and the game
-        // state implements IGameStateLifecycleEnter
-        public void Enter()
-        {
-            // the MouseManager requires some setup before it can be used for the first time.
-            // this is a great opportunity to do it. this assumes you've actually loaded an image
-            // called "Cursor"; more on how this is done, later!
-            Mouse.UseCustomCursor("Cursor", (3, 1));
-
-            // we have nothing to wait for, so let's just GET STARTED by going to the TitleMenu
-            Game.ChangeState<TitleMenu>();
-        }
-
-        // the following methods are all required for any IGameState. let's go over them:
-
-        // the "Active" methods are only called when this game state is "in the foreground". If
-        // the player is in multiple game states at once, only one is "active". this is useful, for
-        // example, if you have a "Pause" game state, and want to see the previous game state behind
-        // it. there's an example of how to do this, later.
-        
-        public void ActiveDraw(GameTime gameTime)
-        {
-            // in my experience, ActiveDraw doesn't get used much, EXCEPT: this is definitely
-            // where you should draw any input cursors you may be using, like the mouse cursor:
-            
-            Mouse.Draw(gameTime);
-        }
-
-        public void ActiveUpdate(GameTime gameTime)
-        {
-            // ActiveUpdate is where you'll put most of your logic for most of your game states.
-        }
-
-        public void ActiveInput(GameTime gameTime)
-        {
-            // this is where you'll get mouse and/or keyboard input.
-        }
-
-        // the "Always" methods are always called for the current/active game state. later on,
-        // there's an example of how to call them for "background" game states.
-        
-        public void AlwaysDraw(GameTime gameTime)
-        {
-            // most of your drawing logic will go here.
-        }
-
-        public void AlwaysUpdate(GameTime gameTime)
-        {
-            // if you've got animated things, like maybe animated water tiles in a tile-based RPG,
-            // you might want to keep those animations going even while the state is "inactive",
-            // for example while a pause screen is up. AlwaysUpdate is the place to put such
-            // logic.
-        }
-
-        // there is no "AlwaysInput".
+        Mouse = mouse;
+        Game = game;
     }
+
+    // Enter() is automatically called when the player first enters this game state
+    public override void Enter()
+    {
+        // the MouseManager requires some setup before it can be used for the first time.
+        // this is a great opportunity to do it. this assumes you've actually loaded an image
+        // called "Cursor"; more on how this is done, later!
+        Mouse.UseCustomCursor("Cursor", (3, 1));
+
+        // we have nothing to wait for, so let's just GET STARTED by going to the TitleMenu
+        Game.ChangeState<TitleMenu>();
+    }
+
+    // the following methods are lifecycle events provided by GameState. let's go over them:
+
+    // the "Active" methods are only called when this game state is "in the foreground". If
+    // the player is in multiple game states at once, only one is "active". this is useful, for
+    // example, if you have a "Pause" game state, and want to see the previous game state behind
+    // it. there's an example of how to do this, later.
+        
+    public override void ActiveDraw(GameTime gameTime)
+    {
+        // in my experience, ActiveDraw doesn't get used much, EXCEPT: this is definitely
+        // where you should draw any input cursors you may be using, like the mouse cursor:
+
+        Mouse.Draw(gameTime);
+    }
+
+    public override void ActiveUpdate(GameTime gameTime)
+    {
+        // ActiveUpdate is where you'll put most of your logic for most of your game states.
+    }
+
+    public override void ActiveInput(GameTime gameTime)
+    {
+        // this is where you'll get mouse and/or keyboard input.
+    }
+
+    // the "Always" methods are always called for the current/active game state. later on,
+    // there's an example of how to call them for "background" game states.
+        
+    public override void AlwaysDraw(GameTime gameTime)
+    {
+        // most of your drawing logic will go here.
+    }
+
+    public override void AlwaysUpdate(GameTime gameTime)
+    {
+        // if you've got animated things, like maybe animated water tiles in a tile-based RPG,
+        // you might want to keep those animations going even while the state is "inactive",
+        // for example while a pause screen is up. AlwaysUpdate is the place to put such
+        // logic.
+    }
+
+    // there is no "AlwaysInput".
 }
 ```
 
 There's a few things to unpack in that example:
 
-First of all, if you understand what all the methods in `IGameState` are for, then you're probably starting to get a sense for how your application will be structured: a series of game states, which the player will move between according to some logic.
+First of all, if you understand what all the methods in `GameState` are for, then you're probably starting to get a sense for how your application will be structured: a series of game states, which the player will move between according to some logic.
 
 Second, you may have noticed:
 
@@ -190,58 +197,47 @@ So how do you create a new service without writing `new`? Search the interwebs i
 
 Alright, so you've made a game state - maybe more; maybe you've even put some logic in - but how do you tell `MonoGame` which game state to start up with?
 
-For that, open up the default `Program.cs`. You need to completely rewrite `static void Main`... but don't worry: it's pretty easy!
+For that, open up the default `Program.cs`. You need to completely rewrite it... but don't worry: it's pretty easy!
 
 ```c#
 using BenMakesGames.PlayPlayMini; // don't forget this part!
 using MyGame.GameStates; // assuming you put your game state classes here
 using System;
 
-namespace MyGame
-{
-    // call this class whatever you want
-    class Program
+// with PlayPlayMini, we use the GameStateManagerBuilder to get things started.
+var gsmBuilder = new GameStateManagerBuilder();
+
+gsmBuilder
+    .SetInitialGameState<Startup>() // define the starting game state
+    .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
+    .AddPictures(new PictureMeta[] // load some graphics
     {
-        // static void Main, the entry point of any C# application:
-        static void Main(string[] args)
-        {
-            // with PlayPlayMini, we use the GameStateManagerBuilder to get things started.
-            var gsmBuilder = new GameStateManagerBuilder();
+        // immediately loaded
+        new("Loading", "Graphics/Loading", true),
+        new("Cursor", "Graphics/Cursor", true),
 
-            gsmBuilder
-                .SetInitialGameState<Startup>() // define the starting game state
-                .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
-                .AddPictures(new PictureMeta[] // load some graphics
-                {
-                    // immediately loaded
-                    new PictureMeta("Loading", "Graphics/Loading", true),
-                    new PictureMeta("Cursor", "Graphics/Cursor", true),
+        // deferred
+        new("Terrain", "Graphics/Terrain"),
+        new("Title", "Graphics/Title"),
+        new("TitleBackground", "Graphics/TitleBackground"),
+    })
+    .AddSpriteSheets(new SpriteSheetMeta[] // load some more graphics
+    {
+        // deferred
+        new("Treasure", "Graphics/Treasure", 16, 16),
+        new("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
+    })
+    .AddFonts(new FontMeta[] // and yet more graphics:
+    {
+        new("Font", "Graphics/Font", 6, 8),
+    })
+;
 
-                    // deferred
-                    new PictureMeta("Terrain", "Graphics/Terrain"),
-                    new PictureMeta("Title", "Graphics/Title"),
-                    new PictureMeta("TitleBackground", "Graphics/TitleBackground"),
-                })
-                .AddSpriteSheets(new SpriteSheetMeta[] // load some more graphics
-                {
-                    // deferred
-                    new SpriteSheetMeta("Treasure", "Graphics/Treasure", 16, 16),
-                    new SpriteSheetMeta("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
-                })
-                .AddFonts(new FontMeta[] // and yet more graphics:
-                {
-                    new FontMeta("Font", "Graphics/Font", 6, 8),
-                })
-            ;
-
-            // once we're done configuring, we're ready to go!
-            gsmBuilder.Run();
-        }
-    }
-}
+// once we're done configuring, we're ready to go!
+gsmBuilder.Run();
 ```
 
-Once again, there was a bit there. One step at a time:
+Taking it one step at a time:
 
 ```
 var gsmBuilder = new GameStateManagerBuilder();
@@ -314,48 +310,6 @@ From the example above, we're saying that the "Loading" and "Cursor" graphics ne
 immediately (presumably to be displayed on a loading screen), while the other images can load in
 later.
 
-#### Rewriting `Program.cs` with .NET 6
-
-Here's that code again, this time using C#'s super-slim "top-level file" feature:
-
-```c#
-using BenMakesGames.PlayPlayMini; // don't forget this part!
-using MyGame.GameStates; // assuming you put your game state classes here
-using System;
-
-// with PlayPlayMini, we use the GameStateManagerBuilder to get things started.
-var gsmBuilder = new GameStateManagerBuilder();
-
-gsmBuilder
-    .SetInitialGameState<Startup>() // define the starting game state
-    .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
-    .AddPictures(new PictureMeta[] // load some graphics
-    {
-        // immediately loaded
-        new("Loading", "Graphics/Loading", true),
-        new()"Cursor", "Graphics/Cursor", true),
-
-        // deferred
-        new("Terrain", "Graphics/Terrain"),
-        new("Title", "Graphics/Title"),
-        new("TitleBackground", "Graphics/TitleBackground"),
-    })
-    .AddSpriteSheets(new SpriteSheetMeta[] // load some more graphics
-    {
-        // deferred
-        new("Treasure", "Graphics/Treasure", 16, 16),
-        new("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
-    })
-    .AddFonts(new FontMeta[] // and yet more graphics:
-    {
-        new("Font", "Graphics/Font", 6, 8),
-    })
-;
-
-// once we're done configuring, we're ready to go!
-gsmBuilder.Run();
-```
-
 #### Checking if All Graphics have been Loaded
 
 If your project has any deferred images, you need to make sure to wait for them to be loaded before continuing.
@@ -363,61 +317,48 @@ If your project has any deferred images, you need to make sure to wait for them 
 Let's modify the `Startup` game state class from before to check for this, and move on to the title menu only once all the graphics are ready!
 
 ```c#
-namespace MyGame.GameStates
+namespace MyGame.GameStates;
+
+sealed class Startup : GameState
 {
-    class Startup : IGameState, IGameStateLifecycleEnter
+    private MouseManager Mouse { get; }
+    private GameStateManager Game { get; }
+    private GraphicsManager Graphics { get; }
+
+    // the GraphicsManager knows whether or not it's loaded everything up. BEHOLD THE POWER OF
+    // DEPENDENCY INJECTION: we decided we need the GraphicsManager, so we just ask for it.
+    public Startup(MouseManager mouse, GameStateManager game, GraphicsManager graphics)
     {
-        private MouseManager Mouse { get; }
-        private GameStateManager Game { get; }
-        private GraphicsManager Graphics { get; }
-
-        // the GraphicsManager knows whether or not it's loaded everything up. BEHOLD THE POWER OF
-        // DEPENDENCY INJECTION: we decided we need the GraphicsManager, so we just ask for it.
-        public Startup(MouseManager mouse, GameStateManager game, GraphicsManager graphics)
-        {
-            Mouse = mouse;
-            Game = game;
-            Graphics = graphics;
-        }
-
-        public void Enter()
-        {
-            Mouse.PictureName = "Cursor";
-            Mouse.HotspotX = 3;
-            Mouse.HotspotY = 1;
-
-            // we shouldn't do this immediately anymore!
-            //Game.ChangeState<TitleMenu>();
-        }
-
-        public void ActiveDraw(GameTime gameTime)
-        {
-            // since we have the GraphicsManager, let's ask it to draw the "Loading" image.
-            // I'm putting it in the very upper-left - 0, 0 - which is kinda' boring. Sorry.
-            GraphicsManager.DrawSprite(GraphicsManager.Pictures["Loading"], 0, 0);
-            
-            Mouse.Draw(gameTime);
-        }
-
-        public void ActiveUpdate(GameTime gameTime)
-        {
-            // okay! let's check if the graphics are all loaded, and move on only when they are!
-            if(Graphics.FullyLoaded)
-                Game.ChangeState<TitleMenu>();
-        }
-
-        public void ActiveInput(GameTime gameTime)
-        {
-        }
-
-        public void AlwaysDraw(GameTime gameTime)
-        {
-        }
-
-        public void AlwaysUpdate(GameTime gameTime)
-        {
-        }
+        Mouse = mouse;
+        Game = game;
+        Graphics = graphics;
     }
+
+    public override void Enter()
+    {
+        Mouse.UseCustomCursor("Cursor", (3, 1));
+
+        // we shouldn't do this immediately anymore!
+        //Game.ChangeState<TitleMenu>();
+    }
+
+    public override void ActiveDraw(GameTime gameTime)
+    {
+        // since we have the GraphicsManager, let's ask it to draw the "Loading" image.
+        // I'm putting it in the very upper-left - 0, 0 - which is kinda' boring. Sorry.
+        GraphicsManager.DrawSprite(GraphicsManager.Pictures["Loading"], 0, 0);
+            
+        Mouse.Draw(gameTime);
+    }
+
+    public override void ActiveUpdate(GameTime gameTime)
+    {
+        // okay! let's check if the graphics are all loaded, and move on only when they are!
+        if(Graphics.FullyLoaded)
+            Game.ChangeState<TitleMenu>();
+    }
+
+    // the rest of the lifecycle methods can be deleted; we're not using them!
 }
 ```
 
@@ -508,7 +449,7 @@ As an example of the most basic use case:
 
 ```c#
 [AutoRegister(Lifetime.Singleton)]
-class MyService
+sealed class MyService
 {
 	...
 }
@@ -537,7 +478,7 @@ interface IRandomNumberGenerator
 
 // the class which implements that interface:
 [AutoRegister(Lifetime.Singleton, InstanceOf = typeof(IRandomNumberGenerator))]
-class MyRNG: IRandomNumberGenerator
+sealed class MyRNG: IRandomNumberGenerator
 {
 	public int RandomInt(int inclusiveMin, int inclusiveMax)
     {
@@ -547,7 +488,7 @@ class MyRNG: IRandomNumberGenerator
 
 // this game state wants some kind of IRandomNumberGenerator; it doesn't know
 // (or care) that it will get an instance of MyRNG:
-class SomeGameState: IGameState
+sealed class SomeGameState: GameState
 {
     private IRandomNumberGenerator RNG { get; }
     
@@ -575,7 +516,7 @@ A circular dependency is when two services refer to one another in their constru
 
 ```C#
 [AutoRegister(Lifetime.Singleton)]
-class ServiceA
+sealed class ServiceA
 {
     public ServiceA(ServiceB b)
     {
@@ -584,7 +525,7 @@ class ServiceA
 }
 
 [AutoRegister(Lifetime.Singleton)]
-class ServiceB
+sealed class ServiceB
 {
     public ServiceB(ServiceA a)
     {
@@ -625,20 +566,20 @@ There are several interfaces which services can implement, each allowing the ser
 Here's how you can draw two states at once, for example, to show a pause screen on top of another game state:
 
 ```c#
-public class PauseScreen: IGameState
+public sealed class PauseScreen: GameState
 {
-	public IGameState PreviousState { get; }
+	public GameState PreviousState { get; }
     
     ...
     
-    public PauseScreen(..., IGameState previousState)
+    public PauseScreen(..., GameState previousState)
     {
     	...
     	
     	PreviousState = previousState;
     }
     
-    public void AlwaysDraw(GameTime gameTime)
+    public override void AlwaysDraw(GameTime gameTime)
     {
     	PreviousState.AlwaysDraw(gameTime);
     	
@@ -648,19 +589,19 @@ public class PauseScreen: IGameState
     	GraphicsManager.DrawPicture("Paused", 100, 200);
     }
     
-    public void AlwaysUpdate(GameTime gameTime)
+    public override void AlwaysUpdate(GameTime gameTime)
     {
     	PreviousState.AlwaysUpdate(gameTime);
     	
     	// pause screen's own update logic goes here, if any
     }
     
-	public void ActiveInput(GameTime gameTime)
+	public override void ActiveInput(GameTime gameTime)
     {
         // press Escape to un-pause
     	if(KeyboardManager.PressedKey(Keys.Escape))
         {
-            // we have a reference to an IGameState, so we can invoke ChangeState this way:
+            // we have a reference to a GameState, so we can invoke ChangeState this way:
         	GameStateManager.ChangeState(PreviousState);
         }
     }
@@ -672,17 +613,17 @@ public class PauseScreen: IGameState
 The pause screen would then be opened like this:
 
 ```C#
-public class CombatEncounter: IGameState
+public sealed class CombatEncounter: GameState
 {
 	...
 	
-	public void ActiveInput(GameTime gameTime)
+	public override void ActiveInput(GameTime gameTime)
     {
     	...
     	
     	if(KeyboardManager.PressedKey(Keys.Escape))
         {
-        	GameStateManager.ChangeState<PauseScreen, IGameState>(this);
+        	GameStateManager.ChangeState<PauseScreen, GameState>(this);
         }
     }
     
@@ -705,7 +646,7 @@ GameStateManager.ChangeState<PauseScreen, PauseScreenConfig>(new PauseScreenConf
 A game state's lifecycle event methods are called, in this order.
 
 1. `Enter`
-   * Called when the game state is entered into, and the game state implements `IGameStateLifecycleEnter`.
+   * Called when the game state is entered into.
    * Do any first-time setup needed for the game state, ex: initializing a star field array.
 3. `ActiveInput`
    * Always called for the current game state.
@@ -725,7 +666,7 @@ A game state's lifecycle event methods are called, in this order.
    * Always called for the current game state.
    * Draw things you only want drawn if the game is the foreground state, for example the mouse cursor (`MouseManager`'s `ActiveDraw`).
 7. `Leave`
-   - Called if a new game state is replacing the current game state, and the game state implements `IGameStateLifecycleLeave`.
+   - Called if a new game state is replacing the current game state.
    - Immediately after `Leave` is called, the current game state is changed to be the next game state.
    - I haven't yet found a use for this method; it's included for completeness/just-in-case.
 

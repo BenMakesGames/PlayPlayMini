@@ -6,7 +6,7 @@ using System.Linq;
 namespace BenMakesGames.PlayPlayMini.Services;
 
 [AutoRegister(Lifetime.Singleton)]
-public class FrameCounter: IServiceDraw
+public sealed class FrameCounter: IServiceDraw
 {
     public FrameCounter()
     {

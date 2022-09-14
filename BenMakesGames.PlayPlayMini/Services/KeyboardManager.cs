@@ -7,7 +7,7 @@ using System.Linq;
 namespace BenMakesGames.PlayPlayMini.Services;
 
 [AutoRegister(Lifetime.Singleton)]
-public class KeyboardManager : IServiceInput
+public sealed class KeyboardManager : IServiceInput
 {
     private KeyboardState PreviousKeyboardState { get; set; }
     private KeyboardState KeyboardState { get; set; }

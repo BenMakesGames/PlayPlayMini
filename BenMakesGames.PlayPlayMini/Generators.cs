@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BenMakesGames.PlayPlayMini;
 
-public class Generators
+public static class Generators
 {
     public static IEnumerable<(int x, int y)> Circle(int centerX, int centerY, int radius)
     {

@@ -2,7 +2,7 @@
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
-public class ServiceWatcher
+public sealed class ServiceWatcher
 {
     private List<IServiceLoadContent> ServiceWithLoadContentEvents { get; } = new List<IServiceLoadContent>();
     private List<IServiceInitialize> ServicesWithInitializeEvents { get; } = new List<IServiceInitialize>();

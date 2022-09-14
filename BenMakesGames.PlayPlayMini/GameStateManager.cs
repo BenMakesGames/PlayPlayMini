@@ -11,8 +11,8 @@ namespace BenMakesGames.PlayPlayMini;
 [AutoRegister(Lifetime.Singleton)]
 public class GameStateManager: Game
 {
-    private IGameState? CurrentState { get; set; }
-    private IGameState? NextState { get; set; }
+    private GameState? CurrentState { get; set; }
+    private GameState? NextState { get; set; }
 
     private ILifetimeScope IoCContainer { get; }
     private GraphicsManager Graphics { get; }
@@ -128,18 +128,16 @@ public class GameStateManager: Game
     {
         if (NextState != null)
         {
-            if (CurrentState is IGameStateLifecycleLeave leaving)
-                leaving.Leave();
+            CurrentState?.Leave();
 
             CurrentState = NextState;
             NextState = null;
 
-            if (CurrentState is IGameStateLifecycleEnter entering)
-                entering.Enter();
+            CurrentState?.Enter();
         }
     }
 
-    public void ChangeState(IGameState nextState)
+    public void ChangeState(GameState nextState)
     {
         if (NextState != null)
             throw new ArgumentException("a next state is already ready.");
@@ -147,20 +145,20 @@ public class GameStateManager: Game
         NextState = nextState;
     }
 
-    public IGameState ChangeState(Type T)
+    public GameState ChangeState(Type T)
     {
         if (NextState != null)
             throw new ArgumentException("a next state is already ready.");
 
-        NextState = (IGameState)IoCContainer.Resolve(T);
+        NextState = (GameState)IoCContainer.Resolve(T);
 
         return NextState;
     }
 
-    public bool IsCurrentState(IGameState state) => CurrentState == state;
-    public bool IsCurrentState<T>() where T : IGameState => CurrentState is T;
+    public bool IsCurrentState(GameState state) => CurrentState == state;
+    public bool IsCurrentState<T>() where T : GameState => CurrentState is T;
 
-    public T ChangeState<T>() where T : IGameState
+    public T ChangeState<T>() where T : GameState
     {
         if (NextState != null)
             throw new ArgumentException("a next state is already ready.");
@@ -170,7 +168,7 @@ public class GameStateManager: Game
         return (T)NextState;
     }
 
-    public T ChangeState<T, TConfig>(TConfig config) where T: IGameState
+    public T ChangeState<T, TConfig>(TConfig config) where T: GameState
     {
         if (NextState != null)
             throw new ArgumentException("a next state is already ready.");
@@ -180,9 +178,9 @@ public class GameStateManager: Game
         return (T)NextState;
     }
 
-    public T CreateState<T>() where T: IGameState => IoCContainer.Resolve<T>();
+    public T CreateState<T>() where T: GameState => IoCContainer.Resolve<T>();
 
-    public T CreateState<T, TConfig>(TConfig config) where T : IGameState =>
+    public T CreateState<T, TConfig>(TConfig config) where T : GameState =>
         IoCContainer.Resolve<T>(new TypedParameter(typeof(TConfig), config))
     ;
 }

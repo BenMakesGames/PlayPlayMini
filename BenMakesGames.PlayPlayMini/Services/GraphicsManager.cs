@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace BenMakesGames.PlayPlayMini.Services;
 
 [AutoRegister(Lifetime.Singleton)]
-public class GraphicsManager: IServiceLoadContent, IServiceInitialize
+public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 {
     private ILogger<GraphicsManager> Logger { get; }
 

@@ -7,7 +7,7 @@ using BenMakesGames.PlayPlayMini.Model;
 namespace BenMakesGames.PlayPlayMini.Services;
 
 [AutoRegister(Lifetime.Singleton)]
-public class MouseManager : IServiceInput
+public sealed class MouseManager : IServiceInput
 {
     private GraphicsManager GraphicsManager { get; }
     private KeyboardManager Keyboard { get; }

@@ -50,7 +50,7 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder SetInitialGameState<T>() where T:IGameState
+    public GameStateManagerBuilder SetInitialGameState<T>() where T:GameState
     {
         InitialGameState = typeof(T);
             
@@ -165,7 +165,7 @@ public class GameStateManagerBuilder
             }
 
             builder.RegisterAssemblyTypes(assembly)
-                .Where(t => t.IsAssignableTo<IGameState>())
+                .Where(t => t.IsAssignableTo<GameState>())
                 .AsSelf()
                 .InstancePerDependency()
                 .OnActivating(s => serviceWatcher.RegisterService(s.Instance))
