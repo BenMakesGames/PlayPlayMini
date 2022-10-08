@@ -509,7 +509,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         {
             if (c >= 32)
             {
-                DrawText(fontOutline, currentX - 1, currentY - 1, (char)(c - 32), outline);
+                DrawPicture(fontOutline.Texture, currentX - 1, currentY - 1, FontRectangle(fontOutline, c - 32), outline);
 
                 currentX += font.CharacterWidth;
             }
