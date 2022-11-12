@@ -1,18 +1,6 @@
 ﻿namespace BenMakesGames.PlayPlayMini.Model;
 
-public struct SoundEffectMeta
-{
-    public string Key { get; set; }
-    public string Path { get; set; }
-    public bool PreLoaded { get; set; }
-
-    /// <param name="key"></param>
-    /// <param name="path">Relative path to image, excluding file extension (ex: "Sounds/TakeDamage")</param>
-    /// <param name="preLoaded">Whether or not to load this resource BEFORE entering the first IGameState</param>
-    public SoundEffectMeta(string key, string path, bool preLoaded = false)
-    {
-        Key = key;
-        Path = path;
-        PreLoaded = preLoaded;
-    }
-}
+/// <param name="Key">Name that uniquely identifies this sound effect</param>
+/// <param name="Path">Relative path to image, excluding file extension (ex: "Sounds/TakeDamage")</param>
+/// <param name="PreLoaded">Whether or not to load this resource BEFORE entering the first GameState</param>
+public sealed record SoundEffectMeta(string Key, string Path, bool PreLoaded = false);

@@ -16,14 +16,14 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 {
     private ILogger<GraphicsManager> Logger { get; }
 
-    public bool FullyLoaded { get; private set; } = false;
+    public bool FullyLoaded { get; private set; }
 
     public int Zoom { get; private set; } = 2;
-    public bool FullScreen { get; private set; } = false;
+    public bool FullScreen { get; private set; }
     public int Width { get; private set; } = 1920 / 3;
     public int Height { get; private set; } = 1080 / 3;
 
-    public int DrawCalls { get; private set; } = 0;
+    public int DrawCalls { get; private set; }
 
     public GraphicsDevice GraphicsDevice { get => Game.GraphicsDevice; }
     private ContentManager Content { get => Game.Content; }

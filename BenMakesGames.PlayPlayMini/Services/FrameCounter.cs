@@ -19,7 +19,7 @@ public sealed class FrameCounter: IServiceDraw
 
     public const int MAXIMUM_SAMPLES = 60;
 
-    private Queue<float> SampleBuffer { get;} = new Queue<float>();
+    private Queue<float> SampleBuffer { get;} = new();
 
     public void Draw(GameTime gameTime)
     {

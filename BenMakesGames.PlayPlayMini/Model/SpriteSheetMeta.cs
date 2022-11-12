@@ -1,24 +1,8 @@
 ﻿namespace BenMakesGames.PlayPlayMini.Model;
 
-public struct SpriteSheetMeta
-{
-    public string Key { get; set; }
-    public string Path { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public bool PreLoaded { get; set; }
-
-    /// <param name="key"></param>
-    /// <param name="path">Relative path to image, excluding file extension (ex: "Characters/Nina")</param>
-    /// <param name="width">Width of an individual sprite</param>
-    /// <param name="height">Height of an individual sprite</param>
-    /// <param name="preLoaded">Whether or not to load this resource BEFORE entering the first IGameState</param>
-    public SpriteSheetMeta(string key, string path, int width, int height, bool preLoaded = false)
-    {
-        Key = key;
-        Path = path;
-        Width = width;
-        Height = height;
-        PreLoaded = preLoaded;
-    }
-}
+/// <param name="Key">Name that uniquely identifies this sprite sheet</param>
+/// <param name="Path">Relative path to image, excluding file extension (ex: "Characters/Nina")</param>
+/// <param name="Width">Width of an individual sprite</param>
+/// <param name="Height">Height of an individual sprite</param>
+/// <param name="PreLoaded">Whether or not to load this resource BEFORE entering the first GameState</param>
+public sealed record SpriteSheetMeta(string Key, string Path, int Width, int Height, bool PreLoaded = false);
