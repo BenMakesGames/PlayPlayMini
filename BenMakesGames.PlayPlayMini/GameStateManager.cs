@@ -74,11 +74,10 @@ public class GameStateManager: Game
 
     private void Input(GameTime gameTime)
     {
-        foreach(IServiceInput s in ServiceWatcher.InputServices)
+        foreach(var s in ServiceWatcher.InputServices)
             s.Input(gameTime);
 
-        if (CurrentState != null)
-            CurrentState.ActiveInput(gameTime);
+        CurrentState?.ActiveInput(gameTime);
     }
 
     protected override void Update(GameTime gameTime)
@@ -88,7 +87,7 @@ public class GameStateManager: Game
 
         base.Update(gameTime);
 
-        foreach (IServiceUpdate s in ServiceWatcher.UpdatedServices)
+        foreach (var s in ServiceWatcher.UpdatedServices)
             s.Update(gameTime);
 
         if (CurrentState != null)
@@ -114,7 +113,7 @@ public class GameStateManager: Game
             CurrentState.ActiveDraw(gameTime);
         }
 
-        foreach (IServiceDraw s in ServiceWatcher.DrawnServices)
+        foreach (var s in ServiceWatcher.DrawnServices)
             s.Draw(gameTime);
     }
 
@@ -126,21 +125,21 @@ public class GameStateManager: Game
 
     private void SwitchState()
     {
-        if (NextState != null)
-        {
-            CurrentState?.Leave();
+        if(NextState == null)
+            return;
 
-            CurrentState = NextState;
-            NextState = null;
+        CurrentState?.Leave();
 
-            CurrentState?.Enter();
-        }
+        CurrentState = NextState;
+        NextState = null;
+
+        CurrentState.Enter();
     }
 
     public void ChangeState(GameState nextState)
     {
         if (NextState != null)
-            throw new ArgumentException("a next state is already ready.");
+            throw new ArgumentException("A next state is already ready!");
 
         NextState = nextState;
     }
@@ -148,7 +147,7 @@ public class GameStateManager: Game
     public GameState ChangeState(Type T)
     {
         if (NextState != null)
-            throw new ArgumentException("a next state is already ready.");
+            throw new ArgumentException("A next state is already ready!");
 
         NextState = (GameState)IoCContainer.Resolve(T);
 
@@ -161,7 +160,7 @@ public class GameStateManager: Game
     public T ChangeState<T>() where T : GameState
     {
         if (NextState != null)
-            throw new ArgumentException("a next state is already ready.");
+            throw new ArgumentException("A next state is already ready!");
 
         NextState = CreateState<T>();
 
@@ -171,7 +170,7 @@ public class GameStateManager: Game
     public T ChangeState<T, TConfig>(TConfig config) where T: GameState
     {
         if (NextState != null)
-            throw new ArgumentException("a next state is already ready.");
+            throw new ArgumentException("A next state is already ready!");
 
         NextState = CreateState<T, TConfig>(config);
 

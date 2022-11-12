@@ -62,7 +62,7 @@ public sealed class SoundManager : IServiceLoadContent
             return;
         }
             
-        float v = volume * SoundVolume;
+        var v = volume * SoundVolume;
 
         if(v > 0)
             SoundEffects[name].Play(v, pitch, pan);
