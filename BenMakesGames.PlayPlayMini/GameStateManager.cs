@@ -23,9 +23,7 @@ public class GameStateManager: Game
     public string InitialWindowTitle { get; set; } = "Untitled Game";
 
     public GameStateManager(
-        ILifetimeScope iocContainer,
-        GraphicsManager graphics,
-        ServiceWatcher serviceWatcher,
+        ILifetimeScope iocContainer, GraphicsManager graphics, ServiceWatcher serviceWatcher,
         SoundManager soundManager
     )
     {
