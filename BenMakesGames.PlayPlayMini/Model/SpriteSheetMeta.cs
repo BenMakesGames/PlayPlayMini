@@ -5,4 +5,4 @@
 /// <param name="Width">Width of an individual sprite</param>
 /// <param name="Height">Height of an individual sprite</param>
 /// <param name="PreLoaded">Whether or not to load this resource BEFORE entering the first GameState</param>
-public sealed record SpriteSheetMeta(string Key, string Path, int Width, int Height, bool PreLoaded = false);
+public sealed record SpriteSheetMeta(string Key, string Path, int Width, int Height, bool PreLoaded = false) : GameAsset<SpriteSheet>(Path, PreLoaded);
