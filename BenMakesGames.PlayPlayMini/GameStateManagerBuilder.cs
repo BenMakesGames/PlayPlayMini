@@ -15,7 +15,7 @@ public class GameStateManagerBuilder
 {
     private Type? InitialGameState { get; set; }
 
-    private AssetCollection GameAssets { get; set; }
+    private AssetCollection GameAssets { get; }
 
     private Action<ContainerBuilder>? AddServicesCallback { get; set; }
     private string WindowTitle { get; set; } = "MonoGame Game";
@@ -55,7 +55,7 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder AddAssets(IEnumerable<Asset> assets)
+    public GameStateManagerBuilder AddAssets(IList<Asset> assets)
     {
         GameAssets.AddRange(assets);
 
@@ -74,14 +74,12 @@ public class GameStateManagerBuilder
 
     private static List<Assembly> GetListOfEntryAssemblyWithReferences()
     {
-        List<Assembly> listOfAssemblies = new List<Assembly>();
+        var listOfAssemblies = new List<Assembly>();
         var mainAsm = Assembly.GetEntryAssembly()!;
+        
         listOfAssemblies.Add(mainAsm);
+        listOfAssemblies.AddRange(mainAsm.GetReferencedAssemblies().Select(Assembly.Load));
 
-        foreach (var refAsmName in mainAsm.GetReferencedAssemblies())
-        {
-            listOfAssemblies.Add(Assembly.Load(refAsmName));
-        }
         return listOfAssemblies;
     }
 
@@ -161,6 +159,8 @@ public class GameStateManagerBuilder
             game.InitialGameState = InitialGameState;
             game.InitialWindowSize = WindowSize;
             game.InitialWindowTitle = WindowTitle;
+            game.Assets = GameAssets;
+            game.IsFixedTimeStep = FixedTimeStep;
 
             game.Run();
         }
@@ -169,15 +169,15 @@ public class GameStateManagerBuilder
     private void InstantiateLoadContentAndInitializedServices(ILifetimeScope scope)
     {
         var serviceTypes = scope.ComponentRegistry.Registrations
-                .SelectMany(r => r.Services)
-                .OfType<IServiceWithType>()
-                .Select(s => s.ServiceType)
-                .Where(serviceType =>
-                    typeof(IServiceInitialize).IsAssignableFrom(serviceType) ||
-                    typeof(IServiceLoadContent).IsAssignableFrom(serviceType)
-                )
-                .ToList()
-            ;
+            .SelectMany(r => r.Services)
+            .OfType<IServiceWithType>()
+            .Select(s => s.ServiceType)
+            .Where(serviceType =>
+                typeof(IServiceInitialize).IsAssignableFrom(serviceType) ||
+                typeof(IServiceLoadContent).IsAssignableFrom(serviceType)
+            )
+            .ToList()
+        ;
 
         foreach(var t in serviceTypes)
             scope.Resolve(t);

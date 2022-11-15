@@ -8,7 +8,7 @@ using System;
 namespace BenMakesGames.PlayPlayMini;
 
 [AutoRegister(Lifetime.Singleton)]
-public class GameStateManager: Game
+public sealed class GameStateManager: Game
 {
     private GameState? CurrentState { get; set; }
     private GameState? NextState { get; set; }
@@ -17,8 +17,8 @@ public class GameStateManager: Game
     private GraphicsManager Graphics { get; }
     private ServiceWatcher ServiceWatcher { get; }
 
-    public AssetCollection Assets { get; set; } = null!;
-    public Type InitialGameState { get; set; } = null!;
+    public AssetCollection Assets { get; set; } = new();
+    public Type? InitialGameState { get; set; }
     public (int Width, int Height, int Zoom) InitialWindowSize { get; set; }
     public string InitialWindowTitle { get; set; } = "Untitled Game";
 
@@ -62,6 +62,9 @@ public class GameStateManager: Game
 
         Window.Title = InitialWindowTitle;
 
+        if(InitialGameState == null)
+            throw new Exception("Must have called SetInitialGameState on GameStateManagerBuilder.");
+        
         ChangeState(InitialGameState);
     }
 

@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace BenMakesGames.PlayPlayMini.Services;
@@ -78,7 +79,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         Fonts = new();
         
         // load immediately
-        foreach(var meta in gsm.Assets.GetPreloadable<Texture2D>())
+        foreach(var meta in gsm.Assets.GetAll<PictureMeta>().Where(m => m.PreLoaded))
             LoadPicture(meta);
 
         if(!Pictures.ContainsKey("Pixel"))
@@ -89,7 +90,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             Pictures.Add("Pixel", whitePixel);
         }
 
-        foreach(var meta in gsm.Assets.GetPreloadable<SpriteSheet>())
+        foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
             LoadSpriteSheet(meta);
 
         // deferred
@@ -98,23 +99,23 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     private void LoadDeferredContent(AssetCollection assets)
     {
-        foreach(var meta in assets.GetDeferred<Texture2D>())
+        foreach(var meta in assets.GetAll<PictureMeta>().Where(m => !m.PreLoaded))
             LoadPicture(meta);
 
-        foreach(var meta in assets.GetDeferred<SpriteSheet>())
+        foreach(var meta in assets.GetAll<SpriteSheetMeta>().Where(m => !m.PreLoaded))
             LoadSpriteSheet(meta);
 
-        foreach (var meta in assets.GetDeferred<Font>())
+        foreach(var meta in assets.GetAll<FontMeta>())
             LoadFont(meta);
 
         FullyLoaded = true;
     }
 
-    private void LoadFont(Asset<Font> font)
+    private void LoadFont(FontMeta font)
     {
         try
         {
-            Fonts.Add(font.Key, font.Load(Content));
+            Fonts.Add(font.Key, new Font(Content.Load<Texture2D>(font.Path), font.Width, font.Height));
         }
         catch (Exception e)
         {
@@ -122,11 +123,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
-    private void LoadPicture(Asset<Texture2D> picture)
+    private void LoadPicture(PictureMeta picture)
     {
         try
         {
-            Pictures.Add(picture.Key, picture.Load(Content));
+            Pictures.Add(picture.Key, Content.Load<Texture2D>(picture.Path));
         }
         catch (Exception e)
         {
@@ -134,11 +135,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
-    private void LoadSpriteSheet(Asset<SpriteSheet> spriteSheet)
+    private void LoadSpriteSheet(SpriteSheetMeta spriteSheet)
     {
         try
         {
-            SpriteSheets.Add(spriteSheet.Key, spriteSheet.Load(Content));
+            SpriteSheets.Add(spriteSheet.Key, new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height));
         }
         catch (Exception e)
         {

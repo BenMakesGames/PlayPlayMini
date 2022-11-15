@@ -99,7 +99,7 @@ public sealed class SoundManager : IServiceLoadContent
         Songs = new();
 
         // load immediately
-        foreach (var meta in gsm.Assets.GetPreloadable<SoundEffect>())
+        foreach (var meta in gsm.Assets.GetAll<SoundEffectMeta>().Where(m => m.PreLoaded))
             LoadSoundEffect(meta);
 
         // deferred
@@ -108,20 +108,20 @@ public sealed class SoundManager : IServiceLoadContent
 
     private void LoadDeferredContent(AssetCollection assets)
     {
-        foreach (var meta in assets.GetDeferred<SoundEffect>().Where(m => !m.PreLoaded))
+        foreach (var meta in assets.GetAll<SoundEffectMeta>().Where(m => !m.PreLoaded))
             LoadSoundEffect(meta);
 
-        foreach (var meta in assets.GetAll<Song>())
+        foreach (var meta in assets.GetAll<SongMeta>())
             LoadSong(meta);
 
         FullyLoaded = true;
     }
 
-    private void LoadSoundEffect(Asset<SoundEffect> soundEffect)
+    private void LoadSoundEffect(SoundEffectMeta soundEffect)
     {
         try
         {
-            SoundEffects.Add(soundEffect.Key, soundEffect.Load(Content));
+            SoundEffects.Add(soundEffect.Key, Content.Load<SoundEffect>(soundEffect.Path));
         }
         catch (Exception e)
         {
@@ -129,11 +129,11 @@ public sealed class SoundManager : IServiceLoadContent
         }
     }
 
-    private void LoadSong(Asset<Song> song)
+    private void LoadSong(SongMeta song)
     {
         try
         {
-            Songs.Add(song.Key, song.Load(Content));
+            Songs.Add(song.Key, Content.Load<Song>(song.Path));
         }
         catch (Exception e)
         {
