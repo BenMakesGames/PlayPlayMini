@@ -1,13 +1,12 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
@@ -74,17 +73,12 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public void LoadContent(GameStateManager gsm)
     {
-        // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
-        var pictures = gsm.Pictures;
-        var spriteSheets = gsm.SpriteSheets;
-        var fonts = gsm.Fonts;
-
         Pictures = new();
         SpriteSheets = new();
         Fonts = new();
-            
+        
         // load immediately
-        foreach(var meta in pictures.Where(m => m.PreLoaded))
+        foreach(var meta in gsm.Assets.GetPreloadable<Texture2D>())
             LoadPicture(meta);
 
         if(!Pictures.ContainsKey("Pixel"))
@@ -95,38 +89,32 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             Pictures.Add("Pixel", whitePixel);
         }
 
-        foreach(var meta in spriteSheets.Where(m => m.PreLoaded))
+        foreach(var meta in gsm.Assets.GetPreloadable<SpriteSheet>())
             LoadSpriteSheet(meta);
 
         // deferred
-        Task.Run(() => {
-            LoadDeferredContent(pictures, spriteSheets, fonts);
-        });
+        Task.Run(() => LoadDeferredContent(gsm.Assets));
     }
 
-    private void LoadDeferredContent(
-        List<PictureMeta> pictures,
-        List<SpriteSheetMeta> spriteSheets,
-        List<FontMeta> fonts
-    )
+    private void LoadDeferredContent(AssetCollection assets)
     {
-        foreach(var meta in pictures.Where(m => !m.PreLoaded))
+        foreach(var meta in assets.GetDeferred<Texture2D>())
             LoadPicture(meta);
 
-        foreach(var meta in spriteSheets.Where(m => !m.PreLoaded))
+        foreach(var meta in assets.GetDeferred<SpriteSheet>())
             LoadSpriteSheet(meta);
 
-        foreach (var meta in fonts)
+        foreach (var meta in assets.GetDeferred<Font>())
             LoadFont(meta);
 
         FullyLoaded = true;
     }
 
-    private void LoadFont(FontMeta font)
+    private void LoadFont(GameAsset<Font> font)
     {
         try
         {
-            Fonts.Add(font.Key, new Font(Content.Load<Texture2D>(font.Path), font.Width, font.Height));
+            Fonts.Add(font.Key, font.Load(Content));
         }
         catch (Exception e)
         {
@@ -134,11 +122,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
-    private void LoadPicture(PictureMeta picture)
+    private void LoadPicture(GameAsset<Texture2D> picture)
     {
         try
         {
-            Pictures.Add(picture.Key, Content.Load<Texture2D>(picture.Path));
+            Pictures.Add(picture.Key, picture.Load(Content));
         }
         catch (Exception e)
         {
@@ -146,11 +134,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
-    private void LoadSpriteSheet(SpriteSheetMeta spriteSheet)
+    private void LoadSpriteSheet(GameAsset<SpriteSheet> spriteSheet)
     {
         try
         {
-            SpriteSheets.Add(spriteSheet.Key, new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height));
+            SpriteSheets.Add(spriteSheet.Key, spriteSheet.Load(Content));
         }
         catch (Exception e)
         {

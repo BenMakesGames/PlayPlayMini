@@ -3,11 +3,11 @@ using Autofac.Core;
 using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
 
 namespace BenMakesGames.PlayPlayMini;
 
@@ -15,12 +15,7 @@ public class GameStateManagerBuilder
 {
     private Type? InitialGameState { get; set; }
 
-    // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
-    private List<PictureMeta> PictureMeta { get; set; }
-    private List<SpriteSheetMeta> SpriteSheetMeta { get; set; }
-    private List<FontMeta> FontMeta { get; set; }
-    private List<SongMeta> SongMeta { get; set; }
-    private List<SoundEffectMeta> SoundEffectMeta { get; set; }
+    private AssetCollection GameAssets { get; set; }
 
     private Action<ContainerBuilder>? AddServicesCallback { get; set; }
     private string WindowTitle { get; set; } = "MonoGame Game";
@@ -29,11 +24,7 @@ public class GameStateManagerBuilder
 
     public GameStateManagerBuilder()
     {
-        PictureMeta = new List<PictureMeta>();
-        SpriteSheetMeta = new List<SpriteSheetMeta>();
-        FontMeta = new List<FontMeta>();
-        SongMeta = new List<SongMeta>();
-        SoundEffectMeta = new List<SoundEffectMeta>();
+        GameAssets = new();
     }
 
     public GameStateManagerBuilder SetWindowSize(int width, int height, int zoom)
@@ -64,37 +55,9 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder AddPictures(IEnumerable<PictureMeta> pictures)
+    public GameStateManagerBuilder AddAssets(IEnumerable<IGameAsset> assets)
     {
-        PictureMeta.AddRange(pictures);
-
-        return this;
-    }
-
-    public GameStateManagerBuilder AddSpriteSheets(IEnumerable<SpriteSheetMeta> spriteSheets)
-    {
-        SpriteSheetMeta.AddRange(spriteSheets);
-
-        return this;
-    }
-
-    public GameStateManagerBuilder AddFonts(IEnumerable<FontMeta> fonts)
-    {
-        FontMeta.AddRange(fonts);
-
-        return this;
-    }
-
-    public GameStateManagerBuilder AddSongs(IEnumerable<SongMeta> songs)
-    {
-        SongMeta.AddRange(songs);
-
-        return this;
-    }
-
-    public GameStateManagerBuilder AddSoundEffects(IEnumerable<SoundEffectMeta> soundEffects)
-    {
-        SoundEffectMeta.AddRange(soundEffects);
+        GameAssets.AddRange(assets);
 
         return this;
     }
@@ -198,14 +161,6 @@ public class GameStateManagerBuilder
             game.InitialGameState = InitialGameState;
             game.InitialWindowSize = WindowSize;
             game.InitialWindowTitle = WindowTitle;
-
-            // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
-            game.Pictures = PictureMeta;
-            game.SpriteSheets = SpriteSheetMeta;
-            game.Fonts = FontMeta;
-            game.Songs = SongMeta;
-            game.SoundEffects = SoundEffectMeta;
-            game.IsFixedTimeStep = FixedTimeStep;
 
             game.Run();
         }

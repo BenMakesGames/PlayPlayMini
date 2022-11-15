@@ -1,10 +1,8 @@
 ﻿using Autofac;
 using BenMakesGames.PlayPlayMini.Attributes.DI;
-using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Generic;
 
 namespace BenMakesGames.PlayPlayMini;
 
@@ -18,19 +16,17 @@ public class GameStateManager: Game
     private GraphicsManager Graphics { get; }
     private ServiceWatcher ServiceWatcher { get; }
 
+    public AssetCollection Assets { get; set; } = null!;
     public Type InitialGameState { get; set; } = null!;
 
     // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
-    public List<PictureMeta> Pictures { get; set; } = null!;
-    public List<SpriteSheetMeta> SpriteSheets { get; set; } = null!;
-    public List<FontMeta> Fonts { get; set; } = null!;
-    public List<SoundEffectMeta> SoundEffects { get; set; } = null!;
-    public List<SongMeta> Songs { get; set; } = null!;
     public (int Width, int Height, int Zoom) InitialWindowSize { get; set; }
     public string InitialWindowTitle { get; set; } = "Untitled Game";
 
     public GameStateManager(
-        ILifetimeScope iocContainer, GraphicsManager graphics, ServiceWatcher serviceWatcher,
+        ILifetimeScope iocContainer,
+        GraphicsManager graphics,
+        ServiceWatcher serviceWatcher,
         SoundManager soundManager
     )
     {
