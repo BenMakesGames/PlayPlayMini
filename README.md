@@ -210,26 +210,19 @@ var gsmBuilder = new GameStateManagerBuilder();
 gsmBuilder
     .SetInitialGameState<Startup>() // define the starting game state
     .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
-    .AddPictures(new PictureMeta[] // load some graphics
+    .AddAssets(new PictureMeta[] // load some graphics
     {
         // immediately loaded
-        new("Loading", "Graphics/Loading", true),
-        new("Cursor", "Graphics/Cursor", true),
+        new PictureMeta("Loading", "Graphics/Loading", true),
+        new PictureMeta("Cursor", "Graphics/Cursor", true),
 
         // deferred
-        new("Terrain", "Graphics/Terrain"),
-        new("Title", "Graphics/Title"),
-        new("TitleBackground", "Graphics/TitleBackground"),
-    })
-    .AddSpriteSheets(new SpriteSheetMeta[] // load some more graphics
-    {
-        // deferred
-        new("Treasure", "Graphics/Treasure", 16, 16),
-        new("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
-    })
-    .AddFonts(new FontMeta[] // and yet more graphics:
-    {
-        new("Font", "Graphics/Font", 6, 8),
+        new PictureMeta("Terrain", "Graphics/Terrain"),
+        new PictureMeta("Title", "Graphics/Title"),
+        new PictureMeta("TitleBackground", "Graphics/TitleBackground"),
+        new SpriteSheetMeta("Treasure", "Graphics/Treasure", 16, 16),
+        new SpriteSheetMeta("TerrainTrim", "Graphics/TerrainTrim", 10, 10),
+        new FontMeta("Font", "Graphics/Font", 6, 8)
     })
 ;
 
