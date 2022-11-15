@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using BenMakesGames.PlayPlayMini.Attributes.DI;
+using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
 using System;

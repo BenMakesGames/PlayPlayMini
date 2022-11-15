@@ -117,7 +117,7 @@ public sealed class SoundManager : IServiceLoadContent
         FullyLoaded = true;
     }
 
-    private void LoadSoundEffect(GameAsset<SoundEffect> soundEffect)
+    private void LoadSoundEffect(Asset<SoundEffect> soundEffect)
     {
         try
         {
@@ -129,7 +129,7 @@ public sealed class SoundManager : IServiceLoadContent
         }
     }
 
-    private void LoadSong(GameAsset<Song> song)
+    private void LoadSong(Asset<Song> song)
     {
         try
         {

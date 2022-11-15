@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using BenMakesGames.PlayPlayMini.Services;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace BenMakesGames.PlayPlayMini.Model;
 
@@ -6,7 +7,7 @@ namespace BenMakesGames.PlayPlayMini.Model;
 /// <param name="Path">Relative path to image, excluding file extension (ex: "Fonts/Consolas")</param>
 /// <param name="Width">Width of an individual character</param>
 /// <param name="Height">Height of an individual character</param>
-public sealed record FontMeta(string Key, string Path, int Width, int Height) : GameAsset<Font>(Key, Path)
+public sealed record FontMeta(string Key, string Path, int Width, int Height) : Asset<Font>(Key, Path)
 {
     public override Font Load(ContentManagerLoader loader)
     {

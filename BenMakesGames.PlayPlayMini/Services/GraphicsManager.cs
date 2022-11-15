@@ -110,7 +110,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         FullyLoaded = true;
     }
 
-    private void LoadFont(GameAsset<Font> font)
+    private void LoadFont(Asset<Font> font)
     {
         try
         {
@@ -122,7 +122,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
-    private void LoadPicture(GameAsset<Texture2D> picture)
+    private void LoadPicture(Asset<Texture2D> picture)
     {
         try
         {
@@ -134,7 +134,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
-    private void LoadSpriteSheet(GameAsset<SpriteSheet> spriteSheet)
+    private void LoadSpriteSheet(Asset<SpriteSheet> spriteSheet)
     {
         try
         {
