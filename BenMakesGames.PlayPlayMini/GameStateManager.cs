@@ -19,8 +19,6 @@ public class GameStateManager: Game
 
     public AssetCollection Assets { get; set; } = null!;
     public Type InitialGameState { get; set; } = null!;
-
-    // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
     public (int Width, int Height, int Zoom) InitialWindowSize { get; set; }
     public string InitialWindowTitle { get; set; } = "Untitled Game";
 
