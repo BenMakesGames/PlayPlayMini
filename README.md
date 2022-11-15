@@ -210,7 +210,7 @@ var gsmBuilder = new GameStateManagerBuilder();
 gsmBuilder
     .SetInitialGameState<Startup>() // define the starting game state
     .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
-    .AddAssets(new PictureMeta[] // load some graphics
+    .AddAssets(new Asset[]
     {
         // immediately loaded
         new PictureMeta("Loading", "Graphics/Loading", true),
