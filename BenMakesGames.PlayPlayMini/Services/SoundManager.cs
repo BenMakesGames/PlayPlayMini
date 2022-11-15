@@ -1,5 +1,6 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -9,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
@@ -95,42 +95,33 @@ public sealed class SoundManager : IServiceLoadContent
 
     public void LoadContent(GameStateManager gsm)
     {
-        // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
-        var soundEffects = gsm.SoundEffects;
-        var songs = gsm.Songs;
-
         SoundEffects = new();
         Songs = new();
 
         // load immediately
-        foreach (var meta in soundEffects.Where(m => m.PreLoaded))
+        foreach (var meta in gsm.Assets.GetPreloadable<SoundEffect>())
             LoadSoundEffect(meta);
 
         // deferred
-        Task.Run(() => {
-            LoadDeferredContent(soundEffects, songs);
-        });
+        Task.Run(() => LoadDeferredContent(gsm.Assets));
     }
 
-    private void LoadDeferredContent(
-        List<SoundEffectMeta> soundEffects,
-        List<SongMeta> songs
-    )
+    private void LoadDeferredContent(AssetCollection assets)
     {
-        foreach (var meta in soundEffects.Where(m => !m.PreLoaded))
+        foreach (var meta in assets.GetDeferred<SoundEffect>().Where(m => !m.PreLoaded))
             LoadSoundEffect(meta);
 
-        foreach (var meta in songs)
+        foreach (var meta in assets.GetAll<Song>())
             LoadSong(meta);
 
         FullyLoaded = true;
     }
 
-    private void LoadSoundEffect(SoundEffectMeta soundEffect)
+    private void LoadSoundEffect(Asset<SoundEffect> soundEffect)
     {
         try
         {
-            SoundEffects.Add(soundEffect.Key, Content.Load<SoundEffect>(soundEffect.Path));
+            SoundEffects.Add(soundEffect.Key, soundEffect.Load(Content));
         }
         catch (Exception e)
         {
@@ -138,11 +129,11 @@ public sealed class SoundManager : IServiceLoadContent
         }
     }
 
-    private void LoadSong(SongMeta song)
+    private void LoadSong(Asset<Song> song)
     {
         try
         {
-            Songs.Add(song.Key, Content.Load<Song>(song.Path));
+            Songs.Add(song.Key, song.Load(Content));
         }
         catch (Exception e)
         {
