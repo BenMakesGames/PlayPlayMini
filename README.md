@@ -210,7 +210,7 @@ var gsmBuilder = new GameStateManagerBuilder();
 gsmBuilder
     .SetInitialGameState<Startup>() // define the starting game state
     .SetWindowSize(480, 270, 2) // 480x270, with a x2 zoom level (window will be 960x540)
-    .AddAssets(new Asset[]
+    .AddAssets(new IAsset[]
     {
         // immediately loaded
         new PictureMeta("Loading", "Graphics/Loading", true),
@@ -253,20 +253,12 @@ Hopefully those are pretty self-explanatory. The final `2` in `SetWindowSize` in
 Next up:
 
 ```c#
-.AddPictures(new PictureMeta[] {
+.AddAssets(new IAsset[] {
     ...
 })
 ```
 
-And:
-
-```c#
-.AddSpriteSheets(new SpriteSheetMeta[] {
-    ...
-})
-```
-
-These methods (along with `AddPicture` and `AddSpriteSheet`, if you only want to add one at a time), tell the `GraphicsManager` which graphics to load, from your `Content/Content.mcgb` file. `Content/Content.mcgb` is part of `MonoGame`'s asset "pipeline". `PlayPlayMini` hides a lot of `MonoGame`'s internals, but the asset pipeline isn't something that can be - or should be - hidden! It's how you tell `MonoGame` what graphics, sounds, and songs, your game will use.
+This method tells the `GraphicsManager` (and `SoundManager`) which assets to load, from your `Content/Content.mcgb` file. `Content/Content.mcgb` is part of `MonoGame`'s asset "pipeline". `PlayPlayMini` hides a lot of `MonoGame`'s internals, but the asset pipeline isn't something that can be - or should be - hidden! It's how you tell `MonoGame` what graphics, sounds, and songs, your game will use.
 
 If you've never used the `Content/Content.mgcb` file before, check out `MonoGame`'s documentation on the subject:
 
@@ -357,6 +349,8 @@ sealed class Startup : GameState
 
 It's important to note: if you try to use a graphic before it's loaded, your application will crash, so don't do it!
 
+If you also have deferred sound effect or music assets, inject the `SoundManager`, and check on _its_ `FullyLoaded` property, as well!
+
 ## Services
 
 If you're familiar with DI, you already know this, but you can create your own services. A service is just any class that's been registered with the DI framework (`Autofac`, in our case). Suppose you make a `ParticleEffectService` class... once your register it as a service, you can ask for a `ParticleEffectService` in the constructor of any other class, and you can ask for other services in the constructor of your `ParticleEffectService`.
@@ -379,7 +373,7 @@ The `GraphicsManager` has methods for drawing graphics and fonts.
 
 Most of your game states will probably include the `GraphicsManager` as one of their dependencies.
 
-#### Sound Manager
+#### SoundManager
 
 The `SoundManager` has methods for playing sounds and looping music.
 

@@ -53,7 +53,7 @@ public sealed class GameStateManager: Game
 
     protected override void Initialize()
     {
-        foreach (IServiceInitialize s in ServiceWatcher.InitializedServices)
+        foreach (var s in ServiceWatcher.InitializedServices)
             s.Initialize(this);
 
         IsMouseVisible = false; // configurable via MouseManager
@@ -61,11 +61,8 @@ public sealed class GameStateManager: Game
         base.Initialize(); // calls LoadContent, btw
 
         Window.Title = InitialWindowTitle;
-
-        if(InitialGameState == null)
-            throw new Exception("Must have called SetInitialGameState on GameStateManagerBuilder.");
         
-        ChangeState(InitialGameState);
+        ChangeState(InitialGameState!);
     }
 
     private void Input(GameTime gameTime)
