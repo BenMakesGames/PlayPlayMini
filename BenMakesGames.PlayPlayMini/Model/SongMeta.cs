@@ -2,4 +2,4 @@
 
 /// <param name="Key">Name that uniquely identifies this song</param>
 /// <param name="Path">Relative path to image, excluding file extension (ex: "Music/TownTheme")</param>
-public sealed record SongMeta(string Key, string Path) : Asset<SongMeta>;
+public sealed record SongMeta(string Key, string Path) : IAsset;

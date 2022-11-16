@@ -25,8 +25,8 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public int DrawCalls { get; private set; }
 
-    public GraphicsDevice GraphicsDevice { get => Game.GraphicsDevice; }
-    private ContentManager Content { get => Game.Content; }
+    public GraphicsDevice GraphicsDevice => Game.GraphicsDevice;
+    private ContentManager Content => Game.Content;
     private RenderTarget2D RenderTarget { get; set; } = null!;
 
     private Game Game { get; set; } = null!;

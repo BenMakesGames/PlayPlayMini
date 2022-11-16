@@ -55,7 +55,7 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder AddAssets(IList<Asset> assets)
+    public GameStateManagerBuilder AddAssets(IList<IAsset> assets)
     {
         GameAssets.AddRange(assets);
 
