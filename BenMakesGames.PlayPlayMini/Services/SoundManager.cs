@@ -76,7 +76,7 @@ public sealed class SoundManager : IServiceLoadContent
             return;
         }
             
-        if (MediaPlayer.Queue.ActiveSong == Songs[name])
+        if (MediaPlayer.Queue.ActiveSong == Songs[name] && MediaPlayer.State == MediaState.Playing)
             return;
 
         MediaPlayer.Stop();
