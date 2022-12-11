@@ -46,11 +46,6 @@ public sealed class GameStateManager: Game
             s.LoadContent(this);
     }
 
-    protected override void UnloadContent()
-    {
-        base.UnloadContent();
-    }
-
     protected override void Initialize()
     {
         foreach (var s in ServiceWatcher.InitializedServices)

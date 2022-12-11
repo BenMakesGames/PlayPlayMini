@@ -8,10 +8,6 @@ namespace BenMakesGames.PlayPlayMini.Services;
 [AutoRegister(Lifetime.Singleton)]
 public sealed class FrameCounter: IServiceDraw
 {
-    public FrameCounter()
-    {
-    }
-
     public long TotalFrames { get; private set; }
     public float TotalSeconds { get; private set; }
     public float AverageFramesPerSecond { get; private set; }

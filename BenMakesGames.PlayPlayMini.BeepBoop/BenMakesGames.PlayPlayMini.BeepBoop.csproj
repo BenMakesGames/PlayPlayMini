@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Version>0.1.0</Version>
+        <Authors>Ben Hendel-Doying</Authors>
+        <Company>Ben Hendel-Doying</Company>
+        <Description>An extension for PlayPlayMini which adds methods for generating &amp; playing simple waveforms.</Description>
+        <Copyright>2022 Ben Hendel-Doying</Copyright>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini.BeepBoop</PackageProjectUrl>
+        <PackageTags>monogame game engine framework di state</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BenMakesGames.PlayPlayMini\BenMakesGames.PlayPlayMini.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\LICENSE.md">
+            <Pack>True</Pack>
+            <PackagePath />
+        </None>
+    </ItemGroup>
+
+</Project>
