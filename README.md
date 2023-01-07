@@ -1,4 +1,4 @@
-<a href='https://ko-fi.com/A0A12KQ16' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
 
 # What Is It?
 
@@ -656,4 +656,3 @@ A game state's lifecycle event methods are called, in this order.
    - Called if a new game state is replacing the current game state.
    - Immediately after `Leave` is called, the current game state is changed to be the next game state.
    - I haven't yet found a use for this method; it's included for completeness/just-in-case.
-
