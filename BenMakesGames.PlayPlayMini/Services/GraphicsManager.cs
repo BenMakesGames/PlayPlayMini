@@ -93,6 +93,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
             LoadSpriteSheet(meta);
 
+        foreach(var meta in gsm.Assets.GetAll<FontMeta>().Where(m => m.PreLoaded))
+            LoadFont(meta);
+
         // deferred
         Task.Run(() => LoadDeferredContent(gsm.Assets));
     }
@@ -105,7 +108,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         foreach(var meta in assets.GetAll<SpriteSheetMeta>().Where(m => !m.PreLoaded))
             LoadSpriteSheet(meta);
 
-        foreach(var meta in assets.GetAll<FontMeta>())
+        foreach(var meta in assets.GetAll<FontMeta>().Where(m => !m.PreLoaded))
             LoadFont(meta);
 
         FullyLoaded = true;
