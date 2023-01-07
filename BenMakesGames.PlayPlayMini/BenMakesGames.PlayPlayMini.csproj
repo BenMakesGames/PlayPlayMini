@@ -8,6 +8,7 @@
     <Description>An opinionated framework for making smallish games with MonoGame.</Description>
     <Copyright>2021-2022 Ben Hendel-Doying</Copyright>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
     <PackageTags>monogame game engine framework di state</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
