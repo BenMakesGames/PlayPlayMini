@@ -30,7 +30,7 @@
       <Pack>True</Pack>
       <PackagePath />
     </None>
-    <None Include="..\README.md">
+    <None Include="README.md">
       <Pack>True</Pack>
       <PackagePath />
     </None>

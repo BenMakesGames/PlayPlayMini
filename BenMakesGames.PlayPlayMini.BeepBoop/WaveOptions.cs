@@ -1,6 +1,6 @@
 ﻿namespace BenMakesGames.PlayPlayMini.BeepBoop;
 
-public readonly ref struct WaveOptions
+public readonly struct WaveOptions
 {
     public int SampleRate { get; init; } = 44100;
     public float Duration { get; init; } = 1;

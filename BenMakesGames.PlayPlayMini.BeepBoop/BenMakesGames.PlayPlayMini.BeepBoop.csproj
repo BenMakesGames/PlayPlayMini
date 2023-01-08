@@ -6,8 +6,9 @@
         <Authors>Ben Hendel-Doying</Authors>
         <Company>Ben Hendel-Doying</Company>
         <Description>An extension for PlayPlayMini which adds methods for generating &amp; playing simple waveforms.</Description>
-        <Copyright>2022 Ben Hendel-Doying</Copyright>
+        <Copyright>2022-2023 Ben Hendel-Doying</Copyright>
         <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
         <RepositoryUrl>https://github.com/BenMakesGames/PlayPlayMini</RepositoryUrl>
         <PackageTags>monogame playplaymini sound generation square triangle saw sine wave waveform</PackageTags>
@@ -22,6 +23,10 @@
 
     <ItemGroup>
         <None Include="..\LICENSE.md">
+            <Pack>True</Pack>
+            <PackagePath />
+        </None>
+        <None Include="README.md">
             <Pack>True</Pack>
             <PackagePath />
         </None>

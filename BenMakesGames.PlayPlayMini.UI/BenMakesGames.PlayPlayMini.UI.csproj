@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Version>3.0.1</Version>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>Nullable</WarningsAsErrors>
+    <Authors>Ben Hendel-Doying</Authors>
+    <Company>Ben Hendel-Doying</Company>
+    <Description>An extension for PlayPlayMini, adding a skinnable, object-oriented UI framework.</Description>
+    <Copyright>2021-2023 Ben Hendel-Doying</Copyright>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/BenMakesGames/PlayPlayMini</RepositoryUrl>
+    <PackageTags>monogame mouse ui framework oo</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath />
+    </None>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath />
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BenMakesGames.PlayPlayMini\BenMakesGames.PlayPlayMini.csproj" />
+  </ItemGroup>
+
+</Project>
