@@ -355,10 +355,18 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public (int x, int y) DrawText(Font font, int x, int y, string text, Color color)
     {
-        (int x, int y) position = (x, y);
+        var position = (x, y);
 
-        foreach (char c in text)
-            position = DrawText(font, position.x, position.y, c, color);
+        foreach(char c in text)
+        {
+            if(c == 10 || c == 13)
+            {
+                position.x = x;
+                position.y += font.CharacterHeight + 1;
+            }
+            else
+                position = DrawText(font, position.x, position.y, c, color);
+        }
 
         return position;
     }
