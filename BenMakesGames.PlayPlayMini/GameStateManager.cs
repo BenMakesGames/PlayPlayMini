@@ -4,14 +4,15 @@ using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace BenMakesGames.PlayPlayMini;
 
 [AutoRegister(Lifetime.Singleton)]
 public sealed class GameStateManager: Game
 {
-    private GameState? CurrentState { get; set; }
-    private GameState? NextState { get; set; }
+    public GameState? CurrentState { get; private set; }
+    public GameState? NextState { get; private set; }
 
     private ILifetimeScope IoCContainer { get; }
     private GraphicsManager Graphics { get; }
@@ -56,7 +57,7 @@ public sealed class GameStateManager: Game
         base.Initialize(); // calls LoadContent, btw
 
         Window.Title = InitialWindowTitle;
-        
+
         ChangeState(InitialGameState!);
     }
 
@@ -137,12 +138,15 @@ public sealed class GameStateManager: Game
         if (NextState != null)
             throw new ArgumentException("A next state is already ready!");
 
-        NextState = (GameState)IoCContainer.Resolve(T);
+        NextState = CreateState(T);
 
         return NextState;
     }
 
+    [Obsolete("Use CurrentState, instead")]
     public bool IsCurrentState(GameState state) => CurrentState == state;
+
+    [Obsolete("Use CurrentState, instead")]
     public bool IsCurrentState<T>() where T : GameState => CurrentState is T;
 
     public T ChangeState<T>() where T : GameState
@@ -165,11 +169,13 @@ public sealed class GameStateManager: Game
         return (T)NextState;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T CreateState<T>() where T: GameState => IoCContainer.Resolve<T>();
 
-    public T CreateState<T, TConfig>(TConfig config) where T : GameState =>
-        IoCContainer.Resolve<T>(new TypedParameter(typeof(TConfig), config))
-    ;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T CreateState<T, TConfig>(TConfig config) where T : GameState
+        => IoCContainer.Resolve<T>(new TypedParameter(typeof(TConfig), config));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public GameState CreateState(Type T) => (GameState)IoCContainer.Resolve(T);
 }
