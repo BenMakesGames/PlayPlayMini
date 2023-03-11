@@ -80,29 +80,27 @@ public sealed class UIService
         {
             MouseDown ??= new Click(gameTime.TotalGameTime, Hovered, Cursor.X, Cursor.Y);
         }
-        else
+        else if (MouseDown is Click click)
         {
-            if (MouseDown is Click click)
+            MouseDown = null;
+
+            if (PointsWithinDistance(click.X, click.Y, Cursor.X, Cursor.Y, 2))
             {
-                if (PointsWithinDistance(click.X, click.Y, Cursor.X, Cursor.Y, 2))
+                bool isDoubleClick = PreviousClick != null && (gameTime.TotalGameTime - PreviousClick.When).TotalMilliseconds <= 500;
+
+                if (isDoubleClick)
                 {
-                    bool isDoubleClick = PreviousClick != null && (gameTime.TotalGameTime - PreviousClick.When).TotalMilliseconds <= 500;
+                    PreviousClick = null;
 
-                    if (isDoubleClick)
-                    {
-                        if (click.What == PreviousClick!.What && PointsWithinDistance(click.X, click.Y, PreviousClick.X, PreviousClick.Y, 3))
-                            Hovered.DoDoubleClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
-
-                        PreviousClick = null;
-                    }
-                    else
-                    {
-                        Hovered.DoClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
-                        PreviousClick = click;
-                    }
+                    if (click.What == PreviousClick!.What && PointsWithinDistance(click.X, click.Y, PreviousClick.X, PreviousClick.Y, 3))
+                        Hovered.DoDoubleClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
                 }
+                else
+                {
+                    PreviousClick = click;
 
-                MouseDown = null;
+                    Hovered.DoClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
+                }
             }
         }
     }
@@ -125,7 +123,7 @@ public sealed class UIService
 
         if (e != Hovered && Hovered != null)
         {
-            Hovered?.DoMouseExit?.Invoke();
+            Hovered.DoMouseExit?.Invoke();
         }
 
         Hovered = e;
