@@ -1,5 +1,4 @@
 ﻿using System;
-using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.UI.Services;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;

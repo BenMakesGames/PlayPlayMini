@@ -47,6 +47,6 @@ public class Image: IUIElement
 
     public void Draw(int xOffset, int yOffset, GameTime gameTime)
     {
-        UI.Graphics.DrawPicture(Texture, X + xOffset, Y + yOffset, SpriteRectangle);
+        UI.Graphics.DrawTexture(Texture, X + xOffset, Y + yOffset, SpriteRectangle);
     }
 }

@@ -7,7 +7,9 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using BenMakesGames.PlayPlayMini.Extensions;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
@@ -209,19 +211,20 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear(Color c)
-    {
-        GraphicsDevice.Clear(c);
-    }
+        => GraphicsDevice.Clear(c);
 
-    private Rectangle SpriteRectangle(SpriteSheet ss, int spriteIndex) => new Rectangle(
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Rectangle SpriteRectangle(SpriteSheet ss, int spriteIndex) => new(
         (spriteIndex % ss.Columns) * ss.SpriteWidth,
         (spriteIndex / ss.Columns) * ss.SpriteHeight,
         ss.SpriteWidth,
         ss.SpriteHeight
     );
 
-    private Rectangle FontRectangle(Font font, int character) => new Rectangle(
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Rectangle FontRectangle(Font font, int character) => new(
         (character % font.Columns) * font.CharacterWidth,
         (character / font.Columns) * font.CharacterHeight,
         font.CharacterWidth,
@@ -271,17 +274,43 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         DrawCalls++;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPictureRotatedAndScaled(string pictureName, int x, int y, float angle, float scale, Color c)
+        => DrawTextureRotatedAndScaled(Pictures[pictureName], x, y, angle, scale, c);
+
+    [Obsolete("Use DrawTextureRotatedAndScaled, instead")]
     public void DrawPictureRotatedAndScaled(Texture2D texture, int x, int y, float angle, float scale, Color c)
+        => DrawTextureRotatedAndScaled(texture, x, y, angle, scale, c);
+
+    public void DrawTextureRotatedAndScaled(Texture2D texture, int x, int y, float angle, float scale, Color c)
     {
-        SpriteBatch.Draw(texture, new Rectangle(x, y, (int)(texture.Width * scale), (int)(texture.Height * scale)), null, c, angle, new Vector2(texture.Width / 2, texture.Height / 2), SpriteEffects.None, 0);
+        SpriteBatch.Draw(
+            texture,
+            new Rectangle(x, y, (int)(texture.Width * scale), (int)(texture.Height * scale)),
+            null,
+            c,
+            angle,
+            new Vector2(texture.Width / 2, texture.Height / 2),
+            SpriteEffects.None,
+            0
+        );
+
         DrawCalls++;
     }
 
-    public void DrawPictureWithTransformations(Texture2D texture, int x, int y, Rectangle spriteRectangle, SpriteEffects flip, float angle, float scale, Color c) =>
-        DrawPictureWithTransformations(texture, x, y, spriteRectangle, flip, angle, scale, scale, c)
-    ;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPictureWithTransformations(string pictureName, int x, int y, Rectangle spriteRectangle, SpriteEffects flip, float angle, float scale, Color c) =>
+        DrawTextureWithTransformations(Pictures[pictureName], x, y, spriteRectangle, flip, angle, scale, scale, c);
 
+    [Obsolete("Use DrawTextureWithTransformations, instead")]
+    public void DrawPictureWithTransformations(Texture2D texture, int x, int y, Rectangle spriteRectangle, SpriteEffects flip, float angle, float scale, Color c) =>
+        DrawTextureWithTransformations(texture, x, y, spriteRectangle, flip, angle, scale, scale, c);
+
+    [Obsolete("Use DrawTextureWithTransformations, instead")]
     public void DrawPictureWithTransformations(Texture2D texture, int x, int y, Rectangle spriteRectangle, SpriteEffects flip, float angle, float scaleX, float scaleY, Color c)
+        => DrawTextureWithTransformations(texture, x, y, spriteRectangle, flip, angle, scaleX, scaleY, c);
+    
+    public void DrawTextureWithTransformations(Texture2D texture, int x, int y, Rectangle spriteRectangle, SpriteEffects flip, float angle, float scaleX, float scaleY, Color c)
     {
         SpriteBatch.Draw(
             texture,
@@ -297,22 +326,30 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         DrawCalls++;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSpriteWithTransformations(SpriteSheet ss, int x, int y, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
-    {
-        DrawPictureWithTransformations(
+        => DrawTextureWithTransformations(
             ss.Texture,
             x, y,
             SpriteRectangle(ss, spriteIndex),
             flip,
             angle,
             scale,
+            scale,
             tint
         );
-    }
 
+    [Obsolete("Use DrawTextureRotatedAndScaled, instead")]
     public void DrawPictureRotatedAndScaled(Texture2D texture, int x, int y, Rectangle spriteRectangle, float angle, float scale, Color c)
-    {
-        DrawPictureWithTransformations(
+        => DrawTextureRotatedAndScaled(texture, x, y, spriteRectangle, angle, scale, c);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPictureRotatedAndScaled(string pictureName, int x, int y, Rectangle spriteRectangle, float angle, float scale, Color c)
+        => DrawTextureRotatedAndScaled(Pictures[pictureName], x, y, spriteRectangle, angle, scale, c);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTextureRotatedAndScaled(Texture2D texture, int x, int y, Rectangle spriteRectangle, float angle, float scale, Color c)
+        => DrawTextureWithTransformations(
             texture,
             x,
             y,
@@ -320,12 +357,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             SpriteEffects.None,
             angle,
             scale,
+            scale,
             c
         );
-    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSpriteRotatedAndScaled(string spriteSheet, int x, int y, int spriteIndex, float angle, float scale, Color c) =>
-        DrawPictureWithTransformations(
+        DrawTextureWithTransformations(
             SpriteSheets[spriteSheet].Texture,
             x,
             y,
@@ -333,13 +371,15 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             SpriteEffects.None,
             angle,
             scale,
+            scale,
             c
         )
     ;
 
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSpriteRotatedAndScaled(SpriteSheet ss, int x, int y, int spriteIndex, float angle, float scale, Color c) =>
-        DrawPictureWithTransformations(
+        DrawTextureWithTransformations(
             ss.Texture,
             x,
             y,
@@ -347,11 +387,14 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             SpriteEffects.None,
             angle,
             scale,
+            scale,
             c
         )
     ;
 
-    public (int x, int y) DrawText(string name, int x, int y, string text, Color color) => DrawText(Fonts[name], x, y, text, color);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (int x, int y) DrawText(string name, int x, int y, string text, Color color)
+        => DrawText(Fonts[name], x, y, text, color);
 
     public (int x, int y) DrawText(Font font, int x, int y, string text, Color color)
     {
@@ -371,7 +414,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return position;
     }
 
-    public (int x, int y) DrawText(string name, int x, int y, char character, Color color) => DrawText(Fonts[name], x, y, character, color);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (int x, int y) DrawText(string name, int x, int y, char character, Color color)
+        => DrawText(Fonts[name], x, y, character, color);
 
     public (int x, int y) DrawText(Font font, int x, int y, char character, Color color)
     {
@@ -379,7 +424,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
         if (character >= 32)
         {
-            DrawPicture(font.Texture, position.x, position.y, FontRectangle(font, character - 32), color);
+            DrawTexture(font.Texture, position.x, position.y, FontRectangle(font, character - 32), color);
 
             position.x += font.CharacterWidth;
         }
@@ -392,7 +437,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return position;
     }
 
-    public (int, int) ComputeDimensionsWithWordWrap(string name, int maxWidth, string text) => ComputeDimensionsWithWordWrap(Fonts[name], maxWidth, text);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (int, int) ComputeDimensionsWithWordWrap(string name, int maxWidth, string text)
+        => ComputeDimensionsWithWordWrap(Fonts[name], maxWidth, text);
 
     public (int, int) ComputeDimensionsWithWordWrap(Font font, int maxWidth, string text)
     {
@@ -439,47 +486,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return (maxPixelX, pixelY + font.CharacterHeight);
     }
 
-    public (int, int) DrawTextWithWordWrap(string name, int x, int y, int maxWidth, string text, Color color) =>
-        DrawTextWithWordWrap(Fonts[name], x, y, maxWidth, text, color)
-    ;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public (int, int) DrawTextWithWordWrap(string fontName, int x, int y, int maxWidth, string text, Color color)
+        => DrawTextWithWordWrap(Fonts[fontName], x, y, maxWidth, text, color);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (int, int) DrawTextWithWordWrap(Font font, int x, int y, int maxWidth, string text, Color color)
-    {
-        var lines = text.Split(new char[] { '\r', '\n' });
-
-        int pixelX = x, pixelY = y;
-        bool first = true;
-
-        foreach (string line in lines)
-        {
-            pixelX = x;
-
-            if (first)
-                first = false;
-            else
-                pixelY += font.CharacterHeight + 1;
-
-            var words = line.Split(' ');
-
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (i > 0)
-                    pixelX += font.CharacterWidth;
-
-                string word = words[i];
-
-                if ((pixelX - x) + word.Length * font.CharacterWidth > maxWidth)
-                {
-                    pixelX = x;
-                    pixelY += font.CharacterHeight + 1;
-                }
-
-                (pixelX, pixelY) = DrawText(font, pixelX, pixelY, word, color);
-            }
-        }
-
-        return (pixelX, pixelY);
-    }
+        => DrawText(font, x, y, text.WrapText(font, maxWidth), color);
 
     public (int, int) PretendDrawText(Font font, int x, int y, string text)
     {
@@ -500,7 +513,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return (currentX, currentY);
     }
 
-    public void DrawTextWithOutline(Font font, Font fontOutline, int x, int y, string text, Color fill, Color outline)
+    public void DrawTextWithOutline(Font font, Font outlineFont, int x, int y, string text, Color fill, Color outline)
     {
         int currentX = x;
         int currentY = y;
@@ -509,7 +522,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         {
             if (c >= 32)
             {
-                DrawPicture(fontOutline.Texture, currentX - 1, currentY - 1, FontRectangle(fontOutline, c - 32), outline);
+                DrawTexture(outlineFont.Texture, currentX - 1, currentY - 1, FontRectangle(outlineFont, c - 32), outline);
 
                 currentX += font.CharacterWidth;
             }
@@ -526,20 +539,38 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         DrawText(font, currentX, currentY, text, fill);
     }
 
-    public void DrawSprite(string name, int x, int y, int spriteIndex) => DrawSprite(SpriteSheets[name], x, y, spriteIndex, Color.White);
-    public void DrawSprite(string name, (int x, int y) position, int spriteIndex) => DrawSprite(SpriteSheets[name], position.x, position.y, spriteIndex, Color.White);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(string name, int x, int y, int spriteIndex)
+        => DrawSprite(SpriteSheets[name], x, y, spriteIndex, Color.White);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(string name, (int x, int y) position, int spriteIndex)
+        => DrawSprite(SpriteSheets[name], position.x, position.y, spriteIndex, Color.White);
 
-    public void DrawSprite(SpriteSheet ss, int x, int y, int spriteIndex) => DrawSprite(ss, x, y, spriteIndex, Color.White);
-    public void DrawSprite(SpriteSheet ss, (int x, int y) position, int spriteIndex) => DrawSprite(ss, position.x, position.y, spriteIndex, Color.White);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(SpriteSheet ss, int x, int y, int spriteIndex)
+        => DrawSprite(ss, x, y, spriteIndex, Color.White);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(SpriteSheet ss, (int x, int y) position, int spriteIndex)
+        => DrawSprite(ss, position.x, position.y, spriteIndex, Color.White);
 
-    public void DrawSprite(string name, int x, int y, int spriteIndex, Color tint) => DrawSprite(SpriteSheets[name], x, y, spriteIndex, tint);
-    public void DrawSprite(string name, (int x, int y) position, int spriteIndex, Color tint) => DrawSprite(SpriteSheets[name], position.x, position.y, spriteIndex, tint);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(string name, int x, int y, int spriteIndex, Color tint)
+        => DrawSprite(SpriteSheets[name], x, y, spriteIndex, tint);
 
-    public void DrawSprite(SpriteSheet ss, (int x, int y) position, int spriteIndex, Color tint) => DrawSprite(ss, position.x, position.y, spriteIndex, tint);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(string name, (int x, int y) position, int spriteIndex, Color tint)
+        => DrawSprite(SpriteSheets[name], position.x, position.y, spriteIndex, tint);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSprite(SpriteSheet ss, (int x, int y) position, int spriteIndex, Color tint)
+        => DrawSprite(ss, position.x, position.y, spriteIndex, tint);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSprite(SpriteSheet ss, int x, int y, int spriteIndex, Color tint)
     {
-        DrawPicture(
+        DrawTexture(
             ss.Texture,
             x, y,
             SpriteRectangle(ss, spriteIndex),
@@ -547,34 +578,83 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         );
     }
 
-    public void DrawPicture(string name, int x, int y) => DrawPicture(Pictures[name], x, y, Color.White);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPicture(string pictureName, int x, int y)
+        => DrawTexture(Pictures[pictureName], x, y, Color.White);
 
-    public void DrawPicture(string name, int x, int y, Color tint) => DrawPicture(Pictures[name], x, y, tint);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPicture(string pictureName, int x, int y, Color tint)
+        => DrawTexture(Pictures[pictureName], x, y, tint);
 
-    public void DrawPicture(Texture2D texture, int x, int y) => DrawPicture(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), Color.White);
+    [Obsolete("Use DrawTexture, instead")]
+    public void DrawPicture(Texture2D texture, int x, int y)
+        => DrawTexture(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), Color.White);
 
-    public void DrawPicture(Texture2D texture, int x, int y, Color color) => DrawPicture(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), color);
+    [Obsolete("Use DrawTexture, instead")]
+    public void DrawPicture(Texture2D texture, int x, int y, Color color)
+        => DrawTexture(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), color);
 
-    public void DrawPicture(Texture2D texture, int x, int y, Rectangle spriteRectangle) => DrawPicture(texture, x, y, spriteRectangle, Color.White);
+    [Obsolete("Use DrawTexture, instead")]
+    public void DrawPicture(Texture2D texture, int x, int y, Rectangle spriteRectangle)
+        => DrawTexture(texture, x, y, spriteRectangle, Color.White);
 
+    [Obsolete("Use DrawTexture, instead")]
     public void DrawPicture(Texture2D texture, int x, int y, Rectangle spriteRectangle, Color color)
     {
         SpriteBatch.Draw(texture, new Vector2(x, y), spriteRectangle, color);
         DrawCalls++;
     }
 
-    public void DrawPictureStretched(Texture2D texture, int x, int y, int width, int height, Rectangle spriteRectangle) =>
-        DrawPictureStretched(texture, x, y, width, height, spriteRectangle, Color.White)
-    ;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTexture(Texture2D texture, int x, int y)
+        => DrawTexture(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), Color.White);
 
-    public void DrawPictureStretched(Texture2D texture, int x, int y, int width, int height, Rectangle spriteRectangle, Color c)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTexture(Texture2D texture, int x, int y, Color color)
+        => DrawTexture(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), color);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTexture(Texture2D texture, int x, int y, Rectangle spriteRectangle)
+        => DrawTexture(texture, x, y, spriteRectangle, Color.White);
+
+    public void DrawTexture(Texture2D texture, int x, int y, Rectangle spriteRectangle, Color color)
+    {
+        SpriteBatch.Draw(texture, new Vector2(x, y), spriteRectangle, color);
+        DrawCalls++;
+    }
+
+    [Obsolete("Call DrawTextureStretched, instead")]
+    public void DrawPictureStretched(Texture2D texture, int x, int y, int width, int height, Rectangle clippingRectangle)
+        => DrawTextureStretched(texture, x, y, width, height, clippingRectangle, Color.White);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPictureStretched(string pictureName, int x, int y, int width, int height, Rectangle clippingRectangle)
+        => DrawTextureStretched(Pictures[pictureName], x, y, width, height, clippingRectangle, Color.White);
+
+    [Obsolete("Call DrawTextureStretched, instead")]
+    public void DrawPictureStretched(Texture2D texture, int x, int y, int width, int height, Rectangle clippingRectangle, Color c)
+    {
+        SpriteBatch.Draw(texture, new Rectangle(x, y, width, height), clippingRectangle, c);
+        DrawCalls++;
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawPictureStretched(string pictureName, int x, int y, int width, int height, Rectangle clippingRectangle, Color c) =>
+        DrawTextureStretched(Pictures[pictureName], x, y, width, height, clippingRectangle, c);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTextureStretched(Texture2D texture, int x, int y, int width, int height, Rectangle spriteRectangle) =>
+        DrawTextureStretched(texture, x, y, width, height, spriteRectangle, Color.White);
+
+    public void DrawTextureStretched(Texture2D texture, int x, int y, int width, int height, Rectangle spriteRectangle, Color c)
     {
         SpriteBatch.Draw(texture, new Rectangle(x, y, width, height), spriteRectangle, c);
         DrawCalls++;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSpriteStretched(SpriteSheet ss, int x, int y, int width, int height, int spriteIndex) =>
-        DrawPictureStretched(
+        DrawTextureStretched(
             ss.Texture,
             x, y,
             width, height,
@@ -583,37 +663,58 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         )
     ;
 
+    [Obsolete("Use DrawTextureFlipped, instead")]
     public void DrawSpriteFlipped(Texture2D texture, int x, int y, SpriteEffects flip) =>
-        DrawSpriteFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, Color.White)
-    ;
+        DrawTextureFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, Color.White);
 
+    [Obsolete("Use DrawTextureFlipped, instead")]
     public void DrawSpriteFlipped(Texture2D texture, int x, int y, SpriteEffects flip, Color tint) =>
-        DrawSpriteFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, tint)
-    ;
+        DrawTextureFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, tint);
+    
+    [Obsolete("Use DrawTextureFlipped, instead")]
+    public void DrawSpriteFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, SpriteEffects flip) =>
+        DrawTextureFlipped(texture, x, y, clippingRectangle, flip, Color.White);
 
-    public void DrawSpriteFlipped(Texture2D texture, int x, int y, Rectangle spriteRectangle, SpriteEffects flip) =>
-        DrawSpriteFlipped(texture, x, y, spriteRectangle, flip, Color.White)
-    ;
-
-    public void DrawSpriteFlipped(Texture2D texture, int x, int y, Rectangle spriteRectangle, SpriteEffects flip, Color tint)
+    [Obsolete("Use DrawTextureFlipped, instead")]
+    public void DrawSpriteFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, SpriteEffects flip, Color tint)
     {
-        SpriteBatch.Draw(texture, new Rectangle(x, y, spriteRectangle.Width, spriteRectangle.Height), spriteRectangle, tint, 0, Vector2.Zero, flip, 0);
+        SpriteBatch.Draw(texture, new Rectangle(x, y, clippingRectangle.Width, clippingRectangle.Height), clippingRectangle, tint, 0, Vector2.Zero, flip, 0);
         DrawCalls++;
     }
 
-    public void DrawSpriteFlipped(string name, int x, int y, int spriteIndex, SpriteEffects flip) =>
-        DrawSpriteFlipped(
-            SpriteSheets[name].Texture,
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, SpriteEffects flip) =>
+        DrawTextureFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, Color.White);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, SpriteEffects flip, Color tint) =>
+        DrawTextureFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, tint);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, SpriteEffects flip) =>
+        DrawTextureFlipped(texture, x, y, clippingRectangle, flip, Color.White);
+
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, SpriteEffects flip, Color tint)
+    {
+        SpriteBatch.Draw(texture, new Rectangle(x, y, clippingRectangle.Width, clippingRectangle.Height), clippingRectangle, tint, 0, Vector2.Zero, flip, 0);
+        DrawCalls++;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSpriteFlipped(string spriteSheetName, int x, int y, int spriteIndex, SpriteEffects flip) =>
+        DrawTextureFlipped(
+            SpriteSheets[spriteSheetName].Texture,
             x,
             y,
-            SpriteRectangle(SpriteSheets[name], spriteIndex),
+            SpriteRectangle(SpriteSheets[spriteSheetName], spriteIndex),
             flip,
             Color.White
         )
     ;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSpriteFlipped(SpriteSheet ss, int x, int y, int spriteIndex, SpriteEffects flip) =>
-        DrawSpriteFlipped(
+        DrawTextureFlipped(
             ss.Texture,
             x,
             y,
@@ -623,8 +724,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         )
     ;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSpriteFlipped(SpriteSheet ss, int x, int y, int spriteIndex, SpriteEffects flip, Color tint) =>
-        DrawSpriteFlipped(
+        DrawTextureFlipped(
             ss.Texture,
             x,
             y,
@@ -633,6 +735,17 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             tint
         )
     ;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void DrawSpriteFlipped(string spriteName, int x, int y, int spriteIndex, SpriteEffects flip, Color tint) =>
+        DrawTextureFlipped(
+            SpriteSheets[spriteName].Texture,
+            x,
+            y,
+            SpriteRectangle(SpriteSheets[spriteName], spriteIndex),
+            flip,
+            tint
+        );
 
     public void EndDraw()
     {

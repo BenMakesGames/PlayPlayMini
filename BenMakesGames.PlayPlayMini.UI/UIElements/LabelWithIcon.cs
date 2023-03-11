@@ -53,7 +53,7 @@ public class LabelWithIcon: IUIElement
 
     public void Draw(int xOffset, int yOffset, GameTime gameTime)
     {
-        UI.Graphics.DrawPicture(Texture, X + xOffset, Y + yOffset, SpriteRectangle);
+        UI.Graphics.DrawTexture(Texture, X + xOffset, Y + yOffset, SpriteRectangle);
         UI.Graphics.DrawText(UI.Font, X + xOffset + SpriteRectangle.Width + 2, Y + yOffset + (SpriteRectangle.Height - UI.Font.CharacterHeight) / 2, Text, TextColor);
     }
 }

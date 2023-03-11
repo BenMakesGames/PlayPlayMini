@@ -106,8 +106,8 @@ public sealed class MouseManager : IServiceInput
         if(DrawingMode != MouseDrawingMode.Custom)
             return;
             
-        if(Enabled && PictureName is string pictureName)
-            GraphicsManager.DrawPicture(GraphicsManager.Pictures[pictureName], X - Hotspot.X, Y - Hotspot.Y);
+        if(Enabled && PictureName is { } pictureName)
+            GraphicsManager.DrawPicture(pictureName, X - Hotspot.X, Y - Hotspot.Y);
     }
 
     public void UseCustomCursor(string pictureName, (int x, int y) hotspot)

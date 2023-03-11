@@ -170,4 +170,6 @@ public sealed class GameStateManager: Game
     public T CreateState<T, TConfig>(TConfig config) where T : GameState =>
         IoCContainer.Resolve<T>(new TypedParameter(typeof(TConfig), config))
     ;
+
+    public GameState CreateState(Type T) => (GameState)IoCContainer.Resolve(T);
 }
