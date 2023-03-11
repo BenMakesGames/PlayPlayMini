@@ -90,16 +90,16 @@ public sealed class UIService
 
                 if (isDoubleClick)
                 {
-                    PreviousClick = null;
-
                     if (click.What == PreviousClick!.What && PointsWithinDistance(click.X, click.Y, PreviousClick.X, PreviousClick.Y, 3))
                         Hovered.DoDoubleClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
+
+                    PreviousClick = null;
                 }
                 else
                 {
-                    PreviousClick = click;
-
                     Hovered.DoClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
+
+                    PreviousClick = click;
                 }
             }
         }
