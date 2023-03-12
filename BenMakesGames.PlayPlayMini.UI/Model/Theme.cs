@@ -8,5 +8,7 @@ public record Theme(
     string ButtonSpriteSheetName,
     Color ButtonLabelColor,
     Color ButtonLabelDisabledColor,
-    string CheckboxSpriteSheetName
+    string CheckboxSpriteSheetName,
+    string? ButtonHoverSoundName = null,
+    string? ButtonClickSoundName = null
 );

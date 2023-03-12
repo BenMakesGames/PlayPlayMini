@@ -22,5 +22,7 @@ public interface IUIElement
     Action? DoMouseEnter { get; }
     Action? DoMouseExit { get; }
 
+    public bool CanClick => DoClick != null;
+
     void Draw(int xOffset, int yOffset, GameTime gameTime);
 }
