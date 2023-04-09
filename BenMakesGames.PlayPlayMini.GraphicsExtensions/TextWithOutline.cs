@@ -14,7 +14,7 @@ public static class TextWithOutline
         graphics.DrawText(fontName, x, y + 1, text, outlineColor);
         graphics.DrawText(fontName, x, y - 1, text, outlineColor);
         graphics.DrawText(fontName, x - 1, y, text, outlineColor);
-        graphics.DrawText(fontName, x - 1, y, text, outlineColor);
+        graphics.DrawText(fontName, x + 1, y, text, outlineColor);
 
         graphics.DrawText(fontName, x, y, text, fillColor);
     }
