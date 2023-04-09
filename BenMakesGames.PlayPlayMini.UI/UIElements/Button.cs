@@ -28,6 +28,8 @@ public class Button : IUIElement
             ClickHandler(e);
     };
 
+    public bool CanClick => Enabled && ClickHandler != null;
+
     public Action<DoubleClickEvent>? DoDoubleClick { get; set; }
 
     public Action? DoMouseEnter { get; set; }

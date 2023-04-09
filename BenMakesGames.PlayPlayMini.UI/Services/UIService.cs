@@ -14,7 +14,9 @@ public sealed class UIService
 {
     public GraphicsManager Graphics { get; }
     public UIThemeProvider ThemeProvider { get; }
+    
     private MouseManager Cursor { get; }
+    private SoundManager Sounds { get; }
 
     public Font Font => Graphics.Fonts[GetTheme().FontName];
 
@@ -28,12 +30,13 @@ public sealed class UIService
     public IUIElement? Hovered { get; private set; }
 
     public UIService(
-        GraphicsManager gm, MouseManager cursor, UIThemeProvider themeProvider
+        GraphicsManager gm, MouseManager cursor, UIThemeProvider themeProvider, SoundManager sounds
     )
     {
         Graphics = gm;
         Cursor = cursor;
         ThemeProvider = themeProvider;
+        Sounds = sounds;
 
         Canvas = new Canvas(this)
         {
@@ -97,7 +100,13 @@ public sealed class UIService
                 }
                 else
                 {
-                    Hovered.DoClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
+                    if(Hovered.CanClick)
+                    {
+                        if(ThemeProvider.GetTheme().ButtonClickSoundName is {} soundName)
+                            Sounds.PlaySound(soundName);
+                    
+                        Hovered.DoClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
+                    }
 
                     PreviousClick = click;
                 }
@@ -121,14 +130,18 @@ public sealed class UIService
             }
         }
 
-        if (e != Hovered && Hovered != null)
+        if (e != Hovered)
         {
-            Hovered.DoMouseExit?.Invoke();
+            if(Hovered != null)
+                Hovered.DoMouseExit?.Invoke();
+
+            Hovered = e;
+
+            Hovered.DoMouseEnter?.Invoke();
+        
+            if(Hovered.CanClick && ThemeProvider.GetTheme().ButtonHoverSoundName is {} soundName)
+                Sounds.PlaySound(soundName);
         }
-
-        Hovered = e;
-
-        Hovered.DoMouseEnter?.Invoke();
     }
 
     public Font GetFont()
