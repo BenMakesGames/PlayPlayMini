@@ -14,7 +14,7 @@ public sealed class UIService
 {
     public GraphicsManager Graphics { get; }
     public UIThemeProvider ThemeProvider { get; }
-    
+
     private MouseManager Cursor { get; }
     private SoundManager Sounds { get; }
 
@@ -83,7 +83,7 @@ public sealed class UIService
         {
             MouseDown ??= new Click(gameTime.TotalGameTime, Hovered, Cursor.X, Cursor.Y);
         }
-        else if (MouseDown is Click click)
+        else if (MouseDown is { } click)
         {
             MouseDown = null;
 
@@ -104,7 +104,7 @@ public sealed class UIService
                     {
                         if(ThemeProvider.GetTheme().ButtonClickSoundName is {} soundName)
                             Sounds.PlaySound(soundName);
-                    
+
                         Hovered.DoClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
                     }
 
@@ -138,7 +138,7 @@ public sealed class UIService
             Hovered = e;
 
             Hovered.DoMouseEnter?.Invoke();
-        
+
             if(Hovered.CanClick && ThemeProvider.GetTheme().ButtonHoverSoundName is {} soundName)
                 Sounds.PlaySound(soundName);
         }
