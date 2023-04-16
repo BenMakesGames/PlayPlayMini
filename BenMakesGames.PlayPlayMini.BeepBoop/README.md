@@ -1,8 +1,12 @@
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+# What Is It?
 
 An extension for [PlayPlayMini](https://github.com/BenMakesGames/PlayPlayMini) which adds methods for generating wave forms on the fly, with support for attack and decay.
 
 This library is in the early stages of development, and has some known issues (for example, it refuses to play notes after a while, for reasons which are still unclear to me). It is not suitable for use in a final product.
+
+[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+
+# How to Use
 
 Here is an example PlayPlayMini game state which lets users play notes by pressing keys on their keyboard:
 

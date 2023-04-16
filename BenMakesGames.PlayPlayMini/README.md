@@ -1,5 +1,3 @@
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
-
 # What Is It?
 
 `PlayPlayMini` is an opinionated framework for making smallish games with `MonoGame`.
@@ -7,6 +5,8 @@
 It provides a state engine with lifecycle events, a `GraphicsManager` that provides methods for easily drawing sprites & fonts with a variety of effects, and dependency injection using `Autofac`.
 
 If you don't know what all of those things are, don't worry: they're awesome, and this readme will show you how to use them (with code examples!), and explain their benefits.
+
+[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
 
 ## What Does "Opinionated" Mean?
 
@@ -35,7 +35,7 @@ Opinionated frameworks are great when:
 
 Is `PlayPlayMini` a *good* opinionated framework? I can only say that I've tried my best to make it one!
 
-# Documentation; How to Use `PlayPlayMini`
+# How to Use
 
 ## Create a New `MonoGame` Project
 
