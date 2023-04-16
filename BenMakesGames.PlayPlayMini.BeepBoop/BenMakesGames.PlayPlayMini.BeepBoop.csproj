@@ -1,18 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <Version>0.1.1</Version>
         <Authors>Ben Hendel-Doying</Authors>
         <Company>Ben Hendel-Doying</Company>
         <Description>An extension for PlayPlayMini which adds methods for generating &amp; playing simple waveforms.</Description>
         <Copyright>2022-2023 Ben Hendel-Doying</Copyright>
-        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>0.2.0</Version>
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageTags>monogame playplaymini sound generation square triangle saw sine wave waveform</PackageTags>
         <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
         <RepositoryUrl>https://github.com/BenMakesGames/PlayPlayMini</RepositoryUrl>
-        <PackageTags>monogame playplaymini sound generation square triangle saw sine wave waveform</PackageTags>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>package-icon.png</PackageIcon>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
     </PropertyGroup>
@@ -30,6 +35,16 @@
             <Pack>True</Pack>
             <PackagePath />
         </None>
+        <None Include="package-icon.png">
+            <Pack>True</Pack>
+            <PackagePath />
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
 </Project>
