@@ -21,14 +21,36 @@ public sealed class MouseManager : IServiceInput
 
     public int X { get; private set; }
     public int Y { get; private set; }
+    
+    /// <summary>
+    /// True if the mouse moved since the last frame.
+    /// </summary>
+    public bool Moved { get; private set;}
+    
+    /// <summary>
+    /// True if the left button is currently being pressed.
+    /// </summary>
     public bool LeftDown { get; private set; }
+    
+    /// <summary>
+    /// True if the left button was released this frame.
+    /// </summary>
     public bool LeftClicked { get; private set; }
+    
+    /// <summary>
+    /// True if the right button is currently being pressed.
+    /// </summary>
     public bool RightDown { get; private set; }
+    
+    /// <summary>
+    /// True if the right button was released this frame.
+    /// </summary>
     public bool RightClicked { get; private set; }
+    
     public int Wheel { get; private set; }
 
     /// <summary>
-    /// When the mouse is not Enabled, *Down and *Click properties are always false, Wheel is 0, and X and Y are int.MinValue.
+    /// When the mouse is not Enabled, *Down, *Click, and Moved properties are always false, Wheel is 0, and X and Y are int.MinValue.
     /// </summary>
     public bool Enabled { get; set; } = true;
     public bool EnableOnMove { get; set; } = true;
@@ -81,6 +103,8 @@ public sealed class MouseManager : IServiceInput
                 Y = MouseState.Y / GraphicsManager.Zoom;
             }
 
+            Moved = PreviousMouseState.X != MouseState.X || PreviousMouseState.Y != MouseState.Y;
+            
             LeftDown = MouseState.LeftButton == ButtonState.Pressed;
             RightDown = MouseState.RightButton == ButtonState.Pressed;
 
@@ -93,6 +117,7 @@ public sealed class MouseManager : IServiceInput
         {
             X = int.MinValue;
             Y = int.MinValue;
+            Moved = false;
             LeftDown = false;
             RightDown = false;
             LeftClicked = false;
