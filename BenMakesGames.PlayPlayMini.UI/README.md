@@ -1,10 +1,10 @@
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
-
 # What Is It?
 
 `PlayPlayMini.UI` is an extension for `PlayPlayMini`, adding a skinnable, object-oriented UI framework.
 
-# Documentation; How to Use `PlayPlayMini.UI`
+[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+
+# How to Use
 
 This documentation assumes you already have a project that uses the `PlayPlayMini` framework. If not, check out the `PlayPlayMini` framework documentation to get started with it!
 

@@ -1,10 +1,35 @@
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
-
 # What Is It?
 
-`PlayPlayMini.GraphicsExtensions` contains extensions for PlayPlayMini that add more functionality to PlayPlayMini's `GraphicsManager`.
+`PlayPlayMini.GraphicsExtensions` contains classes and extensions for PlayPlayMini that add more functionality to PlayPlayMini.
 
-This is a super-early release which includes one extension.
+**Hey, listen!** This is a super-early release which contains a very small number of additions.
+
+[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+
+# Game States Transitions
+
+## `ScreenWipe`
+
+The `ScreenWipe` game state allows you to add a screen wipe transition between two game states.
+
+Example usage:
+
+```c#
+public void GoToNextScene()
+{
+    GSM.ChangeState<ScreenWipe, ScreenWipeConfig>(new() {
+        PreviousState = this,
+        NextState = GSM.CreateState<NextScene>(),
+        Color = Color.Black,
+        WipeTime = 0.25, // in seconds
+        Direction = ScreenWipeDirection.RightToLeft
+    });
+}
+```
+
+There are also options which let you hold on the black screen while some other process finishes (`HoldUntil`), and/or show a message (`Message` and `MessageColor`), which may be useful when performing a long-running operation, such as saving the game, loading the next level from disk, or making an web API call.
+
+# Method Reference
 
 ## `DrawTextWithOutline`
 

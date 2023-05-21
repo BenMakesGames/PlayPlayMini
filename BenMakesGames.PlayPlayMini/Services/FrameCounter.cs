@@ -13,7 +13,7 @@ public sealed class FrameCounter: IServiceDraw
     public float AverageFramesPerSecond { get; private set; }
     public float CurrentFramesPerSecond { get; private set; }
 
-    public const int MAXIMUM_SAMPLES = 60;
+    public const int MaximumSamples = 60;
 
     private Queue<float> SampleBuffer { get;} = new();
 
@@ -25,7 +25,7 @@ public sealed class FrameCounter: IServiceDraw
 
         SampleBuffer.Enqueue(CurrentFramesPerSecond);
 
-        if (SampleBuffer.Count > MAXIMUM_SAMPLES)
+        if (SampleBuffer.Count > MaximumSamples)
         {
             SampleBuffer.Dequeue();
             AverageFramesPerSecond = SampleBuffer.Average(i => i);
