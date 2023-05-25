@@ -8,7 +8,10 @@
    version="1.1"
    id="svg5"
    inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
-   sodipodi:docname="Social Banner.svg"
+   sodipodi:docname="GitHub Social Banner.svg"
+   inkscape:export-filename="GitHub Social Banner.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -25,7 +28,7 @@
      inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="0.5138925"
-     inkscape:cx="142.05305"
+     inkscape:cx="502.05052"
      inkscape:cy="417.40247"
      inkscape:window-width="1920"
      inkscape:window-height="976"
@@ -43,13 +46,13 @@
        style="fill:#058a00;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="path6816"
        cx="232.73692"
-       cy="127"
+       cy="137.58334"
        r="16.786093" />
     <circle
        style="fill:#058a00;fill-opacity:1;stroke-width:0.49294;stroke-linecap:round"
        id="path6816-01"
        cx="268.20071"
-       cy="127"
+       cy="137.58334"
        r="31.273893" />
     <rect
        style="fill:#07cb00;fill-opacity:1;stroke-width:0.221855;stroke-linecap:round"
@@ -57,63 +60,63 @@
        width="338.66666"
        height="42.333332"
        x="0"
-       y="127" />
+       y="137.58334" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.3333px;font-family:'Typo Round Bold Demo';-inkscape-font-specification:'Typo Round Bold Demo Bold';text-align:end;text-anchor:end;fill:#336699;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        x="325.49066"
-       y="58.463009"
+       y="69.046341"
        id="text236-7-9"><tspan
          sodipodi:role="line"
          id="tspan234-5-8"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.3333px;font-family:'Typo Round Bold Demo';-inkscape-font-specification:'Typo Round Bold Demo Bold';fill:#336699;fill-opacity:1;stroke-width:0.264583"
          x="325.49066"
-         y="58.463009">PlayPlayMini</tspan></text>
+         y="69.046341">PlayPlayMini</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.3333px;font-family:'Typo Round Bold Demo';-inkscape-font-specification:'Typo Round Bold Demo Bold';text-align:end;text-anchor:end;fill:#ffffff;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        x="323.90314"
-       y="56.875507"
+       y="67.458839"
        id="text236-7"><tspan
          sodipodi:role="line"
          id="tspan234-5"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.3333px;font-family:'Typo Round Bold Demo';-inkscape-font-specification:'Typo Round Bold Demo Bold';fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
          x="323.90314"
-         y="56.875507">PlayPlayMini</tspan></text>
+         y="67.458839">PlayPlayMini</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.3333px;font-family:'Typo Round Bold Demo';-inkscape-font-specification:'Typo Round Bold Demo Bold';text-align:end;text-anchor:end;fill:#ee8822;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        x="321.78644"
-       y="54.758839"
+       y="65.342171"
        id="text236"><tspan
          sodipodi:role="line"
          id="tspan234"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:42.3333px;font-family:'Typo Round Bold Demo';-inkscape-font-specification:'Typo Round Bold Demo Bold';fill:#ee8822;fill-opacity:1;stroke-width:0.264583"
          x="321.78644"
-         y="54.758839">PlayPlayMini</tspan></text>
+         y="65.342171">PlayPlayMini</tspan></text>
     <path
        style="fill:#336699;fill-opacity:1;stroke-width:0.297463;stroke-linecap:round"
-       d="M 20.720079,26.495846 V 58.639799 L 36.839893,42.519991 Z"
+       d="M 20.720079,37.07918 V 69.223133 L 36.839893,53.103325 Z"
        id="path586-8-0" />
     <path
        style="fill:#336699;fill-opacity:1;stroke-width:0.297463;stroke-linecap:round"
-       d="M 43.327282,26.495846 V 58.639799 L 59.447095,42.519991 Z"
+       d="M 43.327282,37.07918 V 69.223133 L 59.447095,53.103325 Z"
        id="path586-2-8-1" />
     <path
        style="fill:#ffffff;fill-opacity:1;stroke-width:0.297463;stroke-linecap:round"
-       d="M 19.132578,24.908345 V 57.052298 L 35.252392,40.93249 Z"
+       d="M 19.132578,35.491679 V 67.635632 L 35.252392,51.515824 Z"
        id="path586-8" />
     <path
        style="fill:#ffffff;fill-opacity:1;stroke-width:0.297463;stroke-linecap:round"
-       d="M 41.739781,24.908345 V 57.052298 L 57.859594,40.93249 Z"
+       d="M 41.739781,35.491679 V 67.635632 L 57.859594,51.515824 Z"
        id="path586-2-8" />
     <path
        style="fill:#336699;fill-opacity:1;stroke-width:0.297463;stroke-linecap:round"
-       d="M 17.545077,23.320844 V 55.464797 L 33.664891,39.344989 Z"
+       d="M 17.545077,33.904178 V 66.048131 L 33.664891,49.928323 Z"
        id="path586" />
     <path
        style="fill:#ee8822;fill-opacity:1;stroke-width:0.297463;stroke-linecap:round"
-       d="M 40.15228,23.320844 V 55.464797 L 56.272093,39.344989 Z"
+       d="M 40.15228,33.904178 V 66.048131 L 56.272093,49.928323 Z"
        id="path586-2" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
@@ -121,55 +124,55 @@
        width="13.711882"
        height="13.711882"
        x="50.283123"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2"
        width="13.711882"
        height="13.711882"
        x="65.053345"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2-6"
        width="13.711882"
        height="13.711882"
        x="79.82354"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2-6-7"
        width="13.711882"
        height="13.711882"
        x="94.59375"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2-6-7-7"
        width="13.711882"
        height="13.711882"
        x="35.512901"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2-6-9"
        width="13.711882"
        height="13.711882"
        x="138.90434"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2-6-7-1"
        width="13.711882"
        height="13.711882"
        x="153.67455"
-       y="84.666664" />
+       y="95.249992" />
     <rect
        style="fill:#c73535;fill-opacity:1;stroke-width:0.264583;stroke-linecap:round"
        id="rect6436-2-6-7-1-1"
        width="13.711882"
        height="13.711882"
        x="168.44475"
-       y="84.666664" />
+       y="95.249992" />
   </g>
 </svg>
