@@ -6,8 +6,10 @@ using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace BenMakesGames.PlayPlayMini;
 
@@ -18,7 +20,8 @@ public class GameStateManagerBuilder
     private AssetCollection GameAssets { get; }
 
     private Action<ContainerBuilder>? AddServicesCallback { get; set; }
-    private string WindowTitle { get; set; } = "MonoGame Game";
+    private Action<IConfigurationBuilder>? ConfigurationCallback { get; set; }
+    private string WindowTitle { get; set; } = "PlayPlayMini Game";
     private (int Width, int Height, int Zoom) WindowSize { get; set; } = (1920 / 3, 1080 / 3, 2);
     private bool FixedTimeStep { get; set; }
 
@@ -37,20 +40,20 @@ public class GameStateManagerBuilder
     public GameStateManagerBuilder SetWindowTitle(string title)
     {
         WindowTitle = title;
-            
+
         return this;
     }
 
     public GameStateManagerBuilder SetInitialGameState<T>() where T:GameState
     {
         InitialGameState = typeof(T);
-            
+
         return this;
     }
 
-    public GameStateManagerBuilder UseFixedTimeStep()
+    public GameStateManagerBuilder UseFixedTimeStep(bool fixedTimeStep = true)
     {
-        FixedTimeStep = true;
+        FixedTimeStep = fixedTimeStep;
 
         return this;
     }
@@ -72,11 +75,21 @@ public class GameStateManagerBuilder
         return this;
     }
 
+    public GameStateManagerBuilder AddConfiguration(Action<IConfigurationBuilder> callback)
+    {
+        if (ConfigurationCallback != null)
+            throw new ArgumentException("AddServices may only be called once!");
+
+        ConfigurationCallback = callback;
+
+        return this;
+    }
+
     private static List<Assembly> GetListOfEntryAssemblyWithReferences()
     {
         var listOfAssemblies = new List<Assembly>();
         var mainAsm = Assembly.GetEntryAssembly()!;
-        
+
         listOfAssemblies.Add(mainAsm);
         listOfAssemblies.AddRange(mainAsm.GetReferencedAssemblies().Select(Assembly.Load));
 
@@ -85,11 +98,21 @@ public class GameStateManagerBuilder
 
     public void Run()
     {
+        var configBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile($"Content{Path.DirectorySeparatorChar}appsettings.json", optional: true, reloadOnChange: false) // TODO: does this work on Android?
+        ;
+
+        ConfigurationCallback?.Invoke(configBuilder);
+
+        var configuration = configBuilder.Build();
+
         var builder = new ContainerBuilder();
         var serviceWatcher = new ServiceWatcher();
         var assemblies = GetListOfEntryAssemblyWithReferences();
 
         builder.RegisterInstance(serviceWatcher);
+        builder.RegisterInstance(configuration).As<IConfiguration>();
 
         foreach(var assembly in assemblies)
         {
@@ -143,7 +166,7 @@ public class GameStateManagerBuilder
         builder.RegisterGeneric(typeof(Logger<>))
             .As(typeof(ILogger<>))
             .SingleInstance();
-        
+
         AddServicesCallback?.Invoke(builder);
 
         if(InitialGameState == null)
