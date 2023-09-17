@@ -16,19 +16,15 @@ namespace BenMakesGames.PlayPlayMini;
 public class GameStateManagerBuilder
 {
     private Type? InitialGameState { get; set; }
+    private Type? LostFocusGameState { get; set; }
 
-    private AssetCollection GameAssets { get; }
+    private AssetCollection GameAssets { get; } = new();
 
     private Action<ContainerBuilder>? AddServicesCallback { get; set; }
     private Action<IConfigurationBuilder>? ConfigurationCallback { get; set; }
     private string WindowTitle { get; set; } = "PlayPlayMini Game";
     private (int Width, int Height, int Zoom) WindowSize { get; set; } = (1920 / 3, 1080 / 3, 2);
     private bool FixedTimeStep { get; set; }
-
-    public GameStateManagerBuilder()
-    {
-        GameAssets = new();
-    }
 
     public GameStateManagerBuilder SetWindowSize(int width, int height, int zoom)
     {
@@ -44,9 +40,16 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder SetInitialGameState<T>() where T:GameState
+    public GameStateManagerBuilder SetInitialGameState<T>() where T: GameState
     {
         InitialGameState = typeof(T);
+
+        return this;
+    }
+
+    public GameStateManagerBuilder SetLostFocusGameState<T>() where T: GameState
+    {
+        LostFocusGameState = typeof(T);
 
         return this;
     }
@@ -78,7 +81,7 @@ public class GameStateManagerBuilder
     public GameStateManagerBuilder AddConfiguration(Action<IConfigurationBuilder> callback)
     {
         if (ConfigurationCallback != null)
-            throw new ArgumentException("AddServices may only be called once!");
+            throw new ArgumentException("AddConfiguration may only be called once!");
 
         ConfigurationCallback = callback;
 
@@ -172,24 +175,28 @@ public class GameStateManagerBuilder
         if(InitialGameState == null)
             throw new ArgumentException("No initial game state set! You must call GameStateManagerBuilder's SetInitialGameState method before calling its Run method.");
 
+        var gameStateManagerConfig = new GameStateManagerConfig(
+            InitialGameState,
+            LostFocusGameState,
+            WindowSize,
+            WindowTitle,
+            GameAssets
+        );
+        
         // here we go!
         using (var container = builder.Build())
         using (var scope = container.BeginLifetimeScope())
-        using (var game = scope.Resolve<GameStateManager>())
+        using (var game = scope.Resolve<GameStateManager>(new TypedParameter(typeof(GameStateManagerConfig), gameStateManagerConfig)))
         {
             InstantiateLoadContentAndInitializedServices(scope);
 
-            game.InitialGameState = InitialGameState;
-            game.InitialWindowSize = WindowSize;
-            game.InitialWindowTitle = WindowTitle;
-            game.Assets = GameAssets;
             game.IsFixedTimeStep = FixedTimeStep;
 
             game.Run();
         }
     }
 
-    private void InstantiateLoadContentAndInitializedServices(ILifetimeScope scope)
+    private static void InstantiateLoadContentAndInitializedServices(ILifetimeScope scope)
     {
         var serviceTypes = scope.ComponentRegistry.Registrations
             .SelectMany(r => r.Services)

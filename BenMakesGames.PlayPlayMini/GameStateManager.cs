@@ -18,14 +18,14 @@ public sealed class GameStateManager: Game
     private GraphicsManager Graphics { get; }
     private ServiceWatcher ServiceWatcher { get; }
 
-    public AssetCollection Assets { get; set; } = new();
-    public Type? InitialGameState { get; set; }
-    public (int Width, int Height, int Zoom) InitialWindowSize { get; set; }
-    public string InitialWindowTitle { get; set; } = "Untitled Game";
+    public AssetCollection Assets { get; }
+    public (int Width, int Height, int Zoom) InitialWindowSize { get; }
+    public Type InitialGameState { get; }
+    public Type? LostFocusGameState { get; }
 
     public GameStateManager(
         ILifetimeScope iocContainer, GraphicsManager graphics, ServiceWatcher serviceWatcher,
-        SoundManager soundManager
+        SoundManager soundManager, GameStateManagerConfig config
     )
     {
         IoCContainer = iocContainer;
@@ -37,6 +37,12 @@ public sealed class GameStateManager: Game
         // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
         graphics.SetGame(this);
         soundManager.SetGame(this);
+
+        InitialGameState = config.InitialGameState;
+        LostFocusGameState = config.LostFocusGameState;
+        InitialWindowSize = config.InitialWindowSize;
+        Window.Title = config.InitialWindowTitle;
+        Assets = config.Assets;
     }
 
     protected override void LoadContent()
@@ -56,9 +62,7 @@ public sealed class GameStateManager: Game
 
         base.Initialize(); // calls LoadContent, btw
 
-        Window.Title = InitialWindowTitle;
-
-        ChangeState(InitialGameState!);
+        ChangeState(InitialGameState);
     }
 
     private void Input(GameTime gameTime)
@@ -72,6 +76,13 @@ public sealed class GameStateManager: Game
     protected override void Update(GameTime gameTime)
     {
         SwitchState();
+        
+        if(!IsActive && LostFocusGameState != null)
+        {
+            ChangeState(LostFocusGameState);
+            SwitchState();
+        }
+        
         Input(gameTime);
 
         base.Update(gameTime);
@@ -179,3 +190,11 @@ public sealed class GameStateManager: Game
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public GameState CreateState(Type T) => (GameState)IoCContainer.Resolve(T);
 }
+
+public sealed record GameStateManagerConfig(
+    Type InitialGameState,
+    Type? LostFocusGameState,
+    (int Width, int Height, int Zoom) InitialWindowSize,
+    string InitialWindowTitle,
+    AssetCollection Assets
+);
