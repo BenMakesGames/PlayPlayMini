@@ -11,7 +11,7 @@ namespace BenMakesGames.PlayPlayMini;
 [AutoRegister(Lifetime.Singleton)]
 public sealed class GameStateManager: Game
 {
-    public GameState? CurrentState { get; private set; }
+    public GameState CurrentState { get; private set; }
     public GameState? NextState { get; private set; }
 
     private ILifetimeScope IoCContainer { get; }
@@ -43,6 +43,8 @@ public sealed class GameStateManager: Game
         InitialWindowSize = config.InitialWindowSize;
         Window.Title = config.InitialWindowTitle;
         Assets = config.Assets;
+
+        CurrentState = new NoState();
     }
 
     protected override void LoadContent()
@@ -77,9 +79,9 @@ public sealed class GameStateManager: Game
     {
         SwitchState();
         
-        if(!IsActive && LostFocusGameState != null)
+        if(!IsActive && LostFocusGameState != null && CurrentState.GetType() != LostFocusGameState)
         {
-            ChangeState(LostFocusGameState);
+            ChangeState(LostFocusGameState, new LostFocusConfig(CurrentState));
             SwitchState();
         }
         
@@ -90,11 +92,8 @@ public sealed class GameStateManager: Game
         foreach (var s in ServiceWatcher.UpdatedServices)
             s.Update(gameTime);
 
-        if (CurrentState != null)
-        {
-            CurrentState.AlwaysUpdate(gameTime);
-            CurrentState.ActiveUpdate(gameTime);
-        }
+        CurrentState.AlwaysUpdate(gameTime);
+        CurrentState.ActiveUpdate(gameTime);
     }
 
     protected override bool BeginDraw()
@@ -139,17 +138,27 @@ public sealed class GameStateManager: Game
     public void ChangeState(GameState nextState)
     {
         if (NextState != null)
-            throw new ArgumentException("A next state is already ready!");
+            throw new InvalidOperationException("A next state is already ready!");
 
         NextState = nextState;
     }
 
-    public GameState ChangeState(Type T)
+    public GameState ChangeState(Type nextStateType)
     {
         if (NextState != null)
-            throw new ArgumentException("A next state is already ready!");
+            throw new InvalidOperationException("A next state is already ready!");
 
-        NextState = CreateState(T);
+        NextState = CreateState(nextStateType);
+
+        return NextState;
+    }
+
+    public GameState ChangeState<TConfig>(Type nextStateType, TConfig config)
+    {
+        if (NextState != null)
+            throw new InvalidOperationException("A next state is already ready!");
+
+        NextState = CreateState(nextStateType, config);
 
         return NextState;
     }
@@ -163,7 +172,7 @@ public sealed class GameStateManager: Game
     public T ChangeState<T>() where T : GameState
     {
         if (NextState != null)
-            throw new ArgumentException("A next state is already ready!");
+            throw new InvalidOperationException("A next state is already ready!");
 
         NextState = CreateState<T>();
 
@@ -173,7 +182,7 @@ public sealed class GameStateManager: Game
     public T ChangeState<T, TConfig>(TConfig config) where T: GameState
     {
         if (NextState != null)
-            throw new ArgumentException("A next state is already ready!");
+            throw new InvalidOperationException("A next state is already ready!");
 
         NextState = CreateState<T, TConfig>(config);
 
@@ -188,7 +197,24 @@ public sealed class GameStateManager: Game
         => IoCContainer.Resolve<T>(new TypedParameter(typeof(TConfig), config));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public GameState CreateState(Type T) => (GameState)IoCContainer.Resolve(T);
+    public GameState CreateState(Type nextStateType)
+    {
+        if(!nextStateType.IsSubclassOf(typeof(GameState)))
+            throw new ArgumentException("nextStateType must be a GameState", nameof(nextStateType));
+        
+        return (GameState)IoCContainer.Resolve(nextStateType);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public GameState CreateState<TConfig>(Type nextStateType, TConfig config)
+    {
+        if(!nextStateType.IsSubclassOf(typeof(GameState)))
+            throw new ArgumentException("nextStateType must be a GameState", nameof(nextStateType));
+        
+        return (GameState)IoCContainer.Resolve(nextStateType, new TypedParameter(typeof(TConfig), config));
+    }
+
+    private class NoState: GameState { }
 }
 
 public sealed record GameStateManagerConfig(
