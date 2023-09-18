@@ -38,7 +38,7 @@ PlayPlayMini has a built-in `DrawTextWithOutline` method. GraphicsExtensions's v
 Most games won't notice this performance difference, but if you're tight on CPU cycles for some reason, you may not want to rely on this method.
 
 ```c#
-GraphicsManage.DrawTextWithOutline(
+GraphicsManager.DrawTextWithOutline(
     string fontName,
     int x,
     int y,
