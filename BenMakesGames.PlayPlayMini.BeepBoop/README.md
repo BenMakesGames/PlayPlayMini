@@ -37,7 +37,7 @@ public sealed class Playing: GameState
         Graphics = graphics;
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         Graphics.Clear(Color.Black);
 
@@ -50,7 +50,7 @@ public sealed class Playing: GameState
             Graphics.DrawText("Font", 2 + (i * 6), 42, NoteHistory[i], i == NoteHistory.Count - 1 ? Color.White : Color.SkyBlue);
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         if(Keyboard.PressedKey(Keys.D1))
             WaveType = WaveType.Square;

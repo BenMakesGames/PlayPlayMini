@@ -57,7 +57,7 @@ public class sealed Startup : GameState
 The theme provider must extend `UIThemeProvider`, and be registered as a service. Here's an example implementation:
 
 ```c#
-[AutoRegister(Lifetime.Singleton, InstanceOf = typeof(UIThemeProvider))]
+[AutoRegister(InstanceOf = typeof(UIThemeProvider))]
 public sealed class ThemeProvider: UIThemeProvider
 {
     protected override Theme CurrentTheme { get; set; } = new(

@@ -8,22 +8,25 @@ public sealed class ScreenWipe: GameState
 {
     private GraphicsManager Graphics { get; }
     private ScreenWipeConfig Config { get; }
-    private GameStateManager Game { get; }
+    private GameStateManager GSM { get; }
 
     private int Step { get; set; }
     private double Age { get; set; }
 
     public ScreenWipe(
-        GraphicsManager graphics, ScreenWipeConfig config, GameStateManager game
+        GraphicsManager graphics, ScreenWipeConfig config, GameStateManager gsm
     )
     {
         Graphics = graphics;
         Config = config;
-        Game = game;
+        GSM = gsm;
     }
 
-    public override void ActiveUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
+        if (GSM.CurrentState != this)
+            return;
+
         Age += gameTime.ElapsedGameTime.TotalSeconds;
 
         if(Step == 0) // wipe out
@@ -48,16 +51,16 @@ public sealed class ScreenWipe: GameState
         {
             if (Age >= Config.WipeTime)
             {
-                Game.ChangeState(Config.NextState);
+                GSM.ChangeState(Config.NextState);
             }
         }
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         if (Step == 0)
         {
-            Config.PreviousState.AlwaysDraw(gameTime);
+            Config.PreviousState.Draw(gameTime);
             DrawWipe(Age / Config.WipeTime, false);
         }
         else if (Step == 1)
@@ -72,7 +75,7 @@ public sealed class ScreenWipe: GameState
         }
         else
         {
-            Config.NextState.AlwaysDraw(gameTime);
+            Config.NextState.Draw(gameTime);
             DrawWipe(Age / Config.WipeTime, true);
         }
     }

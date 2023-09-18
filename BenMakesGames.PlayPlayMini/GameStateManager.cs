@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace BenMakesGames.PlayPlayMini;
 
-[AutoRegister(Lifetime.Singleton)]
+[AutoRegister]
 public sealed class GameStateManager: Game
 {
     public GameState CurrentState { get; private set; }
@@ -22,6 +22,8 @@ public sealed class GameStateManager: Game
     public (int Width, int Height, int Zoom) InitialWindowSize { get; }
     public Type InitialGameState { get; }
     public Type? LostFocusGameState { get; }
+
+    private double FixedUpdateAccumulator { get; set; }
 
     public GameStateManager(
         ILifetimeScope iocContainer, GraphicsManager graphics, ServiceWatcher serviceWatcher,
@@ -72,19 +74,19 @@ public sealed class GameStateManager: Game
         foreach(var s in ServiceWatcher.InputServices)
             s.Input(gameTime);
 
-        CurrentState?.ActiveInput(gameTime);
+        CurrentState.Input(gameTime);
     }
 
     protected override void Update(GameTime gameTime)
     {
         SwitchState();
-        
+
         if(!IsActive && LostFocusGameState != null && CurrentState.GetType() != LostFocusGameState)
         {
             ChangeState(LostFocusGameState, new LostFocusConfig(CurrentState));
             SwitchState();
         }
-        
+
         Input(gameTime);
 
         base.Update(gameTime);
@@ -92,8 +94,21 @@ public sealed class GameStateManager: Game
         foreach (var s in ServiceWatcher.UpdatedServices)
             s.Update(gameTime);
 
-        CurrentState.AlwaysUpdate(gameTime);
-        CurrentState.ActiveUpdate(gameTime);
+        FixedUpdateAccumulator += gameTime.ElapsedGameTime.TotalMilliseconds;
+
+        if (FixedUpdateAccumulator >= 16.6667)
+        {
+            CurrentState.FixedUpdate(new GameTime()
+            {
+                TotalGameTime = gameTime.TotalGameTime,
+                IsRunningSlowly = gameTime.IsRunningSlowly,
+                ElapsedGameTime = TimeSpan.FromMilliseconds(FixedUpdateAccumulator),
+            });
+
+            FixedUpdateAccumulator -= 16.6667;
+        }
+
+        CurrentState.Update(gameTime);
     }
 
     protected override bool BeginDraw()
@@ -106,11 +121,7 @@ public sealed class GameStateManager: Game
     {
         base.Draw(gameTime);
 
-        if (CurrentState != null)
-        {
-            CurrentState.AlwaysDraw(gameTime);
-            CurrentState.ActiveDraw(gameTime);
-        }
+        CurrentState.Draw(gameTime);
 
         foreach (var s in ServiceWatcher.DrawnServices)
             s.Draw(gameTime);
@@ -163,12 +174,6 @@ public sealed class GameStateManager: Game
         return NextState;
     }
 
-    [Obsolete("Use CurrentState, instead")]
-    public bool IsCurrentState(GameState state) => CurrentState == state;
-
-    [Obsolete("Use CurrentState, instead")]
-    public bool IsCurrentState<T>() where T : GameState => CurrentState is T;
-
     public T ChangeState<T>() where T : GameState
     {
         if (NextState != null)
@@ -201,7 +206,7 @@ public sealed class GameStateManager: Game
     {
         if(!nextStateType.IsSubclassOf(typeof(GameState)))
             throw new ArgumentException("nextStateType must be a GameState", nameof(nextStateType));
-        
+
         return (GameState)IoCContainer.Resolve(nextStateType);
     }
 
@@ -210,11 +215,11 @@ public sealed class GameStateManager: Game
     {
         if(!nextStateType.IsSubclassOf(typeof(GameState)))
             throw new ArgumentException("nextStateType must be a GameState", nameof(nextStateType));
-        
+
         return (GameState)IoCContainer.Resolve(nextStateType, new TypedParameter(typeof(TConfig), config));
     }
 
-    private class NoState: GameState { }
+    private sealed class NoState: GameState { }
 }
 
 public sealed record GameStateManagerConfig(

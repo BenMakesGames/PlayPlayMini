@@ -6,7 +6,7 @@ using BenMakesGames.PlayPlayMini.Model;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
-[AutoRegister(Lifetime.Singleton)]
+[AutoRegister]
 public sealed class MouseManager : IServiceInput
 {
     private GraphicsManager GraphicsManager { get; }
@@ -16,37 +16,37 @@ public sealed class MouseManager : IServiceInput
     private MouseState PreviousMouseState { get; set; }
     private MouseState MouseState { get; set; }
 
-    public string? PictureName { get; set; }
-    public (int X, int Y) Hotspot { get; set; }
+    public string? PictureName { get; private set; }
+    public (int X, int Y) Hotspot { get; private set; }
 
     public int X { get; private set; }
     public int Y { get; private set; }
-    
+
     /// <summary>
     /// True if the mouse moved since the last frame.
     /// </summary>
     public bool Moved { get; private set;}
-    
+
     /// <summary>
     /// True if the left button is currently being pressed.
     /// </summary>
     public bool LeftDown { get; private set; }
-    
+
     /// <summary>
     /// True if the left button was released this frame.
     /// </summary>
     public bool LeftClicked { get; private set; }
-    
+
     /// <summary>
     /// True if the right button is currently being pressed.
     /// </summary>
     public bool RightDown { get; private set; }
-    
+
     /// <summary>
     /// True if the right button was released this frame.
     /// </summary>
     public bool RightClicked { get; private set; }
-    
+
     public int Wheel { get; private set; }
 
     /// <summary>
@@ -62,7 +62,7 @@ public sealed class MouseManager : IServiceInput
     /// </summary>
     public bool ClampToWindow { get; set; } = false;
 
-    public MouseDrawingMode DrawingMode { get; private set; } = MouseDrawingMode.System; 
+    public MouseDrawingMode DrawingMode { get; private set; } = MouseDrawingMode.System;
 
     public MouseManager(GraphicsManager gm, KeyboardManager keyboard, GameStateManager gsm)
     {
@@ -104,7 +104,7 @@ public sealed class MouseManager : IServiceInput
             }
 
             Moved = PreviousMouseState.X != MouseState.X || PreviousMouseState.Y != MouseState.Y;
-            
+
             LeftDown = MouseState.LeftButton == ButtonState.Pressed;
             RightDown = MouseState.RightButton == ButtonState.Pressed;
 
@@ -126,11 +126,11 @@ public sealed class MouseManager : IServiceInput
         }
     }
 
-    public void ActiveDraw(GameTime gameTime)
+    public void Draw(GameTime gameTime)
     {
         if(DrawingMode != MouseDrawingMode.Custom)
             return;
-            
+
         if(Enabled && PictureName is { } pictureName)
             GraphicsManager.DrawPicture(pictureName, X - Hotspot.X, Y - Hotspot.Y);
     }
@@ -142,7 +142,7 @@ public sealed class MouseManager : IServiceInput
         Hotspot = hotspot;
         GSM.IsMouseVisible = false;
     }
-        
+
     public void UseSystemCursor()
     {
         DrawingMode = MouseDrawingMode.System;

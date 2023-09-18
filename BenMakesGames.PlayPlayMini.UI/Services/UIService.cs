@@ -5,7 +5,6 @@ using BenMakesGames.PlayPlayMini.Services;
 using BenMakesGames.PlayPlayMini.UI.Model;
 using BenMakesGames.PlayPlayMini.UI.UIElements;
 using Microsoft.Xna.Framework;
-using System.Linq;
 
 namespace BenMakesGames.PlayPlayMini.UI.Services;
 
@@ -59,19 +58,28 @@ public sealed class UIService
     {
         e.Draw(xOffset, yOffset, gameTime);
 
-        foreach (IUIElement c in e.Children.Where(c => c.Visible))
-            DrawElement(c, xOffset + e.X, yOffset + e.Y, gameTime);
+        for (var i = 0; i < e.Children.Count; i++)
+        {
+            if(e.Children[i].Visible)
+                DrawElement(e.Children[i], xOffset + e.X, yOffset + e.Y, gameTime);
+        }
 
         if (e == Hovered && DebugMode)
             Graphics.DrawRectangle(e.X + xOffset, e.Y + yOffset, e.Width, e.Height, Color.Red);
     }
 
+    /// <summary>
+    /// Should only be called by a GameState when that GameState is the GameStateManager's CurrentState.
+    /// </summary>
     public void ActiveDraw(GameTime gameTime, bool showMouse = true)
     {
         if (showMouse)
-            Cursor.ActiveDraw(gameTime);
+            Cursor.Draw(gameTime);
     }
 
+    /// <summary>
+    /// Should only be called by a GameState when that GameState is the GameStateManager's CurrentState.
+    /// </summary>
     public void ActiveUpdate(GameTime gameTime)
     {
         DoMouseOverElement(Canvas, Cursor.X, Cursor.Y);
@@ -121,19 +129,20 @@ public sealed class UIService
 
     private void DoMouseOverElement(IUIElement e, int x, int y)
     {
-        foreach (var c in e.Children.Where(c => c.Visible).Reverse())
+        for(var i = e.Children.Count - 1; i >= 0; i--)
         {
-            if (x >= c.X && x < c.X + c.Width && y >= c.Y && y < c.Y + c.Height)
+            var child = e.Children[i];
+
+            if (x >= child.X && x < child.X + child.Width && y >= child.Y && y < child.Y + child.Height)
             {
-                DoMouseOverElement(c, x - c.X, y - c.Y);
+                DoMouseOverElement(child, x - child.X, y - child.Y);
                 return;
             }
         }
 
         if (e != Hovered)
         {
-            if(Hovered != null)
-                Hovered.DoMouseExit?.Invoke();
+            Hovered?.DoMouseExit?.Invoke();
 
             Hovered = e;
 
@@ -144,10 +153,7 @@ public sealed class UIService
         }
     }
 
-    public Font GetFont()
-    {
-        return Graphics.Fonts[GetTheme().FontName];
-    }
+    public Font GetFont() => Graphics.Fonts[GetTheme().FontName];
 
     private sealed record Click(TimeSpan When, IUIElement What, int X, int Y);
 }

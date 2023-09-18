@@ -160,9 +160,6 @@ public class GameStateManagerBuilder
             ;
         }
 
-        // manually register some C# built-in stuff:
-        builder.RegisterType<Random>().AsSelf().SingleInstance();
-
         builder.Register(_ => LoggerFactory.Create(f => { f.AddConsole(); }))
             .As<ILoggerFactory>()
             .SingleInstance();
@@ -182,7 +179,7 @@ public class GameStateManagerBuilder
             WindowTitle,
             GameAssets
         );
-        
+
         // here we go!
         using (var container = builder.Build())
         using (var scope = container.BeginLifetimeScope())

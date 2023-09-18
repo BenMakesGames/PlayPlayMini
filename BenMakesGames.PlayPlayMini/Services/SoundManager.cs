@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
-[AutoRegister(Lifetime.Singleton)]
+[AutoRegister]
 public sealed class SoundManager : IServiceLoadContent
 {
     private ILogger<SoundManager> Logger { get; }
@@ -22,8 +22,8 @@ public sealed class SoundManager : IServiceLoadContent
 
     private ContentManager Content => Game.Content;
 
-    public Dictionary<string, SoundEffect> SoundEffects = new();
-    public Dictionary<string, Song> Songs = new();
+    public Dictionary<string, SoundEffect> SoundEffects { get; } = new();
+    public Dictionary<string, Song> Songs { get; } = new();
 
     public float SoundVolume { get; private set; } = 1.0f;
     public float MusicVolume { get; private set; } = 1.0f;
@@ -34,7 +34,7 @@ public sealed class SoundManager : IServiceLoadContent
     {
         Logger = logger;
     }
-    
+
     public void SetGame(Game game)
     {
         if (Game != null)
@@ -61,7 +61,7 @@ public sealed class SoundManager : IServiceLoadContent
             Logger.LogWarning("Sound {Name} has not been loaded", name);
             return;
         }
-            
+
         var v = volume * SoundVolume;
 
         if(v > 0)
@@ -75,15 +75,15 @@ public sealed class SoundManager : IServiceLoadContent
             Logger.LogWarning("Song {Name} has not been loaded", name);
             return;
         }
-            
+
         if (MediaPlayer.Queue.ActiveSong == Songs[name] && MediaPlayer.State == MediaState.Playing)
             return;
 
         MediaPlayer.Stop();
-            
+
         while (MediaPlayer.State == MediaState.Playing)
             Thread.Yield();
-            
+
         MediaPlayer.IsRepeating = repeat;
         MediaPlayer.Play(Songs[name]);
     }
@@ -95,8 +95,8 @@ public sealed class SoundManager : IServiceLoadContent
 
     public void LoadContent(GameStateManager gsm)
     {
-        SoundEffects = new();
-        Songs = new();
+        SoundEffects.Clear();
+        Songs.Clear();
 
         // load immediately
         foreach (var meta in gsm.Assets.GetAll<SoundEffectMeta>().Where(m => m.PreLoaded))
