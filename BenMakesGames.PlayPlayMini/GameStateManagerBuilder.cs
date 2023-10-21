@@ -20,7 +20,7 @@ public class GameStateManagerBuilder
 
     private AssetCollection GameAssets { get; } = new();
 
-    private Action<ContainerBuilder>? AddServicesCallback { get; set; }
+    private Action<ContainerBuilder, IConfiguration>? AddServicesCallback { get; set; }
     private Action<IConfigurationBuilder>? ConfigurationCallback { get; set; }
     private string WindowTitle { get; set; } = "PlayPlayMini Game";
     private (int Width, int Height, int Zoom) WindowSize { get; set; } = (1920 / 3, 1080 / 3, 2);
@@ -68,12 +68,23 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder AddServices(Action<ContainerBuilder> callback)
+    public GameStateManagerBuilder AddServices(Action<ContainerBuilder, IConfiguration> callback)
     {
         if (AddServicesCallback != null)
             throw new ArgumentException("AddServices may only be called once!");
 
         AddServicesCallback = callback;
+
+        return this;
+    }
+
+    [Obsolete("Use AddServices(Action<ContainerBuilder, IConfiguration> callback) instead.")]
+    public GameStateManagerBuilder AddServices(Action<ContainerBuilder> callback)
+    {
+        if (AddServicesCallback != null)
+            throw new ArgumentException("AddServices may only be called once!");
+
+        AddServicesCallback = (s, _) => callback(s);
 
         return this;
     }
@@ -167,7 +178,7 @@ public class GameStateManagerBuilder
             .As(typeof(ILogger<>))
             .SingleInstance();
 
-        AddServicesCallback?.Invoke(builder);
+        AddServicesCallback?.Invoke(builder, configuration);
 
         if(InitialGameState == null)
             throw new ArgumentException("No initial game state set! You must call GameStateManagerBuilder's SetInitialGameState method before calling its Run method.");

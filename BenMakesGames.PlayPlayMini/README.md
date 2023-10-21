@@ -194,7 +194,7 @@ gsmBuilder
     })
 
     // TODO: any additional service registration (refer to PlayPlayMini and/or Autofac documentation for more info)
-    .AddServices(s => {
+    .AddServices((s, c) => {
 
     })
 ;
@@ -368,7 +368,7 @@ Possible lifetimes are:
 One of the methods you can call on the `GameStateManagerBuilder` is `AddServices`. If there isn't already a call to it, add one; it would look something like this:
 
 ```c#
-    .AddServices(s => {
+    .AddServices((s, c) => {
         s.RegisterType<MyService>();
         s.RegisterType<SomeOtherService>();
     })
