@@ -3,8 +3,10 @@ using System.Collections.Generic;
 
 namespace BenMakesGames.PlayPlayMini;
 
+[Obsolete("Use PlayPlayMini.GraphicsExtensions's shape-drawing methods, instead. They're faster, and more flexible!")]
 public static class Generators
 {
+    [Obsolete("Use PlayPlayMini.GraphicsExtensions's DrawFilledEllipse or DrawFilledCircle method, instead. It performs ~12x faster, and is more flexible!")]
     public static IEnumerable<(int x, int y)> Circle(int centerX, int centerY, int radius)
     {
         var radiusSquared = radius * radius;
@@ -20,6 +22,7 @@ public static class Generators
         }
     }
 
+    [Obsolete("Use PlayPlayMini.GraphicsExtensions's DrawFilledEllipse or DrawFilledCircle method, instead. It performs ~12x faster, and is more flexible!")]
     public static IEnumerable<(int x, int y)> Circle(double centerX, double centerY, double radius)
     {
         var radiusSquared = radius * radius;
@@ -35,6 +38,7 @@ public static class Generators
         }
     }
 
+    [Obsolete("Use PlayPlayMini.GraphicsExtensions's DrawLine method, instead. It performs >50% faster.")]
     public static IEnumerable<(int x, int y)> Line(int x, int y, int x2, int y2)
     {
         int w = x2 - x;
