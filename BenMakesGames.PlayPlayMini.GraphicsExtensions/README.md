@@ -31,7 +31,7 @@ There are also options which let you hold on the black screen while some other p
 
 `PlayPlayMini.GraphicsExtensions` contains methods for drawing "basic shapes", beyond just rectangles (which `PlayPlayMini` itself already supports).
 
-At the moment, only lines and ellipses (including circles) are supported.
+At the moment, only lines, ellipses (including circles), and filled triangles are supported.
 
 ## `DrawCircle`
 
@@ -82,6 +82,35 @@ Same as `DrawCircle`, above, but draws a solid circle, instead of just its outli
 ## `DrawFilledEllipse`
 
 Same as `DrawEllipse`, above, but draws a solid ellipse, instead of just its outline.
+
+## `DrawFilledTriangle`
+
+Draws a filled triangle, given three points.
+
+```c#
+GraphicsManager.DrawFilledTriangle(
+    float x1,
+    float y1,
+    float x2,
+    float y2,
+    float x3,
+    float y3,
+    Color color
+)
+```
+
+```c#
+GraphicsManager.DrawFilledTriangle(
+    Vector2 v1,
+    Vector2 v2,
+    Vector2 v3,
+    Color color
+)
+```
+
+**Notes**
+* There is no `DrawTriangle` method for drawing only a triangle's outline (yet...)
+* For those with a 3D background: the order your pass the verticies in does not matter - the triangle will be drawn whether the points are in clockwise or counterclockwise order
 
 ## `DrawLine`
 
