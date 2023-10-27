@@ -20,6 +20,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public bool FullyLoaded { get; private set; }
 
+    public Matrix? TransformMatrix { get; private set; }
     public int Zoom { get; private set; } = 2;
     public bool FullScreen { get; private set; }
     public int Width { get; private set; } = 1920 / 3;
@@ -157,6 +158,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         SpriteBatch.Dispose();
     }
 
+    public void SetTransformMatrix(Matrix? matrix)
+    {
+        TransformMatrix = matrix;
+    }
+
     public void SetZoom(int zoom)
     {
         Zoom = zoom < 1 ? 1 : zoom;
@@ -208,7 +214,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         DrawCalls = 0;
 
         GraphicsDevice.SetRenderTarget(RenderTarget);
-        SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+        SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, transformMatrix: TransformMatrix);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

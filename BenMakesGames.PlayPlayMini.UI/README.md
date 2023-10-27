@@ -61,11 +61,11 @@ The theme provider must extend `UIThemeProvider`, and be registered as a service
 public sealed class ThemeProvider: UIThemeProvider
 {
     protected override Theme CurrentTheme { get; set; } = new(
-        WindowColor: Colors.Orange,
+        WindowColor: Color.Orange,
         FontName: "Font",
         ButtonSpriteSheetName: "Button",
-        ButtonLabelColor: Colors.White,
-        ButtonLabelDisabledColor: Colors.Gray,
+        ButtonLabelColor: Color.White,
+        ButtonLabelDisabledColor: Color.Gray,
         CheckboxSpriteSheetName: "Checkbox"
     );
 }
