@@ -102,6 +102,9 @@ public sealed class SoundManager : IServiceLoadContent
         foreach (var meta in gsm.Assets.GetAll<SoundEffectMeta>().Where(m => m.PreLoaded))
             LoadSoundEffect(meta);
 
+        foreach (var meta in gsm.Assets.GetAll<SongMeta>().Where(s => s.PreLoaded))
+            LoadSong(meta);
+
         // deferred
         Task.Run(() => LoadDeferredContent(gsm.Assets));
     }
@@ -111,7 +114,7 @@ public sealed class SoundManager : IServiceLoadContent
         foreach (var meta in assets.GetAll<SoundEffectMeta>().Where(m => !m.PreLoaded))
             LoadSoundEffect(meta);
 
-        foreach (var meta in assets.GetAll<SongMeta>())
+        foreach (var meta in assets.GetAll<SongMeta>().Where(s => !s.PreLoaded))
             LoadSong(meta);
 
         FullyLoaded = true;
