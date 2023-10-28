@@ -37,7 +37,7 @@ public sealed class SoundManager : IServiceLoadContent
 
     public void SetGame(Game game)
     {
-        if (Game != null)
+        if (Game is not null)
             throw new ArgumentException("SetGame can only be called once!");
 
         Game = game;

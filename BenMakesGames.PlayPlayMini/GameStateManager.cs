@@ -81,7 +81,7 @@ public sealed class GameStateManager: Game
     {
         SwitchState();
 
-        if(!IsActive && LostFocusGameState != null && CurrentState.GetType() != LostFocusGameState)
+        if(!IsActive && LostFocusGameState is not null && CurrentState.GetType() != LostFocusGameState)
         {
             ChangeState(LostFocusGameState, new LostFocusConfig(CurrentState));
             SwitchState();
@@ -135,10 +135,10 @@ public sealed class GameStateManager: Game
 
     private void SwitchState()
     {
-        if(NextState == null)
+        if(NextState is null)
             return;
 
-        CurrentState?.Leave();
+        CurrentState.Leave();
 
         CurrentState = NextState;
         NextState = null;
@@ -148,7 +148,7 @@ public sealed class GameStateManager: Game
 
     public void ChangeState(GameState nextState)
     {
-        if (NextState != null)
+        if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
 
         NextState = nextState;
@@ -156,7 +156,7 @@ public sealed class GameStateManager: Game
 
     public GameState ChangeState(Type nextStateType)
     {
-        if (NextState != null)
+        if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
 
         NextState = CreateState(nextStateType);
@@ -166,7 +166,7 @@ public sealed class GameStateManager: Game
 
     public GameState ChangeState<TConfig>(Type nextStateType, TConfig config)
     {
-        if (NextState != null)
+        if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
 
         NextState = CreateState(nextStateType, config);
@@ -176,7 +176,7 @@ public sealed class GameStateManager: Game
 
     public T ChangeState<T>() where T : GameState
     {
-        if (NextState != null)
+        if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
 
         NextState = CreateState<T>();
@@ -186,7 +186,7 @@ public sealed class GameStateManager: Game
 
     public T ChangeState<T, TConfig>(TConfig config) where T: GameState
     {
-        if (NextState != null)
+        if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
 
         NextState = CreateState<T, TConfig>(config);

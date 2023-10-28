@@ -70,7 +70,7 @@ public class GameStateManagerBuilder
 
     public GameStateManagerBuilder AddServices(Action<ContainerBuilder, IConfiguration> callback)
     {
-        if (AddServicesCallback != null)
+        if (AddServicesCallback is not null)
             throw new ArgumentException("AddServices may only be called once!");
 
         AddServicesCallback = callback;
@@ -81,7 +81,7 @@ public class GameStateManagerBuilder
     [Obsolete("Use AddServices(Action<ContainerBuilder, IConfiguration> callback) instead.")]
     public GameStateManagerBuilder AddServices(Action<ContainerBuilder> callback)
     {
-        if (AddServicesCallback != null)
+        if (AddServicesCallback is not null)
             throw new ArgumentException("AddServices may only be called once!");
 
         AddServicesCallback = (s, _) => callback(s);
@@ -91,7 +91,7 @@ public class GameStateManagerBuilder
 
     public GameStateManagerBuilder AddConfiguration(Action<IConfigurationBuilder> callback)
     {
-        if (ConfigurationCallback != null)
+        if (ConfigurationCallback is not null)
             throw new ArgumentException("AddConfiguration may only be called once!");
 
         ConfigurationCallback = callback;
@@ -140,7 +140,7 @@ public class GameStateManagerBuilder
 
                 var registration = builder.RegisterType(type);
 
-                if(autoRegisterInfo.InstanceOf != null)
+                if(autoRegisterInfo.InstanceOf is not null)
                     registration.As(autoRegisterInfo.InstanceOf);
                 else
                     registration.AsSelf();
@@ -180,7 +180,7 @@ public class GameStateManagerBuilder
 
         AddServicesCallback?.Invoke(builder, configuration);
 
-        if(InitialGameState == null)
+        if(InitialGameState is null)
             throw new ArgumentException("No initial game state set! You must call GameStateManagerBuilder's SetInitialGameState method before calling its Run method.");
 
         var gameStateManagerConfig = new GameStateManagerConfig(
