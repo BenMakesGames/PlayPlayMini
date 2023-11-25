@@ -16,7 +16,7 @@ public class Button : IUIElement
     public int Y { get; set; }
     public bool Visible { get; set; } = true;
     public bool Enabled { get; set; } = true;
-    public int Width => ForcedWidth ?? (Label.Length * UI.Font.CharacterWidth + 6);
+    public int Width => ForcedWidth ?? (6 + Label.Length * UI.Font.CharacterWidth + (Label.Length - 1) * UI.Font.HorizontalSpacing);
     public int Height => UI.Graphics.SpriteSheets[UI.GetTheme().ButtonSpriteSheetName].SpriteHeight;
 
     private int? ForcedWidth { get; }
@@ -71,6 +71,6 @@ public class Button : IUIElement
         // right edge
         UI.Graphics.DrawSprite(button, X + Width - button.SpriteWidth + xOffset, Y + yOffset, spiteIndexOffset + 2);
 
-        UI.Graphics.DrawText(UI.Font, X + (Width - Label.Length * UI.Font.CharacterWidth) / 2 + xOffset, Y + 4 + yOffset, Label, Enabled ? UI.GetTheme().ButtonLabelColor : UI.ThemeProvider.GetTheme().ButtonLabelDisabledColor);
+        UI.Graphics.DrawText(UI.Font, X + (Width - (Label.Length * UI.Font.CharacterWidth + (Label.Length - 1) * UI.Font.HorizontalSpacing)) / 2 + xOffset, Y + 4 + yOffset, Label, Enabled ? UI.GetTheme().ButtonLabelColor : UI.ThemeProvider.GetTheme().ButtonLabelDisabledColor);
     }
 }

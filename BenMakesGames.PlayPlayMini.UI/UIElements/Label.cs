@@ -15,7 +15,7 @@ public class Label : IUIElement
     public int X { get; set; }
     public int Y { get; set; }
     public bool Visible { get; set; } = true;
-    public virtual int Width => ForcedWidth ?? (Text.Length * UI.Font.CharacterWidth + 1);
+    public virtual int Width => ForcedWidth ?? (Text.Length * UI.Font.CharacterWidth + (Text.Length - 1) * UI.Font.HorizontalSpacing);
     public virtual int Height => UI.Font.CharacterHeight;
     public Color Color { get; set; }
 
@@ -51,6 +51,6 @@ public class Label : IUIElement
 
     public virtual void Draw(int xOffset, int yOffset, GameTime gameTime)
     {
-        UI.Graphics.DrawText(UI.Font, X + (Width - Text.Length * UI.Font.CharacterWidth) / 2 + xOffset, Y + yOffset, Text, Color);
+        UI.Graphics.DrawText(UI.Font, X + (Width - (Text.Length * UI.Font.CharacterWidth + (Text.Length - 1) * UI.Font.HorizontalSpacing)) / 2 + xOffset, Y + yOffset, Text, Color);
     }
 }

@@ -35,7 +35,7 @@ public sealed class SoundManager : IServiceLoadContent
         Logger = logger;
     }
 
-    public void SetGame(Game game)
+    internal void SetGame(Game game)
     {
         if (Game is not null)
             throw new ArgumentException("SetGame can only be called once!");
@@ -128,7 +128,7 @@ public sealed class SoundManager : IServiceLoadContent
         }
         catch (Exception e)
         {
-            Logger.LogWarning("Failed to load {Path}: {Message}", soundEffect.Path, e.Message);
+            Logger.LogError("Failed to load {Path}: {Message}", soundEffect.Path, e.Message);
         }
     }
 
@@ -140,7 +140,7 @@ public sealed class SoundManager : IServiceLoadContent
         }
         catch (Exception e)
         {
-            Logger.LogWarning("Failed to load {Path}: {Message}", song.Path, e.Message);
+            Logger.LogError("Failed to load {Path}: {Message}", song.Path, e.Message);
         }
     }
 }

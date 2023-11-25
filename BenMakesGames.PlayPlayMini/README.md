@@ -1,12 +1,23 @@
 # What Is It?
 
-**PlayPlayMini** is an opinionated framework for making smallish games with **MonoGame**.
+**PlayPlayMini** is an opinionated framework for making smallish 2D games with **MonoGame**.
 
 It provides a state engine with lifecycle events, a `GraphicsManager` that provides methods for easily drawing sprites & fonts with a variety of effects, and dependency injection using **Autofac**.
 
 If you don't know what all of those things are, don't worry: they're awesome, and this readme will show you how to use them (with code examples!), and explain their benefits.
 
 [![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+
+# Upgrading from 3.x to 4.0.0
+
+## Breaking Changes
+
+1. Upgraded to .NET 8.0.
+2. `FontMeta` has three new properties: `FirstCharacter`, `HorizontalSpacing`, and `VerticalSpacing`. These default to `' '`, `1`, and `1`, respectively. Previous behavior was equivalent to a horizontal and vertical spacing of `0`.
+   * **Quick fix:** update your fonts' `FontMeta` to set the `HorizontalSpacing` and `VerticalSpacing` properties to `0`; OR:
+   * **Better fix:** update your fonts' images to remove spacing between characters; update the `Width` and `Height` properties accordingly.
+3. The `[Obsolete]` `Generators` methods and class for drawing primitive shapes (lines, circles) have been removed.
+   * Use the `BenMakesGames.PlayPlayMini.GraphicsExtensions` package for drawing primitives. It's capable of drawing more shapes, and has _much_ better performance!
 
 # Upgrading from 2.x to 3.0.0
 

@@ -45,7 +45,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         Logger = logger;
     }
 
-    public void SetGame(Game game)
+    internal void SetGame(Game game)
     {
         if (Game is not null)
             throw new ArgumentException("SetGame can only be called once!");
@@ -121,7 +121,14 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            Fonts.Add(font.Key, new Font(Content.Load<Texture2D>(font.Path), font.Width, font.Height));
+            Fonts.Add(font.Key, new Font(
+                Content.Load<Texture2D>(font.Path),
+                font.Width,
+                font.Height,
+                font.HorizontalSpacing,
+                font.VerticalSpacing,
+                font.FirstCharacter
+            ));
         }
         catch (Exception e)
         {
@@ -163,8 +170,26 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         TransformMatrix = matrix;
     }
 
-    public void SetZoom(int zoom)
+    /// <summary>
+    /// "Zoom" controls how large each "pixel" is.
+    /// Zoom 1 => each pixel of your sprites, pictures, fonts, etc, takes up 1 pixel on the screen
+    /// Zoom 2 => each pixel of your sprites, pictures, fonts, etc, takes up a 2x2 pixel square on the screen
+    /// Zoom 3 => each pixel of your sprites, pictures, fonts, etc, takes up a 3x3 pixel square on the screen
+    /// etc
+    ///
+    /// If Zoom * Width and Zoom * Height precisely fit the physical screen, the game will automatically go into full screen.
+    ///
+    /// If a Zoom value less than 1 is given, then a Zoom value of 1 is used.
+    ///
+    /// If Zoom * Width or Zoom * Height is larger than the available screen space, Zoom is unchanged, and SetZoom returns false.
+    /// </summary>
+    /// <param name="zoom"></param>
+    /// <returns>True if zoom * Width and zoom * Height will fit within the available screen space; false, otherwise.</returns>
+    public bool SetZoom(int zoom)
     {
+        if (zoom > MaxZoom())
+            return false;
+
         Zoom = zoom < 1 ? 1 : zoom;
         FullScreen = Zoom * Width == Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width && Zoom * Height == Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height;
 
@@ -173,6 +198,8 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         Graphics.PreferredBackBufferHeight = Zoom * Height;
         Graphics.IsFullScreen = FullScreen;
         Graphics.ApplyChanges();
+
+        return true;
     }
 
     public void SetFullscreen(bool fullscreen)
@@ -421,16 +448,8 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         var position = (x, y);
 
-        foreach(char c in text)
-        {
-            if(c == 10 || c == 13)
-            {
-                position.x = x;
-                position.y += font.CharacterHeight + 1;
-            }
-            else
-                position = DrawText(font, position.x, position.y, c, color);
-        }
+        for(var i = 0; i < text.Length; i++)
+            position = DrawText(font, position.x, position.y, text[i], color);
 
         return position;
     }
@@ -441,57 +460,53 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public (int x, int y) DrawText(Font font, int x, int y, char character, Color color)
     {
-        (int x, int y) position = (x, y);
+        var position = (x, y);
 
-        if (character >= 32)
+        if (character >= font.FirstCharacter)
         {
-            DrawTexture(font.Texture, position.x, position.y, FontRectangle(font, character - 32), color);
+            DrawTexture(font.Texture, position.x, position.y, FontRectangle(font, character - font.FirstCharacter), color);
 
-            position.x += font.CharacterWidth;
+            position.x += font.CharacterWidth + font.HorizontalSpacing;
         }
         else if (character == 10 || character == 13)
         {
             position.x = x;
-            position.y += font.CharacterHeight + 1;
+            position.y += font.CharacterHeight + font.VerticalSpacing;
         }
 
         return position;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public (int, int) ComputeDimensionsWithWordWrap(string fontName, int maxWidth, string text)
+    public (int Width, int Height) ComputeDimensionsWithWordWrap(string fontName, int maxWidth, string text)
         => ComputeDimensionsWithWordWrap(Fonts[fontName], maxWidth, text);
 
-    public (int, int) ComputeDimensionsWithWordWrap(Font font, int maxWidth, string text)
+    public (int Width, int Height) ComputeDimensionsWithWordWrap(Font font, int maxWidth, string text)
     {
-        var lines = text.Split(new char[] { '\r', '\n' });
+        var lines = text.Split(new[] { '\r', '\n' });
 
-        int pixelX, pixelY = 0;
-        int maxPixelX = 0;
-        bool first = true;
+        var pixelY = 0;
+        var maxPixelX = 0;
 
-        foreach (string line in lines)
+        for(var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
-            pixelX = 0;
+            if (lineIndex > 0)
+                pixelY += font.CharacterHeight + font.VerticalSpacing;
 
-            if (first)
-                first = false;
-            else
-                pixelY += font.CharacterHeight + 1;
+            var words = lines[lineIndex].Split(' ');
+            var pixelX = 0;
 
-            var words = line.Split(' ');
-
-            for (int i = 0; i < words.Length; i++)
+            for (var i = 0; i < words.Length; i++)
             {
                 if (i > 0)
-                    pixelX += font.CharacterWidth;
+                    pixelX += font.CharacterWidth + font.HorizontalSpacing;
 
-                string word = words[i];
+                var word = words[i];
 
-                if (pixelX + word.Length * font.CharacterWidth > maxWidth)
+                if (pixelX + word.Length * font.CharacterWidth + (word.Length - 1) * font.HorizontalSpacing > maxWidth)
                 {
                     pixelX = 0;
-                    pixelY += font.CharacterHeight + 1;
+                    pixelY += font.CharacterHeight + font.VerticalSpacing;
                 }
 
                 if (pixelX > maxPixelX)
@@ -517,40 +532,41 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public (int, int) PretendDrawText(Font font, int x, int y, string text)
     {
-        int currentX = x;
-        int currentY = y;
+        var currentX = x;
+        var currentY = y;
 
-        foreach (char c in text)
+        foreach (var c in text)
         {
             if (c >= 32)
-                currentX += font.CharacterWidth;
+                currentX += font.CharacterWidth + font.HorizontalSpacing;
             else if (c == 10 || c == 13)
             {
                 currentX = x;
-                currentY += font.CharacterHeight + 1;
+                currentY += font.CharacterHeight + font.VerticalSpacing;
             }
         }
 
         return (currentX, currentY);
     }
 
+    [Obsolete("Use the PlayPlayMini.GraphicsExtensions version of this method, instead, and ditch your outline font. (If you're truly counting frames, call DrawText twice, passing the appropriate fonts and colors... or inspect this method, and copy-paste its source into your code!)")]
     public void DrawTextWithOutline(Font font, Font outlineFont, int x, int y, string text, Color fill, Color outline)
     {
-        int currentX = x;
-        int currentY = y;
+        var currentX = x;
+        var currentY = y;
 
         foreach (char c in text)
         {
-            if (c >= 32)
+            if (c >= font.FirstCharacter)
             {
-                DrawTexture(outlineFont.Texture, currentX - 1, currentY - 1, FontRectangle(outlineFont, c - 32), outline);
+                DrawTexture(outlineFont.Texture, currentX - 1, currentY - 1, FontRectangle(outlineFont, c - font.FirstCharacter), outline);
 
-                currentX += font.CharacterWidth;
+                currentX += font.CharacterWidth + font.HorizontalSpacing;
             }
             else if (c == 10 || c == 13)
             {
                 currentX = x;
-                currentY += font.CharacterHeight + 1;
+                currentY += font.CharacterHeight + font.VerticalSpacing;
             }
         }
 
@@ -589,15 +605,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         => DrawSprite(spriteSheet, position.x, position.y, spriteIndex, tint);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSprite(SpriteSheet spriteSheet, int x, int y, int spriteIndex, Color tint)
-    {
+    public void DrawSprite(SpriteSheet spriteSheet, int x, int y, int spriteIndex, Color tint) =>
         DrawTexture(
             spriteSheet.Texture,
             x, y,
             SpriteRectangle(spriteSheet, spriteIndex),
             tint
         );
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawPicture(string pictureName, int x, int y)

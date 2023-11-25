@@ -15,7 +15,7 @@ public class LabelWithIcon: IUIElement
     public int X { get; set; }
     public int Y { get; set; }
     public bool Visible { get; set; } = true;
-    public int Width => Text.Length * UI.Font.CharacterWidth + 1 + 2 + SpriteRectangle.Width;
+    public int Width => Text.Length * UI.Font.CharacterWidth + (Text.Length - 1) * UI.Font.HorizontalSpacing + 1 + 2 + SpriteRectangle.Width;
     public int Height => Math.Max(SpriteRectangle.Height, UI.Font.CharacterHeight);
     public IReadOnlyList<IUIElement> Children => new List<IUIElement>();
 
