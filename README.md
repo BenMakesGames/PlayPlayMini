@@ -10,8 +10,7 @@ This repository contains the following libraries:
 
 | Name | Description | Links |
 | --- | --- | --- |
-| `PlayPlayMini`                    | The PlayPlayMini library itself.                             | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini)<br />[Documentation](BenMakesGames.PlayPlayMini/README.md) |
-| `PlayPlayMini.UI`                 | Skinnable, object-oriented UI Framework for PlayPlayMini.    | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.UI)<br />[Documentation](BenMakesGames.PlayPlayMini.UI/README.md) |
-| `PlayPlayMini.GraphicsExtensions` | Graphics extensions for PlayPlayMini. Preview release; very few features. | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.GraphicsExtensions)<br />[Documentation](BenMakesGames.PlayPlayMini.GraphicsExtensions/README.md) |
-| `PlayPlayMini.BeepBoop`           | Methods for generating wave forms on the fly. Preview release; very few features. | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.BeepBoop) |
-
+| `PlayPlayMini`                    | The PlayPlayMini library itself.                                                      | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini)<br />[Documentation](BenMakesGames.PlayPlayMini/README.md) |
+| `PlayPlayMini.GraphicsExtensions` | Graphics extensions for PlayPlayMini, including shape primitives and font extensions. | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.GraphicsExtensions)<br />[Documentation](BenMakesGames.PlayPlayMini.GraphicsExtensions/README.md) |
+| `PlayPlayMini.UI`                 | Skinnable, object-oriented UI Framework for PlayPlayMini.                             | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.UI)<br />[Documentation](BenMakesGames.PlayPlayMini.UI/README.md) |
+| `PlayPlayMini.BeepBoop`           | Methods for generating wave forms on the fly. Preview release; very few features.     | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.BeepBoop) |
