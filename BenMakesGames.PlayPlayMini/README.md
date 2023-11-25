@@ -6,6 +6,8 @@ It provides a state engine with lifecycle events, a `GraphicsManager` that provi
 
 If you don't know what all of those things are, don't worry: they're awesome, and this readme will show you how to use them (with code examples!), and explain their benefits.
 
+If you prefer learning purely by example, check out [Block-break](https://github.com/BenMakesGames/BlockBreak), a demo game made with PlayPlayMini, EntityFramework, and Serliog that uses fonts, sprite sheets, pictures, and sounds.
+
 [![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
 
 # Upgrading from 3.x to 4.0.0
