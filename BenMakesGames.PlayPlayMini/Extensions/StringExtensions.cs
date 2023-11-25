@@ -15,8 +15,6 @@ public static class StringExtensions
     /// <returns></returns>
     public static string WrapText(this string text, Font font, int maxWidth)
     {
-        var characterWidth = font.CharacterWidth;
-        
         if (string.IsNullOrEmpty(text))
         {
             return string.Empty;
@@ -24,30 +22,37 @@ public static class StringExtensions
 
         var result = new StringBuilder();
 
-        var lines = text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+        var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-        foreach (var line in lines)
+        for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
-            var words = line.Split(' ');
+            var words = lines[lineIndex].Split(' ');
 
             var lineLength = 0;
 
-            foreach (string word in words)
+            if(lineIndex > 0)
+                result.Append('\n');
+
+            for (int wordIndex = 0; wordIndex < words.Length; wordIndex++)
             {
-                var wordWidth = (word.Length + 1) * characterWidth;
-                if (lineLength + wordWidth > maxWidth)
+                var wordWidth = words[wordIndex].Length * font.CharacterWidth + (words[wordIndex].Length - 1) * font.HorizontalSpacing;
+
+                if (lineLength + wordWidth >= maxWidth)
                 {
                     result.Append('\n');
                     lineLength = 0;
                 }
+                else if (wordIndex > 0)
+                {
+                    result.Append(' ');
+                    lineLength += font.CharacterWidth + font.HorizontalSpacing;
+                }
 
-                result.Append(word + " ");
+                result.Append(words[wordIndex]);
                 lineLength += wordWidth;
             }
-
-            result.Append('\n');
         }
 
-        return result.ToString().TrimEnd();
+        return result.ToString();
     }
 }

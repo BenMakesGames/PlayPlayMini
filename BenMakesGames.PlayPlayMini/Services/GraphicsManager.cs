@@ -448,8 +448,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         var position = (x, y);
 
-        for(var i = 0; i < text.Length; i++)
-            position = DrawText(font, position.x, position.y, text[i], color);
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (text[i] is '\r' or '\n')
+                position = (x, position.y + font.CharacterHeight + font.VerticalSpacing);
+            else
+                position = DrawText(font, position.x, position.y, text[i], color);
+        }
 
         return position;
     }
@@ -462,16 +467,16 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         var position = (x, y);
 
-        if (character >= font.FirstCharacter)
+        if (character is '\r' or '\n')
+        {
+            position.x = x;
+            position.y += font.CharacterHeight + font.VerticalSpacing;
+        }
+        else if (character >= font.FirstCharacter)
         {
             DrawTexture(font.Texture, position.x, position.y, FontRectangle(font, character - font.FirstCharacter), color);
 
             position.x += font.CharacterWidth + font.HorizontalSpacing;
-        }
-        else if (character == 10 || character == 13)
-        {
-            position.x = x;
-            position.y += font.CharacterHeight + font.VerticalSpacing;
         }
 
         return position;
