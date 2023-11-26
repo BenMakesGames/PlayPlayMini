@@ -228,6 +228,10 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         Graphics.ApplyChanges();
     }
 
+    /// <summary>
+    /// Returns the maximum Zoom value that will fit within the available screen space.
+    /// </summary>
+    /// <returns></returns>
     public int MaxZoom()
     {
         return Math.Min(
@@ -236,6 +240,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         );
     }
 
+    /// <summary>
+    /// For internal use.
+    /// </summary>
     public void BeginDraw()
     {
         DrawCalls = 0;
@@ -285,6 +292,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         DrawRectangle(x, y, w, h, outline);
     }
 
+    /// <summary>
+    /// Draw a series of points in the given color.
+    /// </summary>
+    /// <param name="points"></param>
+    /// <param name="c"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawPoints(IEnumerable<(int x, int y)> points, Color c)
     {
@@ -292,6 +304,14 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             DrawPoint(p.x, p.y, c);
     }
 
+    /// <summary>
+    /// Draws the outline of a rectangle.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="w"></param>
+    /// <param name="h"></param>
+    /// <param name="c"></param>
     public void DrawRectangle(int x, int y, int w, int h, Color c)
     {
         // top & bottom line
@@ -312,18 +332,38 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         DrawCalls++;
     }
 
+    /// <summary>
+    /// Draws a picture rotated and scaled. The picture will be centered on the given (x, y) coordinates, and rotated
+    /// around that point.
+    /// </summary>
+    /// <param name="pictureName"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="angle"></param>
+    /// <param name="scale"></param>
+    /// <param name="color"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawPictureRotatedAndScaled(string pictureName, int x, int y, float angle, float scale, Color c)
-        => DrawTextureRotatedAndScaled(Pictures[pictureName], x, y, angle, scale, c);
+    public void DrawPictureRotatedAndScaled(string pictureName, int x, int y, float angle, float scale, Color color)
+        => DrawTextureRotatedAndScaled(Pictures[pictureName], x, y, angle, scale, color);
 
+    /// <summary>
+    /// Draws a texture rotated and scaled. The full texture will be centered on the given (x, y) coordinates, and
+    /// rotated around that point.
+    /// </summary>
+    /// <param name="texture"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="angle"></param>
+    /// <param name="scale"></param>
+    /// <param name="color"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureRotatedAndScaled(Texture2D texture, int x, int y, float angle, float scale, Color c)
+    public void DrawTextureRotatedAndScaled(Texture2D texture, int x, int y, float angle, float scale, Color color)
     {
         SpriteBatch.Draw(
             texture,
             new Rectangle(x, y, (int)(texture.Width * scale), (int)(texture.Height * scale)),
             null,
-            c,
+            color,
             angle,
             // ReSharper disable PossibleLossOfFraction
             new Vector2(texture.Width / 2, texture.Height / 2),
@@ -440,10 +480,28 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         )
     ;
 
+    /// <summary>
+    /// Use a font to draw text. Newline characters are respected. For automatic wrapping, use DrawTextWithWordWrap.
+    /// </summary>
+    /// <param name="fontName"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="text"></param>
+    /// <param name="color"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (int x, int y) DrawText(string fontName, int x, int y, string text, Color color)
         => DrawText(Fonts[fontName], x, y, text, color);
 
+    /// <summary>
+    /// Use a font to draw text. Newline characters are respected. For automatic wrapping, use DrawTextWithWordWrap.
+    /// </summary>
+    /// <param name="font"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="text"></param>
+    /// <param name="color"></param>
+    /// <returns></returns>
     public (int x, int y) DrawText(Font font, int x, int y, string text, Color color)
     {
         var position = (x, y);
@@ -459,10 +517,28 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return position;
     }
 
+    /// <summary>
+    /// Use a font to draw a single character.
+    /// </summary>
+    /// <param name="fontName"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="character"></param>
+    /// <param name="color"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (int x, int y) DrawText(string fontName, int x, int y, char character, Color color)
         => DrawText(Fonts[fontName], x, y, character, color);
 
+    /// <summary>
+    /// Use a font to draw a single character.
+    /// </summary>
+    /// <param name="font"></param>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="character"></param>
+    /// <param name="color"></param>
+    /// <returns></returns>
     public (int x, int y) DrawText(Font font, int x, int y, char character, Color color)
     {
         var position = (x, y);
@@ -482,10 +558,24 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return position;
     }
 
+    /// <summary>
+    /// Compute the total width and height needed to draw text within a given width, using a given font.
+    /// </summary>
+    /// <param name="fontName"></param>
+    /// <param name="maxWidth"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public (int Width, int Height) ComputeDimensionsWithWordWrap(string fontName, int maxWidth, string text)
         => ComputeDimensionsWithWordWrap(Fonts[fontName], maxWidth, text);
 
+    /// <summary>
+    /// Compute the total width and height needed to draw text within a given width, using a given font.
+    /// </summary>
+    /// <param name="font"></param>
+    /// <param name="maxWidth"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
     public (int Width, int Height) ComputeDimensionsWithWordWrap(Font font, int maxWidth, string text)
     {
         var lines = text.Split(new[] { '\r', '\n' });
@@ -752,6 +842,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             tint
         );
 
+    /// <summary>
+    /// For internal use.
+    /// </summary>
     public void EndDraw()
     {
         SpriteBatch.End();

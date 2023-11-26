@@ -126,6 +126,11 @@ public sealed class MouseManager : IServiceInput
         }
     }
 
+    /// <summary>
+    /// Call in your GameState's Draw method to draw a custom mouse cursor.
+    /// </summary>
+    /// <remarks>If you will NEVER use a custom mouse cursor, you never need to call this method.</remarks>
+    /// <param name="gameTime"></param>
     public void Draw(GameTime gameTime)
     {
         if(DrawingMode != MouseDrawingMode.Custom)
@@ -135,6 +140,12 @@ public sealed class MouseManager : IServiceInput
             GraphicsManager.DrawPicture(pictureName, X - Hotspot.X, Y - Hotspot.Y);
     }
 
+    /// <summary>
+    /// The operating system's mouse cursor will be drawn as normal. Calling MouseManager.Draw will draw the picture
+    /// specified here at the current mouse position.
+    /// </summary>
+    /// <param name="pictureName"></param>
+    /// <param name="hotspot">The point in the picture that is visually where clicks take place - the end of an arrow,or center of a cross-hair, for example.</param>
     public void UseCustomCursor(string pictureName, (int x, int y) hotspot)
     {
         DrawingMode = MouseDrawingMode.Custom;
@@ -143,12 +154,19 @@ public sealed class MouseManager : IServiceInput
         GSM.IsMouseVisible = false;
     }
 
+    /// <summary>
+    /// The operating system's mouse cursor will be drawn as normal. Calling MouseManager.Draw will have no effect.
+    /// </summary>
     public void UseSystemCursor()
     {
         DrawingMode = MouseDrawingMode.System;
         GSM.IsMouseVisible = true;
     }
 
+    /// <summary>
+    /// The operating system's mouse cursor will be hidden while it is over the game window, and Calling
+    /// MouseManager.Draw will have no effect.
+    /// </summary>
     public void UseNoCursor()
     {
         DrawingMode = MouseDrawingMode.None;

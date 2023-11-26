@@ -57,6 +57,14 @@ public sealed class GameStateManager: Game
             s.LoadContent(this);
     }
 
+    protected override void UnloadContent()
+    {
+        base.UnloadContent();
+
+        foreach (var s in ServiceWatcher.ContentLoadingServices)
+            s.UnloadContent();
+    }
+
     protected override void Initialize()
     {
         foreach (var s in ServiceWatcher.InitializedServices)
@@ -158,7 +166,7 @@ public sealed class GameStateManager: Game
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
-
+        
         NextState = CreateState(nextStateType);
 
         return NextState;
@@ -174,16 +182,46 @@ public sealed class GameStateManager: Game
         return NextState;
     }
 
+    /// <summary>
+    /// Queue up a state change.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
     public T ChangeState<T>() where T : GameState
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
-
+        
         NextState = CreateState<T>();
 
         return (T)NextState;
     }
 
+    /// <summary>
+    /// Queue up a state change. The given config object will be passed to the constructor of the new state.
+    ///
+    /// <example><code>
+    /// ChangeState&lt;Playing, PlayingConfig&gt;(new PlayingConfig(123, "abc"));
+    /// 
+    /// ...
+    /// 
+    /// public sealed class Playing: GameState
+    /// {
+    ///     public Playing(PlayingConfig config, GameStateManager gsm, GraphicsManager graphics, ...)
+    ///     {
+    ///         ...
+    ///     }
+    /// }
+    /// 
+    /// public sealed record PlayingConfig(int Foo, string Bar);
+    /// </code></example>
+    /// </summary>
+    /// <param name="config"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TConfig"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
     public T ChangeState<T, TConfig>(TConfig config) where T: GameState
     {
         if (NextState is not null)
@@ -219,7 +257,7 @@ public sealed class GameStateManager: Game
         return (GameState)IoCContainer.Resolve(nextStateType, new TypedParameter(typeof(TConfig), config));
     }
 
-    private sealed class NoState: GameState { }
+    private sealed class NoState: GameState;
 }
 
 public sealed record GameStateManagerConfig(

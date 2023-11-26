@@ -114,7 +114,7 @@ public class GameStateManagerBuilder
     {
         var configBuilder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"Content{Path.DirectorySeparatorChar}appsettings.json", optional: true, reloadOnChange: false) // TODO: does this work on Android?
+            .AddJsonFile(Path.Combine("Content", "appsettings.json"), optional: true, reloadOnChange: false) // TODO: does this work on Android?
         ;
 
         ConfigurationCallback?.Invoke(configBuilder);

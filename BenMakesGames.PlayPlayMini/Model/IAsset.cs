@@ -1,5 +1,3 @@
 ﻿namespace BenMakesGames.PlayPlayMini.Model;
 
-public interface IAsset
-{
-}
+public interface IAsset;

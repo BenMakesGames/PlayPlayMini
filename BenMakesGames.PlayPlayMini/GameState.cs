@@ -21,10 +21,11 @@ public abstract class GameState
     /// <summary>
     /// This method is called an average of 60 times per second, regardless of the current frame rate. This can be
     /// useful for certain physics-based updates.
-    ///
+    /// </summary>
+    /// <remarks>
     /// If you configured your application to use a fixed time step, then Update will ALSO be called about 60 times
     /// per second. In that case, there's no reason to use both Update and FixedUpdate.
-    /// </summary>
+    /// </remarks>
     /// <param name="gameTime"></param>
     public virtual void FixedUpdate(GameTime gameTime) { }
 

@@ -28,9 +28,9 @@ public sealed class KeyboardManager : IServiceInput
     public bool PressedAnyKey() => AnyKeyDown() && PreviousKeyboardState.GetPressedKeyCount() == 0;
 
     public bool PressedKey(Keys key) => KeyboardState.IsKeyDown(key) && PreviousKeyboardState.IsKeyUp(key);
-    public bool PressedAnyKey(IList<Keys> keys) => keys.Any(k => PressedKey(k));
+    public bool PressedAnyKey(IList<Keys> keys) => keys.Any(PressedKey);
     public bool KeyDown(Keys key) => KeyboardState.IsKeyDown(key);
-    public bool AnyKeyDown(IList<Keys> keys) => keys.Any(k => KeyDown(k));
+    public bool AnyKeyDown(IList<Keys> keys) => keys.Any(KeyDown);
     public bool KeyUp(Keys key) => KeyboardState.IsKeyUp(key);
-    public bool AnyKeyUp(IList<Keys> keys) => keys.Any(k => KeyUp(k));
+    public bool AnyKeyUp(IList<Keys> keys) => keys.Any(KeyUp);
 }

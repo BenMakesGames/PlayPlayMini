@@ -43,11 +43,21 @@ public sealed class SoundManager : IServiceLoadContent
         Game = game;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>The volume level of sounds that are currently playing WILL NOT be adjusted.</remarks>
+    /// <param name="volume"></param>
     public void SetSoundVolume(float volume)
     {
         SoundVolume = volume <= 0 ? 0 : volume;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>The volume level of songs that are currently playing will be adjusted.</remarks>
+    /// <param name="volume"></param>
     public void SetMusicVolume(float volume)
     {
         MusicVolume = volume <= 0 ? 0 : volume;
@@ -56,7 +66,7 @@ public sealed class SoundManager : IServiceLoadContent
 
     public void PlaySound(string name, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
     {
-        if (!SoundEffects.ContainsKey(name))
+        if (!SoundEffects.TryGetValue(name, out var soundEffect))
         {
             Logger.LogWarning("Sound {Name} has not been loaded", name);
             return;
@@ -65,18 +75,18 @@ public sealed class SoundManager : IServiceLoadContent
         var v = volume * SoundVolume;
 
         if(v > 0)
-            SoundEffects[name].Play(v, pitch, pan);
+            soundEffect.Play(v, pitch, pan);
     }
 
     public void PlayMusic(string name, bool repeat = false)
     {
-        if (!Songs.ContainsKey(name))
+        if (!Songs.TryGetValue(name, out var song))
         {
             Logger.LogWarning("Song {Name} has not been loaded", name);
             return;
         }
 
-        if (MediaPlayer.Queue.ActiveSong == Songs[name] && MediaPlayer.State == MediaState.Playing)
+        if (MediaPlayer.Queue.ActiveSong == song && MediaPlayer.State == MediaState.Playing)
             return;
 
         MediaPlayer.Stop();
@@ -85,7 +95,7 @@ public sealed class SoundManager : IServiceLoadContent
             Thread.Yield();
 
         MediaPlayer.IsRepeating = repeat;
-        MediaPlayer.Play(Songs[name]);
+        MediaPlayer.Play(song);
     }
 
     public void StopMusic()
@@ -107,6 +117,10 @@ public sealed class SoundManager : IServiceLoadContent
 
         // deferred
         Task.Run(() => LoadDeferredContent(gsm.Assets));
+    }
+
+    public void UnloadContent()
+    {
     }
 
     private void LoadDeferredContent(AssetCollection assets)
