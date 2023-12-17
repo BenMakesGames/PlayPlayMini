@@ -32,6 +32,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     public int DrawCalls { get; private set; }
 
     private GL GL { get; set; } = null!;
+    private SpriteBatch SpriteBatch { get; set; } = null!;
     
     // TODO: restore this
     //private RenderTarget2D RenderTarget { get; set; } = null!;
@@ -41,8 +42,6 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     public Dictionary<string, Font> Fonts { get; } = new();
 
     private Texture2D WhitePixel { get; set; }
-
-    private SpriteBatch SpriteBatch { get; } = new();
 
     public GraphicsManager(ILogger<GraphicsManager> logger)
     {
@@ -57,6 +56,8 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         
         GL = GL.GetApi(playplayMini.SilkWindow);
         GL.Viewport(0, 0, (uint)Width, (uint)Height);
+
+        SpriteBatch = new SpriteBatch(GL);
     }
 
     public void LoadContent(AssetCollection assetCollection)
@@ -65,7 +66,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         SpriteSheets.Clear();
         Fonts.Clear();
 
-        WhitePixel = new Texture2D(1, 1, new[] { Color.White });
+        WhitePixel = Texture2D.FromColorArray(GL, 1, 1, new[] { Color.White });
 
         // load immediately
         foreach(var meta in assetCollection.GetAll<PictureMeta>().Where(m => m.PreLoaded))
@@ -78,6 +79,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             LoadFont(meta);
 
         // deferred
+        // TODO: GL hates being used in a thread other than the main thread, and crashes; address this
         Task.Run(() => LoadDeferredContent(assetCollection));
     }
 
@@ -101,7 +103,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         {
             Fonts.Add(font.Key, new Font()
             {
-                Texture = Texture2D.FromFile($"Content/{font.Path}"),
+                Texture = Texture2D.FromFile(GL, $"Content/{font.Path}"),
                 CharacterWidth = font.Width,
                 CharacterHeight = font.Height,
                 HorizontalSpacing = font.HorizontalSpacing,
@@ -119,7 +121,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            Pictures.Add(picture.Key, Texture2D.FromFile($"Content/{picture.Path}"));
+            Pictures.Add(picture.Key, Texture2D.FromFile(GL, $"Content/{picture.Path}"));
         }
         catch (Exception e)
         {
@@ -133,7 +135,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         {
             SpriteSheets.Add(spriteSheet.Key, new SpriteSheet()
             {
-                Texture = Texture2D.FromFile($"Content/{spriteSheet.Path}"),
+                Texture = Texture2D.FromFile(GL, $"Content/{spriteSheet.Path}"),
                 SpriteWidth = spriteSheet.Width,
                 SpriteHeight = spriteSheet.Height
             });
@@ -234,6 +236,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     internal void BeginDraw()
     {
         DrawCalls = 0;
+        SpriteBatch.Begin();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -834,8 +837,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     internal void EndDraw()
     {
-        // TODO: draw sprites to screen
-        
+        SpriteBatch.End();
 
         // TODO: apply zoom
         /*

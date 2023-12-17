@@ -19,9 +19,8 @@ If you prefer learning purely by example, check out [Block-break](https://github
 PlayPlayMini now uses Silk.NET and NAudio under the hood, instead of MonoGame!
 
 Why such a dramatic change?
-* MonoGame has always had dodgy audio support, for example music tracks never looped seemlessly. This is a long-standing issue with MonoGame which the MonoGame development team has stated they do not feel is a priority. NAudio, at least, loops music seamlessly. Whether it has different issues, I don't know, but it will at least be easier to swap out in the future.
-* The MonoGame pipeline is cumbersome to work with. I'm sure it made sense for the XBox 360, which XNA was made for. That was, like, 20 years ago.
-* Silk.NET is faster, and better-architected than MonoGame.
+* MonoGame has always had dodgy audio support, for example music tracks never looped seemlessly. This is a long-standing issue with MonoGame which the MonoGame development team has stated they do not feel is a priority. I've thought about switching to FMod for PlayPlayMini in the past. FMod's licensing is tricky, however, so I've gone with NAudio, at least for now.
+* The MonoGame pipeline is cumbersome to work with, and adds unnecessary complexity and overhead for smaller projects. (If you're aiming to make a big 3D game, use Unity or Unreal; not PlayPlayMini!)
 
 Here's what to do:
 
