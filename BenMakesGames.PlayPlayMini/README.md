@@ -14,21 +14,44 @@ If you prefer learning purely by example, check out [Block-break](https://github
 
 ## Breaking Changes
 
+### PlayPlayMini No Longer Uses MonoGame!
+
 PlayPlayMini now uses Silk.NET and NAudio under the hood, instead of MonoGame!
 
 Why such a dramatic change?
-* MonoGame has always had bad audio support, for example music tracks never looped seemlessly. NAudio does not have these issues.
-* The MonoGame pipeline is annoying to work with. It made sense when XNA was first released, but is no longer needed today. (MonoGame should have never reimplemented it.)
+* MonoGame has always had dodgy audio support, for example music tracks never looped seemlessly. This is a long-standing issue with MonoGame which the MonoGame development team has stated they do not feel is a priority. NAudio, at least, loops music seamlessly. Whether it has different issues, I don't know, but it will at least be easier to swap out in the future.
+* The MonoGame pipeline is cumbersome to work with. I'm sure it made sense for the XBox 360, which XNA was made for. That was, like, 20 years ago.
 * Silk.NET is faster, and better-architected than MonoGame.
 
-1. Remove all `using Microsoft.Xna.Framework;` statements.
-2. Where you're using `Color`, add `using System.Drawing;`
-   * Don't worry: `System.Drawing` _is_ cross-platform! (It's `System.Drawing.Common` that's not!)
+Here's what to do:
+
+1. Delete the `Content/Content.mcgb` file, and `Content/bin/` and `Content/obj/` directories from your project.
+2. Remove the entire `<Target Name="RestoreDotnetTools" BeforeTargets="Restore">` block from your `.csproj`.
+3. Add the following to your `.csproj`:
+   * ```xml
+     <ItemGroup>
+       <None Update="Content\**">
+         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+       </None>
+     </ItemGroup>
+     ```
+   * If you've been putting other stuff in your `Content/` directory, you may need to make some other changes.
+4. In your `AddAssets(...)` calls, add file extensions to all your file names.
+   * For example, `new PictureMeta("Cursor", "Graphics/Cursor", true),` becomes `new PictureMeta("Cursor", "Graphics/Cursor.png", true),`.
+5. Remove any and all MonoGame NuGet packages.
+6. Remove all `using Microsoft.Xna.Framework;` statements.
+7. Where you're using `Color`, add `using System.Drawing;`
    * You may need to make other minor changes, such as replacing uses of `new Color(float r, float g, float b, float alpha)` with `Color.FromArgb(int alpha, int r, int g, int b)`.
-   * If you were using `MonoGame`'s color names, like `Color.SeaGreen`, etc, don't worry: MonoGame's colors are the exact same, owing to MonoGame being based on XNA, which was made by Microsoft in the first place!
-3. Where you're using `GameTime`, add `using BenMakesGames.PlayPlayMini.Model;`
+   * You may have heard that `System.Drawing` is not cross-platform. `System.Drawing.Common`, `System.Drawing.Font` and others aren't, but `System.Drawing` itself is!
+   * If you're using `MonoGame`'s color constants, like `Color.SeaGreen`, etc, don't worry: `System.Drawing.Color` has these _exact same_ constants. This color set was created by Microsoft back in early 2000s, and hasn't changed since.
+8. Where you're using `GameTime`, AND getting errors about the type being missing, add `using BenMakesGames.PlayPlayMini;`
+   * Most uses of `GameTime` (game states) will already have this `using` statement, so no changes will be needed.
    * `GameTime` is pretty handy, so PlayPlayMini offers this drop-in replacement.
-4.
+
+## Other Fixes & Changes
+
+1. Creating a picture with the name `"Pixel"` no longer changes the behavior of the `DrawRectangle` methods.
+   * I'd call this a bugfix, but maybe someone was relying on this behavior?? I'd love to hear from you, if you were.
 
 # Upgrading from 3.x to 4.0.0
 

@@ -61,7 +61,7 @@ public sealed class SoundManager : IServiceLoadContent, IDisposable, IServiceUpd
 
         try
         {
-            var stream = CreateWaveStream(filePath);
+            var stream = CreateWaveStream($"Content/{filePath}");
 
             Songs.Add(name, stream);
         }
@@ -81,7 +81,7 @@ public sealed class SoundManager : IServiceLoadContent, IDisposable, IServiceUpd
 
         try
         {
-            var stream = CreateWaveStream(filePath);
+            var stream = CreateWaveStream($"Content/{filePath}");
 
             SoundEffects.Add(name, stream);
         }

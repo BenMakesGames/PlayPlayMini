@@ -1,30 +1,27 @@
-﻿using System.Drawing;
-using Silk.NET.OpenGL;
+﻿using System;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.PixelFormats;
+using Color = System.Drawing.Color;
 
 namespace BenMakesGames.PlayPlayMini.Model;
 
 public struct Texture2D
 {
-    public readonly uint BufferId;
-    public readonly uint TextureId;
     public readonly int Width;
     public readonly int Height;
 
     public readonly byte[] Data;
 
-    public Texture2D(GL gl, int width, int height, byte[] data)
+    public Texture2D(int width, int height, byte[] data)
     {
-        BufferId = gl.GenBuffer();
-        TextureId = gl.GenTexture();
         Width = width;
         Height = height;
         Data = data;
     }
 
-    public Texture2D(GL gl, int width, int height, Color[] data)
+    public Texture2D(int width, int height, Span<Color> data)
     {
-        BufferId = gl.GenBuffer();
-        TextureId = gl.GenTexture();
         Width = width;
         Height = height;
         Data = new byte[width * height * 4];
@@ -40,9 +37,13 @@ public struct Texture2D
         }
     }
     
-    public static Texture2D FromFile(GL gl, string path)
+    public static Texture2D FromFile(string path)
     {
-        // TODO
-        return new Texture2D(gl, 0, 0, new byte[] { });
+        using var image = Image.Load<Rgba32>(path);
+
+        var pixels = new byte[image.Width * image.Height * 4];
+        image.CopyPixelDataTo(pixels);
+        
+        return new Texture2D(image.Width, image.Height, pixels);
     }
 }

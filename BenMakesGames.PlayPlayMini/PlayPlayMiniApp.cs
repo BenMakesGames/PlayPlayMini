@@ -1,5 +1,4 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
-using BenMakesGames.PlayPlayMini.Model;
 using Silk.NET.Windowing;
 
 namespace BenMakesGames.PlayPlayMini;
@@ -14,18 +13,20 @@ public sealed class PlayPlayMiniApp
     
     public PlayPlayMiniApp(GameStateManager gsm)
     {
-        SilkWindow = Window.Create(WindowOptions.Default);
         GSM = gsm;
-    }
 
-    public void Run()
-    {
+        SilkWindow = Window.Create(WindowOptions.Default);
+
         SilkWindow.Load += DoLoad;
         SilkWindow.Update += DoUpdate;
         SilkWindow.Render += DoRender;
         SilkWindow.Closing += DoStop;
+    }
 
+    public void Run()
+    {
         SilkWindow.Initialize();
+        SilkWindow.Run();
     }
 
     private void DoLoad()

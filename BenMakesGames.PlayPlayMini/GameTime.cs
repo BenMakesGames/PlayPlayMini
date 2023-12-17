@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BenMakesGames.PlayPlayMini.Model;
+namespace BenMakesGames.PlayPlayMini;
 
 public class GameTime
 {
