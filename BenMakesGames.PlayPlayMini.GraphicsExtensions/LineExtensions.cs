@@ -1,7 +1,8 @@
 using System;
+using System.Drawing;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using BenMakesGames.PlayPlayMini.Services;
-using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions;
 
@@ -20,7 +21,7 @@ public static class LineExtensions
         => graphics.DrawLine((int)start.X, (int)start.Y, (int)end.X, (int)end.Y, color);
 
     // a modification of Bresenham's line algorithm that draws a sequence of line segments, to minimize
-    // MonoGame Draw calls:
+    // draw calls:
     public static void DrawLine(this GraphicsManager graphics, int x1, int y1, int x2, int y2, Color color)
     {
         var w = x2 - x1;

@@ -1,6 +1,6 @@
 # What Is It?
 
-`PlayPlayMini` is an opinionated framework for making smallish 2D games with `MonoGame` in .NET Core.
+`PlayPlayMini` is an opinionated framework for making smallish 2D games in .NET. It uses **Silk.NET** and **NAudio** under the hood. 
 
 It provides a state engine with lifecycle events, dependency injection using `Autofac`, and several built-in services to help with common tasks such as drawing sprites & fonts, and getting user input.
 

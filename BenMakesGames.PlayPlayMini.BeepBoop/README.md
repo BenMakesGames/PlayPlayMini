@@ -15,8 +15,6 @@ using System.Diagnostics;
 using BenMakesGames.PlayPlayMini;
 using BenMakesGames.PlayPlayMini.BeepBoop;
 using BenMakesGames.PlayPlayMini.Services;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace BeepBoopTest.GameStates;
 

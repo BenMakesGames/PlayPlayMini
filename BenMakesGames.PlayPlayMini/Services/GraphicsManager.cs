@@ -1,15 +1,17 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BenMakesGames.PlayPlayMini.Extensions;
+using Silk.NET.OpenGL;
+using Silk.NET.SDL;
+using Color = System.Drawing.Color;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
@@ -20,7 +22,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public bool FullyLoaded { get; private set; }
 
-    public Matrix? TransformMatrix { get; private set; }
+    // TODO: restore this:
+    //public Matrix? TransformMatrix { get; private set; }
+    
     public int Zoom { get; private set; } = 2;
     public bool FullScreen { get; private set; }
     public int Width { get; private set; } = 1920 / 3;
@@ -28,79 +32,57 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public int DrawCalls { get; private set; }
 
-    public GraphicsDevice GraphicsDevice => Game.GraphicsDevice;
-    private ContentManager Content => Game.Content;
-    private RenderTarget2D RenderTarget { get; set; } = null!;
-
-    private Game Game { get; set; } = null!;
-    private GraphicsDeviceManager Graphics { get; set; } = null!;
-    public SpriteBatch SpriteBatch { get; set; } = null!;
+    private GL? GL { get; set; }
+    
+    // TODO: restore this
+    //private RenderTarget2D RenderTarget { get; set; } = null!;
 
     public Dictionary<string, Texture2D> Pictures { get; } = new();
     public Dictionary<string, SpriteSheet> SpriteSheets { get; } = new();
     public Dictionary<string, Font> Fonts { get; } = new();
+
+    private SpriteBatch SpriteBatch { get; } = new();
 
     public GraphicsManager(ILogger<GraphicsManager> logger)
     {
         Logger = logger;
     }
 
-    internal void SetGame(Game game)
+    public void Initialize(PlayPlayMiniApp playplayMini)
     {
-        if (Game is not null)
-            throw new ArgumentException("SetGame can only be called once!");
-
-        Game = game;
-        Graphics = new GraphicsDeviceManager(Game);
+        Width = 640;
+        Height = 360;
+        Zoom = 2;
+        
+        GL = GL.GetApi(playplayMini.SilkWindow);
+        GL.Viewport(0, 0, (uint)Width, (uint)Height);
     }
 
-    public void Initialize(GameStateManager gsm)
-    {
-        var windowSize = gsm.InitialWindowSize;
-
-        Width = windowSize.Width;
-        Height = windowSize.Height;
-        Zoom = windowSize.Zoom;
-
-        Graphics.SynchronizeWithVerticalRetrace = false;
-        Graphics.PreferredBackBufferWidth = Width * Zoom;
-        Graphics.PreferredBackBufferHeight = Height * Zoom;
-        Graphics.IsFullScreen = FullScreen;
-        Graphics.ApplyChanges();
-
-        SpriteBatch = new SpriteBatch(GraphicsDevice);
-
-        GraphicsDevice.BlendState = BlendState.AlphaBlend;
-
-        RenderTarget = new RenderTarget2D(GraphicsDevice, Width, Height);
-    }
-
-    public void LoadContent(GameStateManager gsm)
+    public void LoadContent(AssetCollection assetCollection)
     {
         Pictures.Clear();
         SpriteSheets.Clear();
         Fonts.Clear();
 
         // load immediately
-        foreach(var meta in gsm.Assets.GetAll<PictureMeta>().Where(m => m.PreLoaded))
+        foreach(var meta in assetCollection.GetAll<PictureMeta>().Where(m => m.PreLoaded))
             LoadPicture(meta);
 
         if(!Pictures.ContainsKey("Pixel"))
         {
-            var whitePixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            whitePixel.SetData(new[] { Color.White });
+            var whitePixel = new Texture2D(GL!, 1, 1, new[] { Color.White });
 
             Pictures.Add("Pixel", whitePixel);
         }
 
-        foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
+        foreach(var meta in assetCollection.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
             LoadSpriteSheet(meta);
 
-        foreach(var meta in gsm.Assets.GetAll<FontMeta>().Where(m => m.PreLoaded))
+        foreach(var meta in assetCollection.GetAll<FontMeta>().Where(m => m.PreLoaded))
             LoadFont(meta);
 
         // deferred
-        Task.Run(() => LoadDeferredContent(gsm.Assets));
+        Task.Run(() => LoadDeferredContent(assetCollection));
     }
 
     private void LoadDeferredContent(AssetCollection assets)
@@ -121,14 +103,15 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            Fonts.Add(font.Key, new Font(
-                Content.Load<Texture2D>(font.Path),
-                font.Width,
-                font.Height,
-                font.HorizontalSpacing,
-                font.VerticalSpacing,
-                font.FirstCharacter
-            ));
+            Fonts.Add(font.Key, new Font()
+            {
+                Texture = Texture2D.FromFile(GL!, font.Path),
+                CharacterWidth = font.Width,
+                CharacterHeight = font.Height,
+                HorizontalSpacing = font.HorizontalSpacing,
+                VerticalSpacing = font.VerticalSpacing,
+                FirstCharacter = font.FirstCharacter
+            });
         }
         catch (Exception e)
         {
@@ -140,7 +123,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            Pictures.Add(picture.Key, Content.Load<Texture2D>(picture.Path));
+            Pictures.Add(picture.Key, Texture2D.FromFile(GL!, picture.Path));
         }
         catch (Exception e)
         {
@@ -152,7 +135,12 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            SpriteSheets.Add(spriteSheet.Key, new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height));
+            SpriteSheets.Add(spriteSheet.Key, new SpriteSheet()
+            {
+                Texture = Texture2D.FromFile(GL!, spriteSheet.Path),
+                SpriteWidth = spriteSheet.Width,
+                SpriteHeight = spriteSheet.Height
+            });
         }
         catch (Exception e)
         {
@@ -162,14 +150,20 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public void UnloadContent()
     {
-        SpriteBatch.Dispose();
+        // TODO: anything??
+        //SpriteBatch.Dispose();
     }
 
+    // TODO: restore this
+    /*
     public void SetTransformMatrix(Matrix? matrix)
     {
         TransformMatrix = matrix;
     }
+    */
 
+    // TODO: restore these:
+    /*
     /// <summary>
     /// "Zoom" controls how large each "pixel" is.
     /// Zoom 1 => each pixel of your sprites, pictures, fonts, etc, takes up 1 pixel on the screen
@@ -239,21 +233,19 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height / Height
         );
     }
+    */
 
-    /// <summary>
-    /// For internal use.
-    /// </summary>
-    public void BeginDraw()
+    internal void BeginDraw()
     {
         DrawCalls = 0;
-
-        GraphicsDevice.SetRenderTarget(RenderTarget);
-        SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, transformMatrix: TransformMatrix);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear(Color c)
-        => GraphicsDevice.Clear(c);
+    {
+        GL!.ClearColor(c);
+        GL.Clear(ClearBufferMask.ColorBufferBit);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Rectangle SpriteRectangle(SpriteSheet spriteSheet, int spriteIndex) => new(
@@ -272,16 +264,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawFilledRectangle((int x, int y) upperLeft, (int x, int y) bottomRight, Color c)
-    {
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(upperLeft.x, upperLeft.y, bottomRight.x - upperLeft.x + 1, bottomRight.y - upperLeft.y + 1), null, c);
-        DrawCalls++;
-    }
+    public void DrawFilledRectangle(int x, int y, int w, int h, Color c)
+        => DrawFilledRectangle(new Rectangle(x, y, w, h), c);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawFilledRectangle(int x, int y, int w, int h, Color c)
+    public void DrawFilledRectangle(Rectangle rectangle, Color c)
     {
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y, w, h), null, c);
+        SpriteBatch.Draw(Pictures["Pixel"], rectangle, null, c);
         DrawCalls++;
     }
 
@@ -328,7 +317,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawPoint(int x, int y, Color c)
     {
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y, 1, 1), c);
+        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y, 1, 1), null, c);
         DrawCalls++;
     }
 
@@ -362,20 +351,18 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         SpriteBatch.Draw(
             texture,
             new Rectangle(x, y, (int)(texture.Width * scale), (int)(texture.Height * scale)),
-            null,
-            color,
-            angle,
-            // ReSharper disable PossibleLossOfFraction
-            new Vector2(texture.Width / 2, texture.Height / 2),
-            SpriteEffects.None,
-            0
+            new()
+            {
+                Tint = color,
+                Rotation = angle,
+            }
         );
 
         DrawCalls++;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawPictureWithTransformations(string pictureName, int x, int y, Rectangle? clippingRectangle, SpriteEffects flip, float angle, float scale, Color c)
+    public void DrawPictureWithTransformations(string pictureName, int x, int y, Rectangle? clippingRectangle, RendererFlip flip, float angle, float scale, Color c)
         => DrawTextureWithTransformations(
             Pictures[pictureName],
             x, y,
@@ -388,26 +375,27 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureWithTransformations(Texture2D texture, int x, int y, Rectangle? clippingRectangle, SpriteEffects flip, float angle, float scaleX, float scaleY, Color c)
+    public void DrawTextureWithTransformations(Texture2D texture, int x, int y, Rectangle? clippingRectangle, RendererFlip flip, float angle, float scaleX, float scaleY, Color c)
     {
         var rectangle = clippingRectangle ?? new Rectangle(0, 0, texture.Width, texture.Height);
 
         SpriteBatch.Draw(
             texture,
             new Rectangle(x, y, (int)(rectangle.Width * scaleX), (int)(rectangle.Height * scaleY)),
-            clippingRectangle,
-            c,
-            angle,
-            new Vector2(rectangle.Width / 2, rectangle.Height / 2),
-            flip,
-            0
+            new()
+            {
+                ClippingRectangle = clippingRectangle,
+                Tint = c,
+                Rotation = angle,
+                Flip = flip
+            }
         );
 
         DrawCalls++;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteWithTransformations(string spriteSheetName, int x, int y, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
+    public void DrawSpriteWithTransformations(string spriteSheetName, int x, int y, int spriteIndex, RendererFlip flip, float angle, float scale, Color tint)
         => DrawTextureWithTransformations(
             SpriteSheets[spriteSheetName].Texture,
             x, y,
@@ -420,7 +408,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteWithTransformations(SpriteSheet spriteSheet, int x, int y, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
+    public void DrawSpriteWithTransformations(SpriteSheet spriteSheet, int x, int y, int spriteIndex, RendererFlip flip, float angle, float scale, Color tint)
         => DrawTextureWithTransformations(
             spriteSheet.Texture,
             x, y,
@@ -443,7 +431,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             x,
             y,
             clippingRectangle,
-            SpriteEffects.None,
+            RendererFlip.None,
             angle,
             scale,
             scale,
@@ -457,7 +445,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             x,
             y,
             SpriteRectangle(SpriteSheets[spriteSheet], spriteIndex),
-            SpriteEffects.None,
+            RendererFlip.None,
             angle,
             scale,
             scale,
@@ -472,7 +460,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             x,
             y,
             SpriteRectangle(spriteSheet, spriteIndex),
-            SpriteEffects.None,
+            RendererFlip.None,
             angle,
             scale,
             scale,
@@ -731,7 +719,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawTexture(Texture2D texture, int x, int y, Rectangle? clippingRectangle, Color color)
     {
-        SpriteBatch.Draw(texture, new Vector2(x, y), clippingRectangle, color);
+        SpriteBatch.Draw(texture, new Rectangle(x, y, texture.Width, texture.Height), clippingRectangle, color);
         DrawCalls++;
     }
 
@@ -777,26 +765,32 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     ;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureFlipped(Texture2D texture, int x, int y, SpriteEffects flip) =>
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, RendererFlip flip) =>
         DrawTextureFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, Color.White);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureFlipped(Texture2D texture, int x, int y, SpriteEffects flip, Color tint) =>
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, RendererFlip flip, Color tint) =>
         DrawTextureFlipped(texture, x, y, new Rectangle(0, 0, texture.Width, texture.Height), flip, tint);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, SpriteEffects flip) =>
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, RendererFlip flip) =>
         DrawTextureFlipped(texture, x, y, clippingRectangle, flip, Color.White);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, SpriteEffects flip, Color tint)
+    public void DrawTextureFlipped(Texture2D texture, int x, int y, Rectangle clippingRectangle, RendererFlip flip, Color tint)
     {
-        SpriteBatch.Draw(texture, new Rectangle(x, y, clippingRectangle.Width, clippingRectangle.Height), clippingRectangle, tint, 0, Vector2.Zero, flip, 0);
+        SpriteBatch.Draw(texture, clippingRectangle with { X = x, Y = y }, new()
+        {
+            ClippingRectangle = clippingRectangle,
+            Tint = tint,
+            Flip = flip
+        });
+        
         DrawCalls++;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteFlipped(string spriteSheetName, int x, int y, int spriteIndex, SpriteEffects flip) =>
+    public void DrawSpriteFlipped(string spriteSheetName, int x, int y, int spriteIndex, RendererFlip flip) =>
         DrawTextureFlipped(
             SpriteSheets[spriteSheetName].Texture,
             x,
@@ -808,7 +802,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     ;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteFlipped(SpriteSheet spriteSheet, int x, int y, int spriteIndex, SpriteEffects flip) =>
+    public void DrawSpriteFlipped(SpriteSheet spriteSheet, int x, int y, int spriteIndex, RendererFlip flip) =>
         DrawTextureFlipped(
             spriteSheet.Texture,
             x,
@@ -820,7 +814,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     ;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteFlipped(SpriteSheet spriteSheet, int x, int y, int spriteIndex, SpriteEffects flip, Color tint) =>
+    public void DrawSpriteFlipped(SpriteSheet spriteSheet, int x, int y, int spriteIndex, RendererFlip flip, Color tint) =>
         DrawTextureFlipped(
             spriteSheet.Texture,
             x,
@@ -832,7 +826,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     ;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteFlipped(string spriteName, int x, int y, int spriteIndex, SpriteEffects flip, Color tint) =>
+    public void DrawSpriteFlipped(string spriteName, int x, int y, int spriteIndex, RendererFlip flip, Color tint) =>
         DrawTextureFlipped(
             SpriteSheets[spriteName].Texture,
             x,
@@ -842,17 +836,18 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
             tint
         );
 
-    /// <summary>
-    /// For internal use.
-    /// </summary>
-    public void EndDraw()
+    internal void EndDraw()
     {
-        SpriteBatch.End();
+        // TODO: draw sprites to screen
+        
 
+        // TODO: apply zoom
+        /*
         GraphicsDevice.SetRenderTarget(null);
 
         SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
         SpriteBatch.Draw(RenderTarget, new Rectangle(0, 0, Width * Zoom, Height * Zoom), Color.White);
         SpriteBatch.End();
+        */
     }
 }

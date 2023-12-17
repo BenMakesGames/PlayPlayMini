@@ -2,14 +2,13 @@
 using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
-using Microsoft.Xna.Framework;
 using System;
 using System.Runtime.CompilerServices;
 
 namespace BenMakesGames.PlayPlayMini;
 
 [AutoRegister]
-public sealed class GameStateManager: Game
+public sealed class GameStateManager
 {
     public GameState CurrentState { get; private set; }
     public GameState? NextState { get; private set; }
@@ -18,61 +17,51 @@ public sealed class GameStateManager: Game
     private GraphicsManager Graphics { get; }
     private ServiceWatcher ServiceWatcher { get; }
 
-    public AssetCollection Assets { get; }
-    public (int Width, int Height, int Zoom) InitialWindowSize { get; }
     public Type InitialGameState { get; }
     public Type? LostFocusGameState { get; }
 
+    // TODO: read this from Silk.NET??
+    public bool IsActive => true;
+
     private double FixedUpdateAccumulator { get; set; }
+
+    private AssetCollection AssetCollection { get; }
 
     public GameStateManager(
         ILifetimeScope iocContainer, GraphicsManager graphics, ServiceWatcher serviceWatcher,
-        SoundManager soundManager, GameStateManagerConfig config
+        SoundManager soundManager, GameStateManagerConfig config, AssetCollection assetCollection
     )
     {
         IoCContainer = iocContainer;
         Graphics = graphics;
         ServiceWatcher = serviceWatcher;
-
-        Content.RootDirectory = "Content";
-
-        // TODO: this is dumb and bad (not extensible), and must be fixed/replaced:
-        graphics.SetGame(this);
-        soundManager.SetGame(this);
+        AssetCollection = assetCollection;
 
         InitialGameState = config.InitialGameState;
         LostFocusGameState = config.LostFocusGameState;
-        InitialWindowSize = config.InitialWindowSize;
-        Window.Title = config.InitialWindowTitle;
-        Assets = config.Assets;
 
         CurrentState = new NoState();
     }
 
-    protected override void LoadContent()
+    internal void Load()
     {
-        base.LoadContent();
-
         foreach (var s in ServiceWatcher.ContentLoadingServices)
-            s.LoadContent(this);
+            s.LoadContent(AssetCollection);
     }
 
-    protected override void UnloadContent()
+    internal void Stop()
     {
-        base.UnloadContent();
-
-        foreach (var s in ServiceWatcher.ContentLoadingServices)
-            s.UnloadContent();
+        CurrentState = new NoState();
+        NextState = null;
     }
 
-    protected override void Initialize()
+    internal void Initialize(PlayPlayMiniApp app)
     {
         foreach (var s in ServiceWatcher.InitializedServices)
-            s.Initialize(this);
+            s.Initialize(app);
 
-        IsMouseVisible = false; // configurable via MouseManager
-
-        base.Initialize(); // calls LoadContent, btw
+        // TODO: restore this
+        //IsMouseVisible = false; // configurable via MouseManager
 
         ChangeState(InitialGameState);
     }
@@ -85,7 +74,7 @@ public sealed class GameStateManager: Game
         CurrentState.Input(gameTime);
     }
 
-    protected override void Update(GameTime gameTime)
+    internal void Update(GameTime gameTime)
     {
         SwitchState();
 
@@ -97,11 +86,11 @@ public sealed class GameStateManager: Game
 
         Input(gameTime);
 
-        base.Update(gameTime);
-
         foreach (var s in ServiceWatcher.UpdatedServices)
             s.Update(gameTime);
 
+        // TODO: restore this!
+        /*
         FixedUpdateAccumulator += gameTime.ElapsedGameTime.TotalMilliseconds;
 
         if (FixedUpdateAccumulator >= 16.6667)
@@ -109,36 +98,26 @@ public sealed class GameStateManager: Game
             CurrentState.FixedUpdate(new GameTime()
             {
                 TotalGameTime = gameTime.TotalGameTime,
-                IsRunningSlowly = gameTime.IsRunningSlowly,
                 ElapsedGameTime = TimeSpan.FromMilliseconds(FixedUpdateAccumulator),
             });
 
             FixedUpdateAccumulator -= 16.6667;
         }
+        */
 
         CurrentState.Update(gameTime);
     }
 
-    protected override bool BeginDraw()
+    internal void Draw(GameTime gameTime)
     {
         Graphics.BeginDraw();
-        return base.BeginDraw();
-    }
-
-    protected override void Draw(GameTime gameTime)
-    {
-        base.Draw(gameTime);
 
         CurrentState.Draw(gameTime);
 
         foreach (var s in ServiceWatcher.DrawnServices)
             s.Draw(gameTime);
-    }
-
-    protected override void EndDraw()
-    {
+        
         Graphics.EndDraw();
-        base.EndDraw();
     }
 
     private void SwitchState()
@@ -262,8 +241,5 @@ public sealed class GameStateManager: Game
 
 public sealed record GameStateManagerConfig(
     Type InitialGameState,
-    Type? LostFocusGameState,
-    (int Width, int Height, int Zoom) InitialWindowSize,
-    string InitialWindowTitle,
-    AssetCollection Assets
+    Type? LostFocusGameState
 );

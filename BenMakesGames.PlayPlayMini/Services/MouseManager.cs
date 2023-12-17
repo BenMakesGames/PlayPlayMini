@@ -1,6 +1,4 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using System;
 using BenMakesGames.PlayPlayMini.Model;
 
@@ -13,8 +11,11 @@ public sealed class MouseManager : IServiceInput
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
 
+    // TODO: restore this
+    /*
     private MouseState PreviousMouseState { get; set; }
     private MouseState MouseState { get; set; }
+    */
 
     public string? PictureName { get; private set; }
     public (int X, int Y) Hotspot { get; private set; }
@@ -70,12 +71,17 @@ public sealed class MouseManager : IServiceInput
         Keyboard = keyboard;
         GSM = gsm;
 
+        // TODO: restore this
+        /*
         PreviousMouseState = Mouse.GetState();
         MouseState = Mouse.GetState();
+        */
     }
 
     public void Input(GameTime gameTime)
     {
+        // TODO: restore this
+        /*
         PreviousMouseState = MouseState;
         MouseState = Mouse.GetState();
 
@@ -124,6 +130,7 @@ public sealed class MouseManager : IServiceInput
             RightClicked = false;
             Wheel = 0;
         }
+        */
     }
 
     /// <summary>
@@ -151,7 +158,8 @@ public sealed class MouseManager : IServiceInput
         DrawingMode = MouseDrawingMode.Custom;
         PictureName = pictureName;
         Hotspot = hotspot;
-        GSM.IsMouseVisible = false;
+        // TODO: restore this
+        //GSM.IsMouseVisible = false;
     }
 
     /// <summary>
@@ -160,7 +168,8 @@ public sealed class MouseManager : IServiceInput
     public void UseSystemCursor()
     {
         DrawingMode = MouseDrawingMode.System;
-        GSM.IsMouseVisible = true;
+        // TODO: restore this
+        //GSM.IsMouseVisible = true;
     }
 
     /// <summary>
@@ -170,6 +179,7 @@ public sealed class MouseManager : IServiceInput
     public void UseNoCursor()
     {
         DrawingMode = MouseDrawingMode.None;
-        GSM.IsMouseVisible = false;
+        // TODO: restore this
+        //GSM.IsMouseVisible = false;
     }
 }

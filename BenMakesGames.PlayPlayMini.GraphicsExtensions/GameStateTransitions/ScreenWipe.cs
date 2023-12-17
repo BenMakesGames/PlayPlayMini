@@ -1,6 +1,7 @@
 using System;
+using System.Drawing;
+using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
-using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.GameStateTransitions;
 

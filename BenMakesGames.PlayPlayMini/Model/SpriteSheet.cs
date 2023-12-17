@@ -1,9 +1,11 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿namespace BenMakesGames.PlayPlayMini.Model;
 
-namespace BenMakesGames.PlayPlayMini.Model;
-
-public sealed record SpriteSheet(Texture2D Texture, int SpriteWidth, int SpriteHeight)
+public sealed class SpriteSheet
 {
+    public required Texture2D Texture { get; init; }
+    public required int SpriteWidth { get; init; }
+    public required int SpriteHeight { get; init; }
+    
     public int Columns => Texture.Width / SpriteWidth;
     public int Rows => Texture.Height / SpriteHeight;
 }

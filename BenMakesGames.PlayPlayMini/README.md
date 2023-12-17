@@ -1,6 +1,6 @@
 # What Is It?
 
-**PlayPlayMini** is an opinionated framework for making smallish 2D games with **MonoGame**.
+**PlayPlayMini** is an opinionated framework for making smallish 2D games in .NET. It uses **Silk.NET** and **NAudio** under the hood.
 
 It provides a state engine with lifecycle events, a `GraphicsManager` that provides methods for easily drawing sprites & fonts with a variety of effects, and dependency injection using **Autofac**.
 
@@ -9,6 +9,26 @@ If you don't know what all of those things are, don't worry: they're awesome, an
 If you prefer learning purely by example, check out [Block-break](https://github.com/BenMakesGames/BlockBreak), a demo game made with PlayPlayMini, EntityFramework, and Serliog that uses fonts, sprite sheets, pictures, and sounds.
 
 [![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+
+# Upgrading from 4.x to 5.0.0
+
+## Breaking Changes
+
+PlayPlayMini now uses Silk.NET and NAudio under the hood, instead of MonoGame!
+
+Why such a dramatic change?
+* MonoGame has always had bad audio support, for example music tracks never looped seemlessly. NAudio does not have these issues.
+* The MonoGame pipeline is annoying to work with. It made sense when XNA was first released, but is no longer needed today. (MonoGame should have never reimplemented it.)
+* Silk.NET is faster, and better-architected than MonoGame.
+
+1. Remove all `using Microsoft.Xna.Framework;` statements.
+2. Where you're using `Color`, add `using System.Drawing;`
+   * Don't worry: `System.Drawing` _is_ cross-platform! (It's `System.Drawing.Common` that's not!)
+   * You may need to make other minor changes, such as replacing uses of `new Color(float r, float g, float b, float alpha)` with `Color.FromArgb(int alpha, int r, int g, int b)`.
+   * If you were using `MonoGame`'s color names, like `Color.SeaGreen`, etc, don't worry: MonoGame's colors are the exact same, owing to MonoGame being based on XNA, which was made by Microsoft in the first place!
+3. Where you're using `GameTime`, add `using BenMakesGames.PlayPlayMini.Model;`
+   * `GameTime` is pretty handy, so PlayPlayMini offers this drop-in replacement.
+4.
 
 # Upgrading from 3.x to 4.0.0
 
@@ -244,24 +264,12 @@ Next up:
 
 ```c#
     .AddAssets(new IAsset[] {
-        ...
+        new FontMeta("Font", "Graphics/Font", 6, 8),
+        new PictureMeta("Cursor", "Graphics/Cursor", true),
     })
 ```
 
-This method tells the `GraphicsManager` (and `SoundManager`) which assets to load, from your `Content/Content.mcgb` file. `Content/Content.mcgb` is part of **MonoGame**'s asset "pipeline". **PlayPlayMini** hides a lot of **MonoGame**'s internals, but the asset pipeline isn't something that can be - or should be - hidden! It's how you tell **MonoGame** what graphics, sounds, and songs, your game will use.
-
-If you've never used the `Content/Content.mgcb` file before, check out **MonoGame**'s documentation on the subject:
-
-* https://docs.monogame.net/articles/content/using_mgcb_editor.html
-
-It's a super-useful tool!
-
-Moving on:
-
-```c#
-        new FontMeta("Font", "Graphics/Font", 6, 8),
-        new PictureMeta("Cursor", "Graphics/Cursor", true),
-```
+This method tells the `GraphicsManager` (and `SoundManager`) which assets to load.
 
 `FontMeta` (along with `PictureMeta` and `SpriteSheetMeta`) is a struct that contains everything the
 `GraphicsManager` needs to load and store graphics.
@@ -270,8 +278,7 @@ The first argument is the name/key/ID/whatever-you-wanna-call-it which you're as
 image. It can be anything, and spaces and other punctuation are allowed, if you want/need them
 (it's just a string, after all!) You'll refer to this later, when drawing images.
 
-The second argument is a path to the image, matching your `Content/Content.mgcb` file's definition of
-the image.
+The second argument is a path to the image.
 
 For fonts and sprite sheets, the dimensions of each individual sprite are specified in the third and fourth parameters.
 
@@ -311,13 +318,7 @@ Most of your game states will probably include the `GraphicsManager` as one of t
 
 #### SoundManager
 
-The `SoundManager` has methods for playing sounds and looping music.
-
-It uses **MonoGame**'s built-in sound library, which has some limitations, and even some audible bugs on some platforms (such as poor looping of music tracks on Windows).
-
-If/when you get your game to a good state, and you really want to upgrade your game's sound and music, I recommend finding a C# FMOD library, like https://github.com/Martenfur/ChaiFoxes.FMODAudio. You'll have to hook it manually; I recommend creating your own sound manager service to wrap it up!
-
-I'm working on an "official" FMOD package for **PlayPlayMini**, but don't currently have an ETA. If you beat me to the punch, let others (and me) know!
+The `SoundManager` uses **NAudio** to play sounds and music, with additions for supporting seemlessly-looping tracks.
 
 #### KeyboardManager
 

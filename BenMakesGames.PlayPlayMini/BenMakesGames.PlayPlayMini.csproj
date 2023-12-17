@@ -3,12 +3,12 @@
   <PropertyGroup>
     <Authors>Ben Hendel-Doying</Authors>
     <Company>Ben Hendel-Doying</Company>
-    <Description>An opinionated framework for making smallish games with MonoGame.</Description>
+    <Description>An opinionated framework for making smallish games in C#.</Description>
     <Copyright>2021-2023 Ben Hendel-Doying</Copyright>
-    <Version>4.0.1</Version>
+    <Version>5.0.0</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>monogame game engine framework di state</PackageTags>
+    <PackageTags>game engine framework di state silk naudio</PackageTags>
     <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
     <RepositoryUrl>https://github.com/BenMakesGames/PlayPlayMini</RepositoryUrl>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
@@ -29,7 +29,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.1.303" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
+    <PackageReference Include="Silk.NET" Version="2.20.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +47,7 @@
       <Pack>True</Pack>
       <PackagePath />
     </None>
+    <None Remove="C:\Users\Ben\.nuget\packages\naudio.vorbis\1.5.0\contentFiles\any\netstandard2.0\README.md" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">

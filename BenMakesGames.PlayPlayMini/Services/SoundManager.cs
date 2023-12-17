@@ -1,160 +1,190 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
 using Microsoft.Extensions.Logging;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using NAudio.Vorbis;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
 [AutoRegister]
-public sealed class SoundManager : IServiceLoadContent
+public sealed class SoundManager : IServiceLoadContent, IDisposable, IServiceUpdate
 {
+    private NAudioPlaybackEngine PlaybackEngine { get; }
     private ILogger<SoundManager> Logger { get; }
 
-    private Game Game { get; set; } = null!;
-
-    private ContentManager Content => Game.Content;
-
-    public Dictionary<string, SoundEffect> SoundEffects { get; } = new();
-    public Dictionary<string, Song> Songs { get; } = new();
-
-    public float SoundVolume { get; private set; } = 1.0f;
-    public float MusicVolume { get; private set; } = 1.0f;
-
-    public bool FullyLoaded { get; private set; }
+    public Dictionary<string, WaveStream> Songs { get; } = new();
+    public Dictionary<string, WaveStream> SoundEffects { get; } = new();
+    
+    private Dictionary<string, FadeInOutSampleProvider> PlayingSongs { get; } = new();
+    private Dictionary<string, DateTimeOffset> FadingSongs { get; } = new();
 
     public SoundManager(ILogger<SoundManager> logger)
     {
         Logger = logger;
+
+        PlaybackEngine = new NAudioPlaybackEngine();
     }
-
-    internal void SetGame(Game game)
+    
+    public void LoadContent(AssetCollection assetCollection)
     {
-        if (Game is not null)
-            throw new ArgumentException("SetGame can only be called once!");
+        foreach(var song in assetCollection.GetAll<SongMeta>().Where(s => s.PreLoaded))
+            LoadSong(song.Key, song.Path);
 
-        Game = game;
-    }
+        foreach(var soundEffect in assetCollection.GetAll<SoundEffectMeta>().Where(s => s.PreLoaded))
+            LoadSoundEffect(soundEffect.Key, soundEffect.Path);
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <remarks>The volume level of sounds that are currently playing WILL NOT be adjusted.</remarks>
-    /// <param name="volume"></param>
-    public void SetSoundVolume(float volume)
-    {
-        SoundVolume = volume <= 0 ? 0 : volume;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <remarks>The volume level of songs that are currently playing will be adjusted.</remarks>
-    /// <param name="volume"></param>
-    public void SetMusicVolume(float volume)
-    {
-        MusicVolume = volume <= 0 ? 0 : volume;
-        MediaPlayer.Volume = volume;
-    }
-
-    public void PlaySound(string name, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
-    {
-        if (!SoundEffects.TryGetValue(name, out var soundEffect))
+        Task.Run(() =>
         {
-            Logger.LogWarning("Sound {Name} has not been loaded", name);
+            foreach(var song in assetCollection.GetAll<SongMeta>().Where(s => !s.PreLoaded))
+                LoadSong(song.Key, song.Path);
+            
+            foreach(var soundEffect in assetCollection.GetAll<SoundEffectMeta>().Where(s => !s.PreLoaded))
+                LoadSoundEffect(soundEffect.Key, soundEffect.Path);
+            
+            FullyLoaded = true;
+        });
+    }
+
+    private void LoadSong(string name, string filePath)
+    {
+        if(Songs.ContainsKey(name))
+        {
+            Logger.LogWarning("A song named {Name} has already been loaded", name);
             return;
         }
 
-        var v = volume * SoundVolume;
+        try
+        {
+            var stream = CreateWaveStream(filePath);
 
-        if(v > 0)
-            soundEffect.Play(v, pitch, pan);
+            Songs.Add(name, stream);
+        }
+        catch(Exception e)
+        {
+            Logger.LogWarning(e, "Failed to load song {Name} from {Path}", name, filePath);
+        }
     }
 
-    public void PlayMusic(string name, bool repeat = false)
+    private void LoadSoundEffect(string name, string filePath)
     {
-        if (!Songs.TryGetValue(name, out var song))
+        if(Songs.ContainsKey(name))
         {
-            Logger.LogWarning("Song {Name} has not been loaded", name);
+            Logger.LogWarning("A sound effect named {Name} has already been loaded", name);
             return;
         }
 
-        if (MediaPlayer.Queue.ActiveSong == song && MediaPlayer.State == MediaState.Playing)
-            return;
+        try
+        {
+            var stream = CreateWaveStream(filePath);
 
-        MediaPlayer.Stop();
-
-        while (MediaPlayer.State == MediaState.Playing)
-            Thread.Yield();
-
-        MediaPlayer.IsRepeating = repeat;
-        MediaPlayer.Play(song);
+            SoundEffects.Add(name, stream);
+        }
+        catch(Exception e)
+        {
+            Logger.LogWarning(e, "Failed to load sound effect {Name} from {Path}", name, filePath);
+        }
     }
 
-    public void StopMusic()
+    private static WaveStream CreateWaveStream(string filePath) => Path.GetExtension(filePath).ToLower() switch
     {
-        MediaPlayer.Stop();
+        ".ogg" => new VorbisWaveReader(filePath),
+        _ => new AudioFileReader(filePath),
+    };
+
+    public void SetVolume(float volume) => PlaybackEngine.SetVolume(volume);
+
+    public bool IsPlaying(string name) => PlayingSongs.ContainsKey(name);
+
+    public SoundManager PlaySound(string name)
+    {
+        if(!SoundEffects.ContainsKey(name))
+        {
+            Logger.LogWarning("There is no sound named {Name}", name);
+            return this;
+        }
+
+        PlaybackEngine.AddSample(SoundEffects[name].ToSampleProvider());
+
+        return this;
+    }
+    
+    public SoundManager PlaySong(string name, int fadeInMilliseconds = 0)
+    {
+        if(!Songs.ContainsKey(name))
+        {
+            Logger.LogWarning("There is no song named {Name}", name);
+            return this;
+        }
+
+        if(PlayingSongs.ContainsKey(name))
+            return this;
+
+        var initiallySilent = fadeInMilliseconds > 0;
+        
+        var sample = new FadeInOutSampleProvider(new LoopStream(Songs[name]).ToSampleProvider(), initiallySilent);
+        
+        if(fadeInMilliseconds > 0)
+            sample.BeginFadeIn(fadeInMilliseconds);
+        
+        PlaybackEngine.AddSample(sample);
+        PlayingSongs.Add(name, sample);
+
+        return this;
+    }
+    
+    public SoundManager StopSongs(int fadeOutMilliseconds = 0)
+    {
+        if(fadeOutMilliseconds == 0)
+        {
+            PlaybackEngine.RemoveAll();
+            PlayingSongs.Clear();
+            FadingSongs.Clear();
+            return this;
+        }
+        
+        foreach(var song in PlayingSongs)
+        {
+            if(FadingSongs.ContainsKey(song.Key))
+                continue;
+            
+            song.Value.BeginFadeOut(fadeOutMilliseconds);
+            FadingSongs.Add(song.Key, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds));
+        }
+
+        return this;
     }
 
-    public void LoadContent(GameStateManager gsm)
+    public bool FullyLoaded { get; private set; }
+
+    public void Dispose()
     {
-        SoundEffects.Clear();
+        foreach (var song in Songs.Values)
+            song.Dispose();
+        
         Songs.Clear();
-
-        // load immediately
-        foreach (var meta in gsm.Assets.GetAll<SoundEffectMeta>().Where(m => m.PreLoaded))
-            LoadSoundEffect(meta);
-
-        foreach (var meta in gsm.Assets.GetAll<SongMeta>().Where(s => s.PreLoaded))
-            LoadSong(meta);
-
-        // deferred
-        Task.Run(() => LoadDeferredContent(gsm.Assets));
+        
+        PlaybackEngine.Dispose();
     }
 
-    public void UnloadContent()
+    public void Update(GameTime gameTime)
     {
-    }
+        var now = DateTimeOffset.UtcNow;
+        var toRemove = FadingSongs.Where(kvp => now >= kvp.Value).Select(kvp => kvp.Key);
 
-    private void LoadDeferredContent(AssetCollection assets)
-    {
-        foreach (var meta in assets.GetAll<SoundEffectMeta>().Where(m => !m.PreLoaded))
-            LoadSoundEffect(meta);
-
-        foreach (var meta in assets.GetAll<SongMeta>().Where(s => !s.PreLoaded))
-            LoadSong(meta);
-
-        FullyLoaded = true;
-    }
-
-    private void LoadSoundEffect(SoundEffectMeta soundEffect)
-    {
-        try
+        foreach(var name in toRemove)
         {
-            SoundEffects.Add(soundEffect.Key, Content.Load<SoundEffect>(soundEffect.Path));
-        }
-        catch (Exception e)
-        {
-            Logger.LogError("Failed to load {Path}: {Message}", soundEffect.Path, e.Message);
-        }
-    }
-
-    private void LoadSong(SongMeta song)
-    {
-        try
-        {
-            Songs.Add(song.Key, Content.Load<Song>(song.Path));
-        }
-        catch (Exception e)
-        {
-            Logger.LogError("Failed to load {Path}: {Message}", song.Path, e.Message);
+            var sample = PlayingSongs[name];
+            
+            PlaybackEngine.RemoveSample(sample);
+            
+            PlayingSongs.Remove(name);
+            FadingSongs.Remove(name);
         }
     }
 }

@@ -178,27 +178,25 @@ public class GameStateManagerBuilder
             .As(typeof(ILogger<>))
             .SingleInstance();
 
+        builder.Register(_ => GameAssets)
+            .As<AssetCollection>()
+            .SingleInstance();
+        
         AddServicesCallback?.Invoke(builder, configuration);
 
         if(InitialGameState is null)
             throw new ArgumentException("No initial game state set! You must call GameStateManagerBuilder's SetInitialGameState method before calling its Run method.");
 
-        var gameStateManagerConfig = new GameStateManagerConfig(
-            InitialGameState,
-            LostFocusGameState,
-            WindowSize,
-            WindowTitle,
-            GameAssets
-        );
+        builder.Register(_ => new GameStateManagerConfig(InitialGameState, LostFocusGameState))
+            .SingleInstance();
 
         // here we go!
         using (var container = builder.Build())
         using (var scope = container.BeginLifetimeScope())
-        using (var game = scope.Resolve<GameStateManager>(new TypedParameter(typeof(GameStateManagerConfig), gameStateManagerConfig)))
         {
-            InstantiateLoadContentAndInitializedServices(scope);
+            var game = scope.Resolve<PlayPlayMiniApp>();
 
-            game.IsFixedTimeStep = FixedTimeStep;
+            InstantiateLoadContentAndInitializedServices(scope);
 
             game.Run();
         }
