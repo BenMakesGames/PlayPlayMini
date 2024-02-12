@@ -4,7 +4,7 @@
     <Authors>Ben Hendel-Doying</Authors>
     <Company>Ben Hendel-Doying</Company>
     <Description>An extension for PlayPlayMini, adding a skinnable, object-oriented UI framework.</Description>
-    <Copyright>2021-2023 Ben Hendel-Doying</Copyright>
+    <Copyright>2021-2024 Ben Hendel-Doying</Copyright>
     <Version>4.1.0</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
