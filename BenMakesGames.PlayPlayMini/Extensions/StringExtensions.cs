@@ -22,7 +22,7 @@ public static class StringExtensions
 
         var result = new StringBuilder();
 
-        var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        var lines = text.Split([ "\r\n", "\r", "\n" ], StringSplitOptions.None);
 
         for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {

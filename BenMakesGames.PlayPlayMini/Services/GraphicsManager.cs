@@ -88,7 +88,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         if(!Pictures.ContainsKey("Pixel"))
         {
             var whitePixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            whitePixel.SetData(new[] { Color.White });
+            whitePixel.SetData([ Color.White ]);
 
             Pictures.Add("Pixel", whitePixel);
         }
@@ -578,43 +578,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     /// <returns></returns>
     public (int Width, int Height) ComputeDimensionsWithWordWrap(Font font, int maxWidth, string text)
     {
-        var lines = text.Split(new[] { '\r', '\n' });
+        var wrappedLines = text.WrapText(font, maxWidth).Split('\n');
+        var longestLine = wrappedLines.Max(l => l.Length);
 
-        var pixelY = 0;
-        var maxPixelX = 0;
-
-        for(var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
-        {
-            if (lineIndex > 0)
-                pixelY += font.CharacterHeight + font.VerticalSpacing;
-
-            var words = lines[lineIndex].Split(' ');
-            var pixelX = 0;
-
-            for (var i = 0; i < words.Length; i++)
-            {
-                if (i > 0)
-                    pixelX += font.CharacterWidth + font.HorizontalSpacing;
-
-                var word = words[i];
-
-                if (pixelX + word.Length * font.CharacterWidth + (word.Length - 1) * font.HorizontalSpacing > maxWidth)
-                {
-                    pixelX = 0;
-                    pixelY += font.CharacterHeight + font.VerticalSpacing;
-                }
-
-                if (pixelX > maxPixelX)
-                    maxPixelX = pixelX;
-
-                (pixelX, pixelY) = PretendDrawText(font, pixelX, pixelY, word);
-
-                if (pixelX > maxPixelX)
-                    maxPixelX = pixelX;
-            }
-        }
-
-        return (maxPixelX, pixelY + font.CharacterHeight);
+        return (
+            longestLine == 0 ? 0 : (longestLine * (font.CharacterWidth + font.VerticalSpacing) - font.VerticalSpacing),
+            wrappedLines.Length == 0 ? 0 : (wrappedLines.Length * (font.CharacterHeight + font.HorizontalSpacing) - font.HorizontalSpacing)
+        );
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
