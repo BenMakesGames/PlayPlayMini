@@ -81,13 +81,19 @@ public sealed class MouseManager : IServiceInput
 
         if(Enabled)
         {
-            if (DisableOnKeyPress && Keyboard.AnyKeyDown())
+            if(DisableOnKeyPress && Keyboard.AnyKeyDown())
+            {
                 Enabled = false;
+                GSM.IsMouseVisible = false;
+            }
         }
         else
         {
             if(EnableOnMove && (PreviousMouseState.X != MouseState.X || PreviousMouseState.Y != MouseState.Y))
+            {
                 Enabled = true;
+                GSM.IsMouseVisible = DrawingMode == MouseDrawingMode.System;
+            }
         }
 
         if (Enabled)

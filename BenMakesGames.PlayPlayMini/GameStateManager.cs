@@ -18,12 +18,16 @@ public sealed class GameStateManager: Game
     private GraphicsManager Graphics { get; }
     private ServiceWatcher ServiceWatcher { get; }
 
-    public AssetCollection Assets { get; }
-    public (int Width, int Height, int Zoom) InitialWindowSize { get; }
-    public Type InitialGameState { get; }
-    public Type? LostFocusGameState { get; }
+    public AssetCollection Assets => Config.Assets;
+    
+    [Obsolete("Refer to Config.InitialWindowTitle instead.")] public (int Width, int Height, int Zoom) InitialWindowSize => Config.InitialWindowSize;
+    [Obsolete("Refer to Config.InitialGameState instead.")] public Type InitialGameState => Config.InitialGameState;
+    
+    public Type? LostFocusGameState { get; set; }
 
     private double FixedUpdateAccumulator { get; set; }
+    
+    public GameStateManagerConfig Config { get; }
 
     public GameStateManager(
         ILifetimeScope iocContainer, GraphicsManager graphics, ServiceWatcher serviceWatcher,
@@ -40,12 +44,9 @@ public sealed class GameStateManager: Game
         graphics.SetGame(this);
         soundManager.SetGame(this);
 
-        InitialGameState = config.InitialGameState;
-        LostFocusGameState = config.LostFocusGameState;
-        InitialWindowSize = config.InitialWindowSize;
-        Window.Title = config.InitialWindowTitle;
-        Assets = config.Assets;
-
+        Config = config;
+        LostFocusGameState = config.InitialLostFocusGameState;
+        
         CurrentState = new NoState();
     }
 
@@ -67,14 +68,15 @@ public sealed class GameStateManager: Game
 
     protected override void Initialize()
     {
+        Window.Title = Config.InitialWindowTitle; // https://community.monogame.net/t/cant-set-window-title-in-game1-constructor/9465
+        IsMouseVisible = false;
+
         foreach (var s in ServiceWatcher.InitializedServices)
             s.Initialize(this);
 
-        IsMouseVisible = false; // configurable via MouseManager
-
         base.Initialize(); // calls LoadContent, btw
 
-        ChangeState(InitialGameState);
+        ChangeState(Config.InitialGameState);
     }
 
     private void Input(GameTime gameTime)
@@ -262,7 +264,7 @@ public sealed class GameStateManager: Game
 
 public sealed record GameStateManagerConfig(
     Type InitialGameState,
-    Type? LostFocusGameState,
+    Type? InitialLostFocusGameState,
     (int Width, int Height, int Zoom) InitialWindowSize,
     string InitialWindowTitle,
     AssetCollection Assets

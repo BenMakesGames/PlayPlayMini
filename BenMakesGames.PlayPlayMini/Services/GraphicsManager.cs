@@ -56,7 +56,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public void Initialize(GameStateManager gsm)
     {
-        var windowSize = gsm.InitialWindowSize;
+        var windowSize = gsm.Config.InitialWindowSize;
 
         Width = windowSize.Width;
         Height = windowSize.Height;
