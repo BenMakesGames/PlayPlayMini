@@ -582,8 +582,8 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         var longestLine = wrappedLines.Max(l => l.Length);
 
         return (
-            longestLine == 0 ? 0 : (longestLine * (font.CharacterWidth + font.VerticalSpacing) - font.VerticalSpacing),
-            wrappedLines.Length == 0 ? 0 : (wrappedLines.Length * (font.CharacterHeight + font.HorizontalSpacing) - font.HorizontalSpacing)
+            longestLine == 0 ? 0 : (longestLine * (font.CharacterWidth + font.HorizontalSpacing) - font.HorizontalSpacing),
+            wrappedLines.Length == 0 ? 0 : (wrappedLines.Length * (font.CharacterHeight + font.VerticalSpacing) - font.VerticalSpacing)
         );
     }
 
