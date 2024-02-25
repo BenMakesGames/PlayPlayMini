@@ -39,14 +39,14 @@ public static class StringExtensions
 
                 // we might be prepending a space:
                 if(lineLength > 0)
-                    wordWidth += font.CharacterWidth + font.HorizontalSpacing;
+                    wordWidth += font.CharacterWidth + font.HorizontalSpacing * 2;
                 
-                if (lineLength + wordWidth >= maxWidth)
+                if (lineLength + wordWidth > maxWidth)
                 {
                     result.Append('\n');
                     
                     if(lineLength > 0)
-                        wordWidth -= font.CharacterWidth + font.HorizontalSpacing; // if we prepended a space, take it off again...
+                        wordWidth -= font.CharacterWidth + font.HorizontalSpacing * 2; // if we prepended a space, take it off again...
                     
                     lineLength = 0;
                 }
@@ -56,6 +56,7 @@ public static class StringExtensions
                 }
 
                 result.Append(words[wordIndex]);
+                
                 lineLength += wordWidth;
             }
         }
