@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Autofac.Util;
 using Microsoft.Extensions.Configuration;
 
 namespace BenMakesGames.PlayPlayMini;
@@ -130,7 +131,7 @@ public class GameStateManagerBuilder
 
         foreach(var assembly in assemblies)
         {
-            var withAutoRegister = assembly.GetTypes()
+            var withAutoRegister = assembly.GetLoadableTypes()
                 .Where(t => t.GetCustomAttributes<AutoRegister>().Any())
             ;
 
