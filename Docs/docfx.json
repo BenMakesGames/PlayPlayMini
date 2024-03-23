@@ -7,7 +7,13 @@
           "files": [
             "**/*.csproj"
           ]
-        }
+        },
+        {
+          "src": "../BenMakesGames.PlayPlayMini.GraphicsExtensions",
+          "files": [
+            "**/*.csproj"
+          ]
+        },
       ],
       "dest": "api"
     }
