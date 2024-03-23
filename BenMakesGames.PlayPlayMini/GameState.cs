@@ -2,6 +2,36 @@
 
 namespace BenMakesGames.PlayPlayMini;
 
+/// <summary>
+/// Inherit this class to create your own game states.
+///
+/// Change the current game's state by calling one of `GameStateManager`'s `ChangeState` methods.
+///
+/// If a game state needs access to a service, such as the `GameStateManager`, `GraphicsManager`, `SoundManager`, etc.,
+/// include the service in the game state's constructor arguments. The IoC container will automatically inject them.
+///
+/// Example:
+///
+///     public sealed class MyGameState: GameState
+///     {
+///         private GameStateManager GSM { get; }
+///         private GraphicsManager Graphics { get; }
+///         private KeyboardManager Keyboard { get; }
+///
+///         public MyGameState(GameStateManager gsm, GraphicsManager graphics, KeyboardManager keyboard)
+///         {
+///             GSM = gsm;
+///             Graphics = graphics;
+///             Keyboard = keyboard;
+///         }
+///
+///         public override void Update(GameTime gameTime)
+///         {
+///             if(Keyboard.IsKeyDown(Keys.Escape))
+///                 GSM.ChangeState&lt;MyPauseMenu&gt;(); // or maybe GSM.Exit();
+///         }
+///     }
+/// </summary>
 public abstract class GameState
 {
     /// <summary>

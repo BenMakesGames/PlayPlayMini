@@ -78,6 +78,14 @@ public sealed class SoundManager : IServiceLoadContent
             soundEffect.Play(v, pitch, pan);
     }
 
+    public string? CurrentMusic()
+    {
+        if(MediaPlayer.State != MediaState.Playing || MediaPlayer.Queue.ActiveSong is not {} activeSong)
+            return null;
+
+        return Songs.Keys.FirstOrDefault(k => Songs[k] == activeSong);
+    }
+
     public void PlayMusic(string name, bool repeat = false)
     {
         if (!Songs.TryGetValue(name, out var song))

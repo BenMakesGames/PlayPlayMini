@@ -24,7 +24,7 @@ Since .NET 7, this advice is less relevant, and sometimes plain bad: not only ha
 
 Language and compiler writers have been working on performance for many many years. Before you make a performance-based decision based on suggestions from internet randos, do some research; if/when you're having performance issues, do your own benchmarking!
 
-* PlayPlayMini comes with a [FrameCounter service](/api/BenMakesGames.PlayPlayMini.Services.FrameCounter.html) you can use to help keep an eye on how your changes affect your game's FPS!
+* PlayPlayMini comes with a [FrameCounter service](/PlayPlayMini/api/BenMakesGames.PlayPlayMini.Services.FrameCounter.html) you can use to help keep an eye on how your changes affect your game's FPS!
 * [BenchmarkDotNet](https://benchmarkdotnet.org/) is a great tool to learn when you've got a free afternoon.
 
 ### Prefer Composition over Inheritance
