@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors>Ben Hendel-Doying</Authors>
         <Company>Ben Hendel-Doying</Company>
-        <Description>Get seamless looping music in your MonoGame-PlayPlayMini game using NAudio.</Description>
+        <Description>Get seamless looping music, and cross-fade, in your MonoGame-PlayPlayMini game using NAudio.</Description>
         <Copyright>2024 Ben Hendel-Doying</Copyright>
         <Version>0.1.0</Version>
 

@@ -31,7 +31,7 @@ Seamlessy-looping music is important for many games, but MonoGame's built-in mus
 
 `.mp3`, `.aiff`, and `.wav` files are supported out of the box. For other formats, you will need to install additional NAudio packages and do a little extra configuration:
 
-#### `.ogg`
+#### Add Ogg Vorbis (`.ogg`) Support
 
 Add the `NAudio.Vorbis` package to your project.
 
@@ -41,7 +41,7 @@ In your game's `.AddServices(...)` configuration, add the following line:
 s.RegisterInstance(new NAudioFileLoader("ogg", f => new VorbisWaveReader(f)));
 ```
 
-#### `.flac`
+#### Add FLAC (`.flac`) Support
 
 Add the `NAudio.Flac` package to your project.
 
