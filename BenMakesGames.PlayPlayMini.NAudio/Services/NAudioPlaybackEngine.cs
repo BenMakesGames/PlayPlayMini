@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
@@ -9,6 +10,9 @@ public sealed class NAudioPlaybackEngine: IDisposable
 {
     private IWavePlayer OutputDevice { get; }
     private MixingSampleProvider Mixer { get; }
+
+    public int SampleRate => Mixer.WaveFormat.SampleRate;
+    public int Channels => Mixer.WaveFormat.Channels;
 
     public NAudioPlaybackEngine(int sampleRate = 44100, int channelCount = 2)
     {
@@ -26,6 +30,18 @@ public sealed class NAudioPlaybackEngine: IDisposable
 
     public void AddSample(ISampleProvider sample)
     {
+        if(sample.WaveFormat.SampleRate != Mixer.WaveFormat.SampleRate)
+        {
+            Console.WriteLine($"Warning: Sample's sample rate ({sample.WaveFormat.SampleRate}) does not match mixer sample rate ({Mixer.WaveFormat.SampleRate})");
+            return;
+        }
+
+        if(sample.WaveFormat.Channels != Mixer.WaveFormat.Channels)
+        {
+            Console.WriteLine($"Warning: Sample's channel count ({sample.WaveFormat.Channels}) does not match mixer channel count ({Mixer.WaveFormat.Channels})");
+            return;
+        }
+
         Mixer.AddMixerInput(sample);
     }
 

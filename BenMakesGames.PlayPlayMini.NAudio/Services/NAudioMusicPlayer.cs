@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.NAudio.Model;
 using Microsoft.Extensions.Logging;
@@ -37,19 +38,19 @@ namespace BenMakesGames.PlayPlayMini.NAudio.Services;
 [AutoRegister]
 public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDisposable
 {
-    private NAudioPlaybackEngine PlaybackEngine { get; }
+    private NAudioPlaybackEngine? PlaybackEngine { get; set; }
     private ILogger<NAudioMusicPlayer> Logger { get; }
+    private ILifetimeScope IocContainer { get; }
 
     public Dictionary<string, WaveStream> Songs { get; } = new();
 
     private Dictionary<string, FadeInOutSampleProvider> PlayingSongs { get; } = new();
     private Dictionary<string, DateTimeOffset> FadingSongs { get; } = new();
 
-    public NAudioMusicPlayer(ILogger<NAudioMusicPlayer> logger)
+    public NAudioMusicPlayer(ILogger<NAudioMusicPlayer> logger, ILifetimeScope iocContainer)
     {
         Logger = logger;
-
-        PlaybackEngine = new NAudioPlaybackEngine();
+        IocContainer = iocContainer;
     }
 
     public void LoadContent(GameStateManager gsm)
@@ -85,6 +86,18 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
         {
             var stream = CreateWaveStream(filePath);
 
+            if(PlaybackEngine is null)
+                PlaybackEngine = new NAudioPlaybackEngine(stream.WaveFormat.SampleRate, stream.WaveFormat.Channels);
+            else if(stream.WaveFormat.SampleRate != PlaybackEngine.SampleRate || stream.WaveFormat.Channels != PlaybackEngine.Channels)
+            {
+                Logger.LogError(
+                    "All songs must have the same sample rate and channel count. Song {Name} has a sample rate of {StreamSampleRate} and channel count of {StreamChannelCount}, but other songs have a sample rate of {PlayerSampleRate} and channel count of {PlayerChannelCount}.",
+                    name, stream.WaveFormat.SampleRate, stream.WaveFormat.Channels, PlaybackEngine.SampleRate, PlaybackEngine.Channels
+                );
+
+                return;
+            }
+
             Songs.Add(name, stream);
         }
         catch(Exception e)
@@ -93,26 +106,17 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
         }
     }
 
-    private static WaveStream CreateWaveStream(string filePath) => Path.GetExtension(filePath).ToLower() switch
+    private WaveStream CreateWaveStream(string filePath)
     {
-        ".ogg" => TryLoad("NAudio.Vorbis.VorbisWaveReader", filePath),
-        ".flac" => TryLoad("NAudio.Flac.FlacReader", filePath),
-        _ => new AudioFileReader(filePath),
-    };
+        var extension = Path.GetExtension(filePath)[1..].ToLower();
 
-    private static WaveStream TryLoad(string typeName, string filePath)
-    {
-        var type = Type.GetType(typeName);
+        var loader = IocContainer.Resolve<IEnumerable<NAudioFileLoader>>()
+            .FirstOrDefault(l => l.Extension == extension);
 
-        if(type == null)
-            throw new InvalidOperationException($"Could not find class of type {typeName}");
+        if(loader is not null)
+            return loader.Load(filePath);
 
-        var instance = Activator.CreateInstance(type, filePath);
-
-        if (instance is not WaveStream waveStream)
-            throw new InvalidOperationException($"Failed to instantiate class of type {typeName}");
-
-        return waveStream;
+        return new AudioFileReader(filePath);
     }
 
     /// <summary>
@@ -125,7 +129,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// <returns></returns>
     public NAudioMusicPlayer SetVolume(float volume)
     {
-        PlaybackEngine.SetVolume(volume);
+        PlaybackEngine?.SetVolume(volume);
         return this;
     }
 
@@ -171,7 +175,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
         if(fadeInMilliseconds > 0)
             sample.BeginFadeIn(fadeInMilliseconds);
 
-        PlaybackEngine.AddSample(sample);
+        PlaybackEngine?.AddSample(sample);
         PlayingSongs.Add(name, sample);
 
         return this;
@@ -189,7 +193,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     {
         if(fadeOutMilliseconds <= 0)
         {
-            PlaybackEngine.RemoveAll();
+            PlaybackEngine?.RemoveAll();
             PlayingSongs.Clear();
             FadingSongs.Clear();
             return this;
@@ -260,7 +264,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
 
         if (fadeOutMilliseconds <= 0)
         {
-            PlaybackEngine.RemoveSample(sample);
+            PlaybackEngine?.RemoveSample(sample);
             PlayingSongs.Remove(name);
             FadingSongs.Remove(name);
             return this;
@@ -284,7 +288,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
 
         Songs.Clear();
 
-        PlaybackEngine.Dispose();
+        PlaybackEngine?.Dispose();
     }
 
     public void Update(GameTime gameTime)
@@ -296,7 +300,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
         {
             var sample = PlayingSongs[name];
 
-            PlaybackEngine.RemoveSample(sample);
+            PlaybackEngine?.RemoveSample(sample);
 
             PlayingSongs.Remove(name);
             FadingSongs.Remove(name);

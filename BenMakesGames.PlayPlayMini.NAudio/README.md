@@ -25,14 +25,31 @@ Seamlessy-looping music is important for many games, but MonoGame's built-in mus
    * For example, `new NAudioSongMeta("TitleTheme", "Content/Music/TitleTheme.mp3")`.
 4. In your startup state, where you wait for content loaders to finish loading, wait for `NAudioMusicPlayer.FullyLoaded`, too. 
 
+**Note:** All songs you load must have the same sample rate (typically 44.1khz) and channel count (typically 2). When songs are loading, an error will be logged if they do not all match, and not all songs will be loaded.
+
 ### Optional Setup
 
-`.mp3`, `.aiff`, and `.wav` files are supported out of the box. For other formats, you will need to install additional NAudio packages:
+`.mp3`, `.aiff`, and `.wav` files are supported out of the box. For other formats, you will need to install additional NAudio packages and do a little extra configuration:
 
-| Extension | Package |
-| --------- | ------- |
-| `.ogg`    | `NAudio.Vorbis` |
-| `.flac`   | `NAudio.Flac` |
+#### `.ogg`
+
+Add the `NAudio.Vorbis` package to your project.
+
+In your game's `.AddServices(...)` configuration, add the following line:
+
+```c#
+s.RegisterInstance(new NAudioFileLoader("ogg", f => new VorbisWaveReader(f)));
+```
+
+#### `.flac`
+
+Add the `NAudio.Flac` package to your project.
+
+In your game's `.AddServices(...)` configuration, add the following line:
+
+```c#
+s.RegisterInstance(new NAudioFileLoader("flac", f => new FlacReader(f)));
+```
  
 ### Use
 
