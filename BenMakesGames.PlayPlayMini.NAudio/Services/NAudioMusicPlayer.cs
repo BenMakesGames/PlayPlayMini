@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
-using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.NAudio.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
@@ -13,8 +12,42 @@ using NAudio.Wave.SampleProviders;
 
 namespace BenMakesGames.PlayPlayMini.NAudio.Services;
 
+public interface INAudioMusicPlayer: IServiceLoadContent, IServiceUpdate
+{
+    INAudioMusicPlayer SetVolume(float volume);
+    float GetVolume();
+    bool IsPlaying(string name);
+    string[] GetPlayingSongs();
+    INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0);
+    INAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0);
+    INAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0);
+    INAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0);
+    INAudioMusicPlayer StopSong(string name, int fadeOutMilliseconds = 0);
+}
+
 /// <summary>
 /// Service for playing music using NAudio.
+///
+/// To support cross-platform, you must register the NAudioMusicPlayer manually.
+/// (This may be improved in a future version of PlayPlayMini.NAudio.)
+///
+/// Register it manually as follows:
+///
+///     .AddServices((s, c, serviceWatcher) => {
+///
+///        ...
+///
+///        s.RegisterType&lt;NAudioMusicPlayer&lt;WaveOutEvent>>().As&lt;INAudioMusicPlayer>()
+///            .SingleInstance()
+///            .OnActivating(audio => serviceWatcher.RegisterService(audio.Instance));
+///     })
+///
+/// The above will register NAudioMusicPlayer using WaveOutEvent, which only
+/// works on Windows. For different OSes, you will need to use a different class.
+///
+/// Here are some community-made players for other OSes:
+/// * MacOS, iOS, and Android: https://github.com/naudio/NAudio/issues/585
+/// *
 ///
 /// Inject it into your game state or service, for example:
 ///
@@ -35,11 +68,11 @@ namespace BenMakesGames.PlayPlayMini.NAudio.Services;
 ///         }
 ///     }
 /// </summary>
-[AutoRegister]
-public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDisposable
+public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
+    where T: IWavePlayer, new()
 {
-    private NAudioPlaybackEngine? PlaybackEngine { get; set; }
-    private ILogger<NAudioMusicPlayer> Logger { get; }
+    private INAudioPlaybackEngine? PlaybackEngine { get; set; }
+    private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
     public Dictionary<string, WaveStream> Songs { get; } = new();
@@ -47,7 +80,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     private Dictionary<string, FadeInOutSampleProvider> PlayingSongs { get; } = new();
     private Dictionary<string, DateTimeOffset> FadingSongs { get; } = new();
 
-    public NAudioMusicPlayer(ILogger<NAudioMusicPlayer> logger, ILifetimeScope iocContainer)
+    public NAudioMusicPlayer(ILogger<NAudioMusicPlayer<T>> logger, ILifetimeScope iocContainer)
     {
         Logger = logger;
         IocContainer = iocContainer;
@@ -55,6 +88,8 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
 
     public void LoadContent(GameStateManager gsm)
     {
+        Logger.LogInformation("LoadContent() started");
+
         var allSongs = gsm.Assets.GetAll<NAudioSongMeta>().ToList();
 
         foreach(var song in allSongs.Where(s => s.PreLoaded))
@@ -64,6 +99,8 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
         {
             foreach(var song in allSongs.Where(s => !s.PreLoaded))
                 LoadSong(song.Key, song.Path);
+
+            Logger.LogInformation("Fully loaded!");
 
             FullyLoaded = true;
         });
@@ -87,7 +124,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
             var stream = CreateWaveStream(filePath);
 
             if(PlaybackEngine is null)
-                PlaybackEngine = new NAudioPlaybackEngine(stream.WaveFormat.SampleRate, stream.WaveFormat.Channels);
+                PlaybackEngine = new NAudioPlaybackEngine<T>(stream.WaveFormat.SampleRate, stream.WaveFormat.Channels);
             else if(stream.WaveFormat.SampleRate != PlaybackEngine.SampleRate || stream.WaveFormat.Channels != PlaybackEngine.Channels)
             {
                 Logger.LogError(
@@ -127,11 +164,23 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// </summary>
     /// <param name="volume"></param>
     /// <returns></returns>
-    public NAudioMusicPlayer SetVolume(float volume)
+    /// <exception cref="InvalidOperationException">Throws an InvalidOperationException if called before any songs have been loaded.</exception>
+    public INAudioMusicPlayer SetVolume(float volume)
     {
-        PlaybackEngine?.SetVolume(volume);
+        if (PlaybackEngine is null)
+            throw new InvalidOperationException("NAudioMusicPlayer has not been initialized, yet.");
+
+        PlaybackEngine.SetVolume(volume);
+
         return this;
     }
+
+    /// <summary>
+    /// Returns the current master volume level.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException">Throws an InvalidOperationException if called before any songs have been loaded.</exception>
+    public float GetVolume() => PlaybackEngine?.GetVolume() ?? throw new InvalidOperationException("NAudioMusicPlayer has not been initialized, yet.");
 
     /// <summary>
     /// Returns true if the specified song is currently playing, including if it is fading in or out.
@@ -157,7 +206,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// <param name="name"></param>
     /// <param name="fadeInMilliseconds"></param>
     /// <returns></returns>
-    public NAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)
+    public INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)
     {
         if(!Songs.ContainsKey(name))
         {
@@ -189,7 +238,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// </summary>
     /// <param name="fadeOutMilliseconds"></param>
     /// <returns></returns>
-    public NAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0)
+    public INAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0)
     {
         if(fadeOutMilliseconds <= 0)
         {
@@ -221,7 +270,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// <param name="songsToContinue"></param>
     /// <param name="fadeOutMilliseconds"></param>
     /// <returns></returns>
-    public NAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0)
+    public INAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0)
     {
         foreach(var song in PlayingSongs)
         {
@@ -245,7 +294,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// <param name="name"></param>
     /// <param name="fadeOutMilliseconds"></param>
     /// <returns></returns>
-    public NAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0)
+    public INAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0)
         => StopAllSongsExcept([ name ], fadeOutMilliseconds);
 
     /// <summary>
@@ -257,7 +306,7 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
     /// <param name="name"></param>
     /// <param name="fadeOutMilliseconds"></param>
     /// <returns></returns>
-    public NAudioMusicPlayer StopSong(string name, int fadeOutMilliseconds = 0)
+    public INAudioMusicPlayer StopSong(string name, int fadeOutMilliseconds = 0)
     {
         if (!PlayingSongs.TryGetValue(name, out var sample))
             return this;
@@ -288,7 +337,8 @@ public sealed class NAudioMusicPlayer: IServiceLoadContent, IServiceUpdate, IDis
 
         Songs.Clear();
 
-        PlaybackEngine?.Dispose();
+        if(PlaybackEngine is IDisposable disposablePlaybackEngine)
+            disposablePlaybackEngine.Dispose();
     }
 
     public void Update(GameTime gameTime)

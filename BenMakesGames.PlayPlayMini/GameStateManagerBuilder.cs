@@ -169,7 +169,7 @@ public class GameStateManagerBuilder
 
                 registration
                     .OnActivating(s => serviceWatcher.RegisterService(s.Instance))
-                    .OnRelease(s => serviceWatcher.UnregisterService(s)) // pretty sure this is never called for ISingleInstance?
+                    .OnRelease(s => serviceWatcher.UnregisterService(s)) // pretty sure this is never called for singletons?
                 ;
             }
 
@@ -202,17 +202,18 @@ public class GameStateManagerBuilder
             GameAssets
         );
 
-        // here we go!
-        using (var container = builder.Build())
-        using (var scope = container.BeginLifetimeScope())
-        using (var game = scope.Resolve<GameStateManager>(new TypedParameter(typeof(GameStateManagerConfig), gameStateManagerConfig)))
-        {
-            InstantiateLoadContentAndInitializedServices(scope);
+        // let's-a go!
+        using var container = builder.Build();
+        using var scope = container.BeginLifetimeScope();
 
-            game.IsFixedTimeStep = FixedTimeStep;
+        InstantiateLoadContentAndInitializedServices(scope);
 
-            game.Run();
-        }
+        using var game = scope.Resolve<GameStateManager>(new TypedParameter(typeof(GameStateManagerConfig), gameStateManagerConfig));
+
+        game.IsFixedTimeStep = FixedTimeStep;
+
+        // wahoo!
+        game.Run();
     }
 
     private static void InstantiateLoadContentAndInitializedServices(ILifetimeScope scope)

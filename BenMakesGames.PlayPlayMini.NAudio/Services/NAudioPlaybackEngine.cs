@@ -1,14 +1,28 @@
 ﻿using System;
-using Microsoft.Extensions.Logging;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 
 namespace BenMakesGames.PlayPlayMini.NAudio.Services;
 
+public interface INAudioPlaybackEngine
+{
+    public int SampleRate { get; }
+    public int Channels { get; }
+
+    void SetVolume(float volume);
+    float GetVolume();
+
+    void AddSample(ISampleProvider sample);
+    void RemoveSample(ISampleProvider sample);
+    void RemoveAll();
+}
+
 // modified from https://markheath.net/post/fire-and-forget-audio-playback-with
-public sealed class NAudioPlaybackEngine: IDisposable
+public sealed class NAudioPlaybackEngine<T>: INAudioPlaybackEngine, IDisposable
+    where T: IWavePlayer, new()
 {
     private IWavePlayer OutputDevice { get; }
+    private VolumeSampleProvider VolumeControl { get; }
     private MixingSampleProvider Mixer { get; }
 
     public int SampleRate => Mixer.WaveFormat.SampleRate;
@@ -16,17 +30,20 @@ public sealed class NAudioPlaybackEngine: IDisposable
 
     public NAudioPlaybackEngine(int sampleRate = 44100, int channelCount = 2)
     {
-        OutputDevice = new WaveOutEvent();
+        OutputDevice = new T();
         Mixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, channelCount));
         Mixer.ReadFully = true;
-        OutputDevice.Init(Mixer);
+        VolumeControl = new VolumeSampleProvider(Mixer);
+        OutputDevice.Init(VolumeControl);
         OutputDevice.Play();
     }
 
     public void SetVolume(float volume)
     {
-        OutputDevice.Volume = volume;
+        VolumeControl.Volume = volume;
     }
+
+    public float GetVolume() => VolumeControl.Volume;
 
     public void AddSample(ISampleProvider sample)
     {

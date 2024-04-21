@@ -2,7 +2,9 @@
 
 Seamlessy-looping music is important for many games, but MonoGame's built-in music player isn't able to consistently loop music - more often than not, it lags, adding a short, but noticeable delay before looping.
 
-`PlayPlayMini.NAudio` allows you to use NAudio to play music, resolving this issue, and adding support for cross-fading songs!
+`PlayPlayMini.NAudio` allows you to use NAudio to play music, resolving this issue, and adding support for playing multiple songs at once, and cross-fading between songs!
+
+**Hey, Listen!** `PlayPlayMini.NAudio` is in early release; the API may change dramatically even between minor version numbers.
 
 [![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
 
@@ -23,9 +25,21 @@ Seamlessy-looping music is important for many games, but MonoGame's built-in mus
      ``` 
 3. When adding assets to your game's `GameStateManagerBuilder`, use `new NAudioSongMeta(...)` instead of `new SongMeta(...)`. When using `new NAudioSongMeta(...)`, you must specify the extension of the song.
    * For example, `new NAudioSongMeta("TitleTheme", "Content/Music/TitleTheme.mp3")`.
-4. In your startup state, where you wait for content loaders to finish loading, wait for `NAudioMusicPlayer.FullyLoaded`, too. 
+4. Update your `.AddServices(...)` call as follows:
+   ```c#
+   .AddServices((s, c, serviceWatcher) => {
 
-**Note:** All songs you load must have the same sample rate (typically 44.1khz) and channel count (typically 2). When songs are loading, an error will be logged if they do not all match, and not all songs will be loaded.
+      ...
+
+      // WaveOutEvent is only supported by Windows; for other OSes, replace WaveOutEvent with alternatives from this thread: https://github.com/naudio/NAudio/issues/585
+      s.RegisterType<NAudioMusicPlayer<WaveOutEvent>>().As<INAudioMusicPlayer>()
+          .SingleInstance()
+          .OnActivating(audio => serviceWatcher.RegisterService(audio.Instance));
+   })
+   ```
+5. In your startup state, where you wait for content loaders to finish loading, get an `INAudioMusicPlayer`, and wait for it to be `.FullyLoaded`, too.
+
+**Hey, Listen!** All songs you load must have the same sample rate (typically 44.1khz) and channel count (typically 2). When songs are loading, an error will be logged if they do not all match, and not all songs will be loaded.
 
 ### Optional Setup
 
@@ -53,7 +67,7 @@ s.RegisterInstance(new NAudioFileLoader("flac", f => new FlacReader(f)));
  
 ### Use
 
-In your game state or services, get an `NAudioMusicPlayer` via the constructor (just as you would any other service), and use it to play and stop songs.
+In your game state or services, get an `INAudioMusicPlayer` via the constructor (just as you would any other service), and use it to play and stop songs.
 
 Example:
 
@@ -65,19 +79,19 @@ NAudioMusicPlayer
 
 Refer to the reference, below, for a list of available methods.
 
-## `NAudioMusicPlayer` Method Reference
+## `INAudioMusicPlayer` Method Reference
 
-Note: negative fade-in and fade-out times are treated as 0.
+**Hey, Listen!** Negative fade-in and fade-out times are treated as 0.
 
-### `NAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)`
+### `INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)`
 
 Starts playing the specific song, fading it in over the specified number of milliseconds.
 
 Songs which are already playing will not be stopped! You must explicitly stop them using `StopAllSongs` or `StopSong` (below).
 
-If the song is already playing, it will not be played again (you cannot play two copies of the song playing at the same time). If the song is fading in, its fade-in time will not be changed.  
+If the song is already playing, it will not be played again (you cannot currently play two copies of the same song at the same time). If the song is fading in, its fade-in time will not be changed.  
 
-### `NAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0)`
+### `INAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0)`
 
 Stops all songs, fading them out over the specified number of milliseconds.
 
@@ -86,24 +100,24 @@ Songs which are already fading out will not have their fade-out time changed. A 
 To cross-fade between songs, you can chain `StopSongs` and `PlaySong` calls. For example:
 
 ```c#
-NAudioMusicPlayer
+musicPlayer // an instance of INAudioMusicPlayer
     .StopAllSongs(1000)
     .PlaySong("TitleTheme");
 ```
 
-### `NAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0)`
+### `INAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0)`
 
 Works like `StopAllSongs` (above), but does NOT stop the songs named in `songsToContinue`.
 
-### `NAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0)`
+### `INAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0)`
 
 Works like `StopAllSongs` (above), but does NOT stop the named song.
 
-### `NAudioMusicPlayer StopSong(string name, int fadeOutMilliseconds = 0)`
+### `INAudioMusicPlayer StopSong(string name, int fadeOutMilliseconds = 0)`
 
 Like `StopAllSongs` (above), but stops only the named song.
 
-### `NAudioMusicPlayer SetVolume(float volume)`
+### `INAudioMusicPlayer SetVolume(float volume)`
 
 Changes the volume for all songs.
 

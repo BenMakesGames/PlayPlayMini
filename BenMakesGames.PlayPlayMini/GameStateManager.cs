@@ -19,14 +19,14 @@ public sealed class GameStateManager: Game
     private ServiceWatcher ServiceWatcher { get; }
 
     public AssetCollection Assets => Config.Assets;
-    
+
     [Obsolete("Refer to Config.InitialWindowTitle instead.")] public (int Width, int Height, int Zoom) InitialWindowSize => Config.InitialWindowSize;
     [Obsolete("Refer to Config.InitialGameState instead.")] public Type InitialGameState => Config.InitialGameState;
-    
+
     public Type? LostFocusGameState { get; set; }
 
     private double FixedUpdateAccumulator { get; set; }
-    
+
     public GameStateManagerConfig Config { get; }
 
     public GameStateManager(
@@ -46,7 +46,7 @@ public sealed class GameStateManager: Game
 
         Config = config;
         LostFocusGameState = config.InitialLostFocusGameState;
-        
+
         CurrentState = new NoState();
     }
 
@@ -168,7 +168,7 @@ public sealed class GameStateManager: Game
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
-        
+
         NextState = CreateState(nextStateType);
 
         return NextState;
@@ -194,7 +194,7 @@ public sealed class GameStateManager: Game
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
-        
+
         NextState = CreateState<T>();
 
         return (T)NextState;
@@ -205,9 +205,9 @@ public sealed class GameStateManager: Game
     ///
     /// <example><code>
     /// ChangeState&lt;Playing, PlayingConfig&gt;(new PlayingConfig(123, "abc"));
-    /// 
+    ///
     /// ...
-    /// 
+    ///
     /// public sealed class Playing: GameState
     /// {
     ///     public Playing(PlayingConfig config, GameStateManager gsm, GraphicsManager graphics, ...)
@@ -215,7 +215,7 @@ public sealed class GameStateManager: Game
     ///         ...
     ///     }
     /// }
-    /// 
+    ///
     /// public sealed record PlayingConfig(int Foo, string Bar);
     /// </code></example>
     /// </summary>
