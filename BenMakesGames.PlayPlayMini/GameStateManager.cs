@@ -91,10 +91,15 @@ public sealed class GameStateManager: Game
     {
         SwitchState();
 
-        if(!IsActive && LostFocusGameState is not null && CurrentState.GetType() != LostFocusGameState)
+        if(!IsActive && LostFocusGameState is not null)
         {
-            ChangeState(LostFocusGameState, new LostFocusConfig(CurrentState));
-            SwitchState();
+            var currentStateType = CurrentState.GetType();
+
+            if (currentStateType != LostFocusGameState && currentStateType != Config.InitialGameState && currentStateType != typeof(NoState))
+            {
+                ChangeState(LostFocusGameState, new LostFocusConfig(CurrentState));
+                SwitchState();
+            }
         }
 
         Input(gameTime);

@@ -5,7 +5,7 @@
     <Company>Ben Hendel-Doying</Company>
     <Description>An opinionated framework for making smallish games with MonoGame.</Description>
     <Copyright>2021-2024 Ben Hendel-Doying</Copyright>
-    <Version>4.6.1</Version>
+    <Version>4.6.2</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>monogame game engine framework di state</PackageTags>
