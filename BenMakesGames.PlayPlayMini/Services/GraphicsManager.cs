@@ -21,6 +21,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     public bool FullyLoaded { get; private set; }
 
     public Matrix? TransformMatrix { get; private set; }
+    public Effect? PostProcessingShader { get; private set; }
     public int Zoom { get; private set; } = 2;
     public bool FullScreen { get; private set; }
     public int Width { get; private set; } = 1920 / 3;
@@ -39,6 +40,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     public Dictionary<string, Texture2D> Pictures { get; } = new();
     public Dictionary<string, SpriteSheet> SpriteSheets { get; } = new();
     public Dictionary<string, Font> Fonts { get; } = new();
+    public Dictionary<string, Effect> PixelShaders { get; } = new();
 
     public GraphicsManager(ILogger<GraphicsManager> logger)
     {
@@ -99,6 +101,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         foreach(var meta in gsm.Assets.GetAll<FontMeta>().Where(m => m.PreLoaded))
             LoadFont(meta);
 
+        foreach(var meta in gsm.Assets.GetAll<PixelShaderMeta>().Where(m => m.PreLoaded))
+            LoadPixelShader(meta);
+
         // deferred
         Task.Run(() => LoadDeferredContent(gsm.Assets));
     }
@@ -113,6 +118,9 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
         foreach(var meta in assets.GetAll<FontMeta>().Where(m => !m.PreLoaded))
             LoadFont(meta);
+
+        foreach(var meta in assets.GetAll<PixelShaderMeta>().Where(m => !m.PreLoaded))
+            LoadPixelShader(meta);
 
         FullyLoaded = true;
     }
@@ -132,7 +140,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
         catch (Exception e)
         {
-            Logger.LogError("Failed to load {Path}: {Message}", font.Path, e.Message);
+            Logger.LogError("Failed to load Font (Texture2D) {Path}: {Message}", font.Path, e.Message);
         }
     }
 
@@ -144,7 +152,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
         catch (Exception e)
         {
-            Logger.LogError("Failed to load {Path}: {Message}", picture.Path, e.Message);
+            Logger.LogError("Failed to load Picture (Texture2D) {Path}: {Message}", picture.Path, e.Message);
         }
     }
 
@@ -156,7 +164,19 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
         catch (Exception e)
         {
-            Logger.LogError("Failed to load {Path}: {Message}", spriteSheet.Path, e.Message);
+            Logger.LogError("Failed to load SpriteSheet (Texture2D) {Path}: {Message}", spriteSheet.Path, e.Message);
+        }
+    }
+
+    private void LoadPixelShader(PixelShaderMeta pixelShader)
+    {
+        try
+        {
+            PixelShaders.Add(pixelShader.Key, Content.Load<Effect>(pixelShader.Path));
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Failed to load PixelShader (Effect) {Path}: {Message}", pixelShader.Path, e.Message);
         }
     }
 
@@ -166,9 +186,13 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     }
 
     public void SetTransformMatrix(Matrix? matrix)
-    {
-        TransformMatrix = matrix;
-    }
+        => TransformMatrix = matrix;
+
+    public void SetPostProcessingPixelShader(Effect? effect)
+        => PostProcessingShader = effect;
+
+    public void SetPostProcessingPixelShader(string pixelShaderName)
+        => SetPostProcessingPixelShader(PixelShaders[pixelShaderName]);
 
     /// <summary>
     /// "Zoom" controls how large each "pixel" is.
@@ -821,7 +845,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
         GraphicsDevice.SetRenderTarget(null);
 
-        SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
+        SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, effect: PostProcessingShader);
         SpriteBatch.Draw(RenderTarget, new Rectangle(0, 0, Width * Zoom, Height * Zoom), Color.White);
         SpriteBatch.End();
     }
