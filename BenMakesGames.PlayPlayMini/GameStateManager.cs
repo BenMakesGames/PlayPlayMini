@@ -81,8 +81,10 @@ public sealed class GameStateManager: Game
 
     private void Input(GameTime gameTime)
     {
-        foreach(var s in ServiceWatcher.InputServices)
-            s.Input(gameTime);
+        // ReSharper disable once ForCanBeConvertedToForeach
+        // for loop, instead of foreach, reduces allocations
+        for(var i = 0; i < ServiceWatcher.InputServices.Count; i++)
+            ServiceWatcher.InputServices[i].Input(gameTime);
 
         CurrentState.Input(gameTime);
     }
@@ -106,8 +108,10 @@ public sealed class GameStateManager: Game
 
         base.Update(gameTime);
 
-        foreach (var s in ServiceWatcher.UpdatedServices)
-            s.Update(gameTime);
+        // ReSharper disable once ForCanBeConvertedToForeach
+        // for loop, instead of foreach, reduces allocations
+        for (var i = 0; i < ServiceWatcher.UpdatedServices.Count; i++)
+            ServiceWatcher.UpdatedServices[i].Update(gameTime);
 
         FixedUpdateAccumulator += gameTime.ElapsedGameTime.TotalMilliseconds;
 

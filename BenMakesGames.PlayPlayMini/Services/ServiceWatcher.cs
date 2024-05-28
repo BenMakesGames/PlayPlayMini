@@ -10,11 +10,11 @@ public sealed class ServiceWatcher
     private List<IServiceUpdate> ServicesWithUpdateEvents { get; } = new();
     private List<IServiceDraw> ServicesWithDrawEvents { get; } = new();
 
-    public IReadOnlyCollection<IServiceLoadContent> ContentLoadingServices => ServiceWithLoadContentEvents;
-    public IReadOnlyCollection<IServiceInitialize> InitializedServices => ServicesWithInitializeEvents;
-    public IReadOnlyCollection<IServiceInput> InputServices => ServicesWithInputEvents;
-    public IReadOnlyCollection<IServiceUpdate> UpdatedServices => ServicesWithUpdateEvents;
-    public IReadOnlyCollection<IServiceDraw> DrawnServices => ServicesWithDrawEvents;
+    public IReadOnlyList<IServiceLoadContent> ContentLoadingServices => ServiceWithLoadContentEvents;
+    public IReadOnlyList<IServiceInitialize> InitializedServices => ServicesWithInitializeEvents;
+    public IReadOnlyList<IServiceInput> InputServices => ServicesWithInputEvents;
+    public IReadOnlyList<IServiceUpdate> UpdatedServices => ServicesWithUpdateEvents;
+    public IReadOnlyList<IServiceDraw> DrawnServices => ServicesWithDrawEvents;
 
     public void RegisterService(object service)
     {
