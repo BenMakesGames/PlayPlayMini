@@ -16,6 +16,7 @@
     <PackageIcon>package-icon.png</PackageIcon>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
