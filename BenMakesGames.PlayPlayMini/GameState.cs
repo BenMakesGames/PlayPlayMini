@@ -43,7 +43,7 @@ public abstract class GameState
     /// </summary>
     /// <remarks>
     /// Override this method to capture input from a service such as <see cref="KeyboardManager"/>, <see cref="MouseManager"/>, etc.
-    /// This method is called once per frame, immediately before <see cref="Update(GameTime)"/>.
+    /// This method is called once per frame, immediately before <see cref="FixedUpdate(GameTime)"/> and <see cref="Update(GameTime)"/>.
     /// </remarks>
     /// <param name="gameTime">A <see cref="GameTime"/> instance containing the elapsed time since the last call to <see cref="Input"/> and the total time elapsed since the game started.</param>
     public virtual void Input(GameTime gameTime) { }
