@@ -75,7 +75,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
-    public Dictionary<string, WaveStream> Songs { get; } = new();
+    public Dictionary<string, (WaveStream Stream, float Gain)> Songs { get; } = new();
 
     private Dictionary<string, FadeInOutSampleProvider> PlayingSongs { get; } = new();
     private Dictionary<string, DateTimeOffset> FadingSongs { get; } = new();
@@ -93,12 +93,12 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         var allSongs = gsm.Assets.GetAll<NAudioSongMeta>().ToList();
 
         foreach(var song in allSongs.Where(s => s.PreLoaded))
-            LoadSong(song.Key, song.Path);
+            LoadSong(song.Key, song.Path, song.Gain);
 
         Task.Run(() =>
         {
             foreach(var song in allSongs.Where(s => !s.PreLoaded))
-                LoadSong(song.Key, song.Path);
+                LoadSong(song.Key, song.Path, song.Gain);
 
             Logger.LogInformation("Fully loaded!");
 
@@ -111,7 +111,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         // unloading is done in Dispose()
     }
 
-    private void LoadSong(string name, string filePath)
+    private void LoadSong(string name, string filePath, float gain)
     {
         if(Songs.ContainsKey(name))
         {
@@ -135,7 +135,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
                 return;
             }
 
-            Songs.Add(name, stream);
+            Songs.Add(name, (stream, gain));
         }
         catch(Exception e)
         {
@@ -208,7 +208,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     /// <returns></returns>
     public INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)
     {
-        if(!Songs.ContainsKey(name))
+        if(!Songs.TryGetValue(name, out var song))
         {
             Logger.LogWarning("There is no song named {Name}", name);
             return this;
@@ -219,7 +219,11 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
         var initiallySilent = fadeInMilliseconds > 0;
 
-        var sample = new FadeInOutSampleProvider(new LoopStream(Songs[name]).ToSampleProvider(), initiallySilent);
+        var gainAdjusted = Math.Abs(song.Gain - 1) < 0.001
+            ? new LoopStream(song.Stream).ToSampleProvider()
+            : new VolumeSampleProvider(new LoopStream(song.Stream).ToSampleProvider()) { Volume = song.Gain };
+
+        var sample = new FadeInOutSampleProvider(gainAdjusted, initiallySilent);
 
         if(fadeInMilliseconds > 0)
             sample.BeginFadeIn(fadeInMilliseconds);
@@ -333,7 +337,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     public void Dispose()
     {
         foreach (var song in Songs.Values)
-            song.Dispose();
+            song.Stream.Dispose();
 
         Songs.Clear();
 
