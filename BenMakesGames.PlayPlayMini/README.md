@@ -10,6 +10,13 @@ If you prefer learning purely by example, check out [Block-break](https://github
 
 [![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
 
+# Upgrading from 4.x to 5.0.0
+
+## Breaking Changes
+1. Upgraded to MonoGame 3.8.2.1105
+2. The "Pixel" `Texture2D` is no longer available via the `GraphicsManager`'s `Pictures` dictionary, and can no longer be overridden by adding `PictureMeta` for "Pixel"; if you still need to use this texture, it's available as `WhitePixel` on the `GraphicsManager` service
+   * Replace uses `graphics.Pictures["Pixel"]` with `graphics.WhitePixel`
+
 # Upgrading from 3.x to 4.0.0
 
 ## Breaking Changes
