@@ -37,10 +37,11 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     private GraphicsDeviceManager Graphics { get; set; } = null!;
     public SpriteBatch SpriteBatch { get; set; } = null!;
 
-    public Dictionary<string, Texture2D> Pictures { get; } = new();
-    public Dictionary<string, SpriteSheet> SpriteSheets { get; } = new();
-    public Dictionary<string, Font> Fonts { get; } = new();
-    public Dictionary<string, Effect> PixelShaders { get; } = new();
+    public Dictionary<string, Texture2D> Pictures { get; private set; } = new();
+    public Texture2D WhitePixel { get; private set; } = null!;
+    public Dictionary<string, SpriteSheet> SpriteSheets { get; private set; } = new();
+    public Dictionary<string, Font> Fonts { get; private set; } = new();
+    public Dictionary<string, Effect> PixelShaders { get; private set; } = new();
 
     public GraphicsManager(ILogger<GraphicsManager> logger)
     {
@@ -79,21 +80,17 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 
     public void LoadContent(GameStateManager gsm)
     {
-        Pictures.Clear();
-        SpriteSheets.Clear();
-        Fonts.Clear();
+        WhitePixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+        WhitePixel.SetData([ Color.White ]);
+
+        Pictures = gsm.Assets.GetAll<PictureMeta>().ToDictionary(meta => meta.Key, _ => (Texture2D)null!);
+        SpriteSheets = gsm.Assets.GetAll<SpriteSheetMeta>().ToDictionary(meta => meta.Key, _ => (SpriteSheet)null!);
+        Fonts = gsm.Assets.GetAll<FontMeta>().ToDictionary(meta => meta.Key, _ => (Font)null!);
+        PixelShaders = gsm.Assets.GetAll<PixelShaderMeta>().ToDictionary(meta => meta.Key, _ => (Effect)null!);
 
         // load immediately
-        foreach(var meta in gsm.Assets.GetAll<PictureMeta>().Where(m => m.PreLoaded))
+        foreach(var meta in gsm.Assets.GetAll<PictureMeta>())
             LoadPicture(meta);
-
-        if(!Pictures.ContainsKey("Pixel"))
-        {
-            var whitePixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            whitePixel.SetData([ Color.White ]);
-
-            Pictures.Add("Pixel", whitePixel);
-        }
 
         foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
             LoadSpriteSheet(meta);
@@ -129,14 +126,14 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            Fonts.Add(font.Key, new Font(
+            Fonts[font.Key] = new Font(
                 Content.Load<Texture2D>(font.Path),
                 font.Width,
                 font.Height,
                 font.HorizontalSpacing,
                 font.VerticalSpacing,
                 font.FirstCharacter
-            ));
+            );
         }
         catch (Exception e)
         {
@@ -148,7 +145,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            Pictures.Add(picture.Key, Content.Load<Texture2D>(picture.Path));
+            Pictures[picture.Key] = Content.Load<Texture2D>(picture.Path);
         }
         catch (Exception e)
         {
@@ -160,7 +157,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            SpriteSheets.Add(spriteSheet.Key, new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height));
+            SpriteSheets[spriteSheet.Key] = new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height);
         }
         catch (Exception e)
         {
@@ -172,7 +169,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     {
         try
         {
-            PixelShaders.Add(pixelShader.Key, Content.Load<Effect>(pixelShader.Path));
+            PixelShaders[pixelShader.Key] = Content.Load<Effect>(pixelShader.Path);
         }
         catch (Exception e)
         {
@@ -298,14 +295,14 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawFilledRectangle((int x, int y) upperLeft, (int x, int y) bottomRight, Color c)
     {
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(upperLeft.x, upperLeft.y, bottomRight.x - upperLeft.x + 1, bottomRight.y - upperLeft.y + 1), null, c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(upperLeft.x, upperLeft.y, bottomRight.x - upperLeft.x + 1, bottomRight.y - upperLeft.y + 1), null, c);
         DrawCalls++;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawFilledRectangle(int x, int y, int w, int h, Color c)
     {
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y, w, h), null, c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(x, y, w, h), null, c);
         DrawCalls++;
     }
 
@@ -339,12 +336,12 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     public void DrawRectangle(int x, int y, int w, int h, Color c)
     {
         // top & bottom line
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y, w, 1), null, c);
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y + h - 1, w, 1), null, c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(x, y, w, 1), null, c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(x, y + h - 1, w, 1), null, c);
 
         // left & right line
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y + 1, 1, h - 2), null, c);
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x + w - 1, y + 1, 1, h - 2), null, c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(x, y + 1, 1, h - 2), null, c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(x + w - 1, y + 1, 1, h - 2), null, c);
 
         DrawCalls += 4;
     }
@@ -352,7 +349,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawPoint(int x, int y, Color c)
     {
-        SpriteBatch.Draw(Pictures["Pixel"], new Rectangle(x, y, 1, 1), c);
+        SpriteBatch.Draw(WhitePixel, new Rectangle(x, y, 1, 1), c);
         DrawCalls++;
     }
 

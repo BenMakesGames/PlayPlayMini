@@ -75,10 +75,10 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
-    public Dictionary<string, (WaveStream Stream, float Gain)> Songs { get; } = new();
+    public Dictionary<string, (WaveStream Stream, float Gain)> Songs { get; private set; } = new();
 
     private Dictionary<string, FadeInOutSampleProvider> PlayingSongs { get; } = new();
-    private Dictionary<string, DateTimeOffset> FadingSongs { get; } = new();
+    private List<(string Name, DateTimeOffset EndTime)> FadingSongs { get; } = new();
 
     public NAudioMusicPlayer(ILogger<NAudioMusicPlayer<T>> logger, ILifetimeScope iocContainer)
     {
@@ -91,6 +91,8 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         Logger.LogInformation("LoadContent() started");
 
         var allSongs = gsm.Assets.GetAll<NAudioSongMeta>().ToList();
+
+        Songs = allSongs.ToDictionary(meta => meta.Key, _ => ((WaveStream)null!, 0f));
 
         foreach(var song in allSongs.Where(s => s.PreLoaded))
             LoadSong(song.Key, song.Path, song.Gain);
@@ -113,12 +115,6 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
     private void LoadSong(string name, string filePath, float gain)
     {
-        if(Songs.ContainsKey(name))
-        {
-            Logger.LogWarning("A song named {Name} has already been loaded", name);
-            return;
-        }
-
         try
         {
             var stream = CreateWaveStream(filePath);
@@ -135,7 +131,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
                 return;
             }
 
-            Songs.Add(name, (stream, gain));
+            Songs[name] = (stream, gain);
         }
         catch(Exception e)
         {
@@ -254,11 +250,11 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
         foreach(var song in PlayingSongs)
         {
-            if(FadingSongs.ContainsKey(song.Key))
+            if(FadingSongs.Any(s => s.Name == song.Key))
                 continue;
 
             song.Value.BeginFadeOut(fadeOutMilliseconds);
-            FadingSongs.Add(song.Key, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds));
+            FadingSongs.Add((song.Key, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds)));
         }
 
         return this;
@@ -278,11 +274,11 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     {
         foreach(var song in PlayingSongs)
         {
-            if(songsToContinue.Contains(song.Key) || FadingSongs.ContainsKey(song.Key))
+            if(songsToContinue.Contains(song.Key) || FadingSongs.Any(s => s.Name == song.Key))
                 continue;
 
             song.Value.BeginFadeOut(fadeOutMilliseconds);
-            FadingSongs.Add(song.Key, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds));
+            FadingSongs.Add((song.Key, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds)));
         }
 
         return this;
@@ -315,19 +311,24 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         if (!PlayingSongs.TryGetValue(name, out var sample))
             return this;
 
+        var fadingSongIndex = FadingSongs.FindIndex(s => s.Name == name);
+
         if (fadeOutMilliseconds <= 0)
         {
             PlaybackEngine?.RemoveSample(sample);
             PlayingSongs.Remove(name);
-            FadingSongs.Remove(name);
+
+            if(fadingSongIndex >= 0)
+                FadingSongs.RemoveAt(fadingSongIndex);
+
             return this;
         }
 
-        if (FadingSongs.ContainsKey(name))
+        if (fadingSongIndex >= 0)
             return this;
 
         sample.BeginFadeOut(fadeOutMilliseconds);
-        FadingSongs.Add(name, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds));
+        FadingSongs.Add((name, DateTimeOffset.UtcNow + TimeSpan.FromMilliseconds(fadeOutMilliseconds)));
 
         return this;
     }
@@ -348,16 +349,18 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     public void Update(GameTime gameTime)
     {
         var now = DateTimeOffset.UtcNow;
-        var toRemove = FadingSongs.Where(kvp => now >= kvp.Value).Select(kvp => kvp.Key);
 
-        foreach(var name in toRemove)
+        for (var i = FadingSongs.Count - 1; i >= 0; i--)
         {
-            var sample = PlayingSongs[name];
+            if (now <= FadingSongs[i].EndTime)
+                continue;
+
+            var sample = PlayingSongs[FadingSongs[i].Name];
 
             PlaybackEngine?.RemoveSample(sample);
 
-            PlayingSongs.Remove(name);
-            FadingSongs.Remove(name);
+            PlayingSongs.Remove(FadingSongs[i].Name);
+            FadingSongs.RemoveAt(i);
         }
     }
 }

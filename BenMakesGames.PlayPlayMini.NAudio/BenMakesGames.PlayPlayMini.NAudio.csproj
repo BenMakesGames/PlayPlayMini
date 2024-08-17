@@ -5,7 +5,7 @@
         <Company>Ben Hendel-Doying</Company>
         <Description>Get seamless looping music, and cross-fade, in your MonoGame-PlayPlayMini game using NAudio.</Description>
         <Copyright>2024 Ben Hendel-Doying</Copyright>
-        <Version>0.4.0</Version>
+        <Version>0.5.0</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>monogame playplaymini naudio music</PackageTags>
@@ -24,7 +24,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="BenMakesGames.PlayPlayMini" Version="4.5.0" />
       <PackageReference Include="NAudio" Version="2.2.1" />
     </ItemGroup>
 
@@ -47,6 +46,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\BenMakesGames.PlayPlayMini\BenMakesGames.PlayPlayMini.csproj" />
     </ItemGroup>
 
 </Project>

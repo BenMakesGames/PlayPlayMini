@@ -22,8 +22,8 @@ public sealed class SoundManager : IServiceLoadContent
 
     private ContentManager Content => Game.Content;
 
-    public Dictionary<string, SoundEffect> SoundEffects { get; } = new();
-    public Dictionary<string, Song> Songs { get; } = new();
+    public Dictionary<string, SoundEffect> SoundEffects { get; private set; } = new();
+    public Dictionary<string, Song> Songs { get; private set; } = new();
 
     public float SoundVolume { get; private set; } = 1.0f;
     public float MusicVolume { get; private set; } = 1.0f;
@@ -44,7 +44,7 @@ public sealed class SoundManager : IServiceLoadContent
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>The volume level of sounds that are currently playing WILL NOT be adjusted.</remarks>
     /// <param name="volume"></param>
@@ -54,7 +54,7 @@ public sealed class SoundManager : IServiceLoadContent
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <remarks>The volume level of songs that are currently playing will be adjusted.</remarks>
     /// <param name="volume"></param>
@@ -113,8 +113,8 @@ public sealed class SoundManager : IServiceLoadContent
 
     public void LoadContent(GameStateManager gsm)
     {
-        SoundEffects.Clear();
-        Songs.Clear();
+        SoundEffects = gsm.Assets.GetAll<SoundEffectMeta>().ToDictionary(m => m.Key, _ => (SoundEffect)null!);
+        Songs = gsm.Assets.GetAll<SongMeta>().ToDictionary(m => m.Key, _ => (Song)null!);
 
         // load immediately
         foreach (var meta in gsm.Assets.GetAll<SoundEffectMeta>().Where(m => m.PreLoaded))
@@ -146,7 +146,7 @@ public sealed class SoundManager : IServiceLoadContent
     {
         try
         {
-            SoundEffects.Add(soundEffect.Key, Content.Load<SoundEffect>(soundEffect.Path));
+            SoundEffects[soundEffect.Key] = Content.Load<SoundEffect>(soundEffect.Path);
         }
         catch (Exception e)
         {
@@ -158,7 +158,7 @@ public sealed class SoundManager : IServiceLoadContent
     {
         try
         {
-            Songs.Add(song.Key, Content.Load<Song>(song.Path));
+            Songs[song.Key] = Content.Load<Song>(song.Path);
         }
         catch (Exception e)
         {
