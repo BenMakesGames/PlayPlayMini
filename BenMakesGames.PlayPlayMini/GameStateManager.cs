@@ -154,15 +154,15 @@ public sealed class GameStateManager: Game
 
     private void SwitchState()
     {
-        if(NextState is null)
-            return;
+        while (NextState is not null)
+        {
+            CurrentState.Leave();
 
-        CurrentState.Leave();
+            CurrentState = NextState;
+            NextState = null;
 
-        CurrentState = NextState;
-        NextState = null;
-
-        CurrentState.Enter();
+            CurrentState.Enter();
+        }
     }
 
     public void ChangeState(GameState nextState)
