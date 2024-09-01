@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenMakesGames.PlayPlayMini.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenMakesGames.PlayPlayMini.NAudio", "BenMakesGames.PlayPlayMini.NAudio\BenMakesGames.PlayPlayMini.NAudio.csproj", "{9BDBBE24-8240-414F-B8F7-C09B89C98861}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenMakesGames.PlayPlayMini.Performance", "BenMakesGames.PlayPlayMini.Performance\BenMakesGames.PlayPlayMini.Performance.csproj", "{CDC52531-262F-45F2-9485-D5C09BACE008}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{9BDBBE24-8240-414F-B8F7-C09B89C98861}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BDBBE24-8240-414F-B8F7-C09B89C98861}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BDBBE24-8240-414F-B8F7-C09B89C98861}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDC52531-262F-45F2-9485-D5C09BACE008}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDC52531-262F-45F2-9485-D5C09BACE008}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDC52531-262F-45F2-9485-D5C09BACE008}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDC52531-262F-45F2-9485-D5C09BACE008}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
