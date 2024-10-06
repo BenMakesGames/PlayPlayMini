@@ -91,7 +91,7 @@ public sealed class ScreenWipe: GameState
         }
     }
 
-    private void DrawWipeLeftToRight(double progress, bool reentering)
+    private void DrawWipeRightToLeft(double progress, bool reentering)
     {
         var width = (int)(Graphics.Width * progress);
 
@@ -103,7 +103,7 @@ public sealed class ScreenWipe: GameState
         Graphics.DrawFilledRectangle(x, 0, width, Graphics.Height, Config.Color);
     }
 
-    private void DrawWipeRightToLeft(double progress, bool reentering)
+    private void DrawWipeLeftToRight(double progress, bool reentering)
     {
         var width = (int)(Graphics.Width * progress);
 
