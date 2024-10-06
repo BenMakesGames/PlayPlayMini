@@ -18,7 +18,7 @@ public interface INAudioMusicPlayer: IServiceLoadContent, IServiceUpdate
     float GetVolume();
     bool IsPlaying(string name);
     string[] GetPlayingSongs();
-    INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0);
+    INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0, long? startPosition = null);
     INAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0);
     INAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0);
     INAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0);
@@ -201,8 +201,9 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     /// </summary>
     /// <param name="name"></param>
     /// <param name="fadeInMilliseconds"></param>
+    /// <param name="startPosition">Position to start song from. If null, song resumes from where it left off.</param>
     /// <returns></returns>
-    public INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)
+    public INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0, long? startPosition = null)
     {
         if(!Songs.TryGetValue(name, out var song))
         {
@@ -212,6 +213,9 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
         if(PlayingSongs.ContainsKey(name))
             return this;
+
+        if(startPosition.HasValue)
+            song.Stream.Position = startPosition.Value;
 
         var initiallySilent = fadeInMilliseconds > 0;
 
