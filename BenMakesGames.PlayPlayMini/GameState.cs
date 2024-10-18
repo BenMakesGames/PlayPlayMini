@@ -25,10 +25,10 @@ namespace BenMakesGames.PlayPlayMini;
 ///         Graphics = graphics;
 ///         Keyboard = keyboard;
 ///     }
-///     
+///
 ///     public override void Input(GameTime gameTime)
 ///     {
-///         if (Keyboard.IsKeyDown(Keys.Escape))
+///         if (Keyboard.KeyDown(Keys.Escape))
 ///             GSM.ChangeState&lt;MyPauseMenu&gt;(); // or maybe GSM.Exit();
 ///     }
 /// }
@@ -39,7 +39,7 @@ namespace BenMakesGames.PlayPlayMini;
 public abstract class GameState
 {
     /// <summary>
-    /// Called when input should be captured from input devices. 
+    /// Called when input should be captured from input devices.
     /// </summary>
     /// <remarks>
     /// Override this method to capture input from a service such as <see cref="KeyboardManager"/>, <see cref="MouseManager"/>, etc.
@@ -63,13 +63,13 @@ public abstract class GameState
     /// </summary>
     /// <remarks>
     /// This method is called an average of 60 times per second, regardless of the current frame rate. This can be useful for certain physics-based updates.
-    /// If your <see cref="Game.IsFixedTimeStep"/> is set to <see langword="true" />, then <see cref="Update(GameTime)"/> will ALSO be called about 60 times per second. 
+    /// If your <see cref="Game.IsFixedTimeStep"/> is set to <see langword="true" />, then <see cref="Update(GameTime)"/> will ALSO be called about 60 times per second.
     /// In that case, there's no reason to use both <see cref="Update(GameTime)"/> and <see cref="FixedUpdate(GameTime)"/>.
     /// <list>
     /// <listheader>See also:</listheader>
     /// <item><seealso cref="Update(GameTime)"/></item>
     /// </list>
-    /// </remarks>   
+    /// </remarks>
     /// <param name="gameTime">A <see cref="GameTime"/> instance containing the elapsed time since the last call to <see cref="Update"/> and the total time elapsed since the game started.</param>
     public virtual void FixedUpdate(GameTime gameTime) { }
 
@@ -80,7 +80,7 @@ public abstract class GameState
     public virtual void Draw(GameTime gameTime) { }
 
     /// <summary>
-    /// This method is called when the <see cref="GameStateManager"/>'s current state changes to this state. 
+    /// This method is called when the <see cref="GameStateManager"/>'s current state changes to this state.
     /// It runs before the first <see cref="Input"/>, <see cref="Update"/>, <see cref="FixedUpdate"/>, or <see cref="Draw"/> method is called.
     /// </summary>
     public virtual void Enter() { }
