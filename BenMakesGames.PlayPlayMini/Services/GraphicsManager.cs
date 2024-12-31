@@ -89,7 +89,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         PixelShaders = gsm.Assets.GetAll<PixelShaderMeta>().ToDictionary(meta => meta.Key, _ => (Effect)null!);
 
         // load immediately
-        foreach(var meta in gsm.Assets.GetAll<PictureMeta>())
+        foreach(var meta in gsm.Assets.GetAll<PictureMeta>().Where(m => m.PreLoaded))
             LoadPicture(meta);
 
         foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
