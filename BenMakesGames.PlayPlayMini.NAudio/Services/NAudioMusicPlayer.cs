@@ -337,8 +337,10 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         return this;
     }
 
+    /// <inheritdoc />
     public bool FullyLoaded { get; private set; }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         foreach (var song in Songs.Values)
@@ -350,6 +352,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
             disposablePlaybackEngine.Dispose();
     }
 
+    /// <inheritdoc />
     public void Update(GameTime gameTime)
     {
         var now = DateTimeOffset.UtcNow;

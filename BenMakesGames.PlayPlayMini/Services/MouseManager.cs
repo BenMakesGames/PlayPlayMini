@@ -178,4 +178,44 @@ public sealed class MouseManager : IServiceInput
         DrawingMode = MouseDrawingMode.None;
         GSM.IsMouseVisible = false;
     }
+
+    /// <summary>
+    /// Returns true if the mouse is currently in the specified rectangle.
+    /// </summary>
+    /// <param name="rectangle"></param>
+    /// <returns></returns>
+    public bool IsInRectangle(Rectangle rectangle) => rectangle.Contains(X, Y);
+
+    /// <summary>
+    /// Returns true if the mouse is currently in the specified rectangle.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <returns></returns>
+    public bool IsIsRectangle(int x, int y, int width, int height) => X >= x && X < x + width && Y >= y && Y < y + height;
+
+    /// <summary>
+    /// Returns true if the mouse is currently in the window.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsInWindow() => X >= 0 && X < GraphicsManager.Width && Y >= 0 && Y < GraphicsManager.Height;
+
+    /// <summary>
+    /// Returns true if the mouse is currently in the specified circle.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="radius"></param>
+    /// <returns></returns>
+    public bool IsInCircle(int x, int y, int radius) => Math.Pow(X - x, 2) + Math.Pow(Y - y, 2) < Math.Pow(radius, 2);
+
+    /// <summary>
+    /// Returns true if the mouse is currently in the specified circle.
+    /// </summary>
+    /// <param name="center"></param>
+    /// <param name="radius"></param>
+    /// <returns></returns>
+    public bool IsInCircle(Point center, int radius) => Math.Pow(X - center.X, 2) + Math.Pow(Y - center.Y, 2) < Math.Pow(radius, 2);
 }
