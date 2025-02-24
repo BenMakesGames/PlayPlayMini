@@ -4,31 +4,76 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions;
 
+/// <summary>
+/// Extension methods for drawing ellipses and circles using the GraphicsManager.
+/// </summary>
 public static class EllipseExtensions
 {
+    /// <summary>
+    /// Draws a filled circle centered at the specified Vector2 position.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="center">Center point of the circle.</param>
+    /// <param name="radius">Radius of the circle.</param>
+    /// <param name="fillColor">Fill color of the circle.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawFilledCircle(this GraphicsManager graphics, Vector2 center, int radius, Color fillColor)
         => graphics.DrawFilledEllipse((int)center.X - radius, (int)center.Y - radius, radius * 2 + 1, radius * 2 + 1, fillColor);
 
+    /// <summary>
+    /// Draws a circle outline centered at the specified Vector2 position.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="center">Center point of the circle.</param>
+    /// <param name="radius">Radius of the circle.</param>
+    /// <param name="outlineColor">Color of the circle outline.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawCircle(this GraphicsManager graphics, Vector2 center, int radius, Color outlineColor)
         => graphics.DrawFilledEllipse((int)center.X - radius, (int)center.Y - radius, radius * 2 + 1, radius * 2 + 1, outlineColor);
 
+    /// <summary>
+    /// Draws a filled circle centered at the specified coordinates.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="centerX">X coordinate of the circle center.</param>
+    /// <param name="centerY">Y coordinate of the circle center.</param>
+    /// <param name="radius">Radius of the circle.</param>
+    /// <param name="fillColor">Fill color of the circle.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawFilledCircle(this GraphicsManager graphics, int centerX, int centerY, int radius, Color fillColor)
         => graphics.DrawFilledEllipse(centerX - radius, centerY - radius, radius * 2 + 1, radius * 2 + 1, fillColor);
 
+    /// <summary>
+    /// Draws a circle outline centered at the specified coordinates.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="centerX">X coordinate of the circle center.</param>
+    /// <param name="centerY">Y coordinate of the circle center.</param>
+    /// <param name="radius">Radius of the circle.</param>
+    /// <param name="outlineColor">Color of the circle outline.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawCircle(this GraphicsManager graphics, int centerX, int centerY, int radius, Color outlineColor)
         => graphics.DrawEllipse(centerX - radius, centerY - radius, radius * 2 + 1, radius * 2 + 1, outlineColor);
 
+    /// <summary>
+    /// Draws a filled ellipse that fits within the specified rectangle.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="rectangle">The rectangle that defines the ellipse bounds.</param>
+    /// <param name="fillColor">Fill color of the ellipse.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawFilledEllipse(this GraphicsManager graphics, Rectangle rectangle, Color fillColor)
         => graphics.DrawFilledEllipse(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, fillColor);
 
     /// <summary>
-    /// Draws an ellipse that occupies the rectangle given by (x, y, width, height).
+    /// Draws a filled ellipse that occupies the rectangle given by (x, y, width, height).
     /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="x">X coordinate of the upper-left corner.</param>
+    /// <param name="y">Y coordinate of the upper-left corner.</param>
+    /// <param name="width">Width of the bounding rectangle.</param>
+    /// <param name="height">Height of the bounding rectangle.</param>
+    /// <param name="fillColor">Fill color of the ellipse.</param>
     public static void DrawFilledEllipse(this GraphicsManager graphics, int x, int y, int width, int height, Color fillColor)
     {
         if (width < 1 || height < 1) return;
@@ -48,10 +93,25 @@ public static class EllipseExtensions
         graphics.DrawFilledEllipse_Sheldon(x, y, x + width - 1, y + height - 1, fillColor);
     }
 
+    /// <summary>
+    /// Draws an ellipse outline that fits within the specified rectangle.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="rectangle">The rectangle that defines the ellipse bounds.</param>
+    /// <param name="outlineColor">Color of the ellipse outline.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawEllipse(this GraphicsManager graphics, Rectangle rectangle, Color outlineColor)
         => graphics.DrawEllipse(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, outlineColor);
 
+    /// <summary>
+    /// Draws an ellipse outline that occupies the rectangle given by (x, y, width, height).
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="x">X coordinate of the upper-left corner.</param>
+    /// <param name="y">Y coordinate of the upper-left corner.</param>
+    /// <param name="width">Width of the bounding rectangle.</param>
+    /// <param name="height">Height of the bounding rectangle.</param>
+    /// <param name="outlineColor">Color of the ellipse outline.</param>
     public static void DrawEllipse(this GraphicsManager graphics, int x, int y, int width, int height, Color outlineColor)
     {
         if (width < 1 || height < 1) return;

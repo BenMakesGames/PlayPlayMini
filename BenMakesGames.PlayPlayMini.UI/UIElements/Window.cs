@@ -1,5 +1,5 @@
 ﻿using System;
-using BenMakesGames.PlayPlayMini.UI.Extensions;
+using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.UI.Model;
 using BenMakesGames.PlayPlayMini.UI.Services;
 using Microsoft.Xna.Framework;

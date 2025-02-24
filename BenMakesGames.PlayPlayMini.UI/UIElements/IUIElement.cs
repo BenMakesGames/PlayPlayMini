@@ -2,11 +2,12 @@
 using BenMakesGames.PlayPlayMini.UI.Services;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.UI.Model;
 
 namespace BenMakesGames.PlayPlayMini.UI.UIElements;
 
-public interface IUIElement
+public interface IUIElement: IRectangle<int>
 {
     UIService UI { get; }
 

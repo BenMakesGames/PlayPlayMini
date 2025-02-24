@@ -4,8 +4,19 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions;
 
+/// <summary>
+/// Extension methods for drawing text with a wavy animation effect using the GraphicsManager.
+/// </summary>
 public static class WavyText
 {
+    /// <summary>
+    /// Draws text with a wavy animation effect, centered horizontally and vertically on the screen.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="fontName">Name of the font to use.</param>
+    /// <param name="gameTime">Current game time for animation.</param>
+    /// <param name="text">Text to draw.</param>
+    /// <param name="color">Color of the text.</param>
     public static void DrawWavyText(this GraphicsManager graphics, string fontName, GameTime gameTime, string text, Color color)
     {
         var font = graphics.Fonts[fontName];
@@ -16,9 +27,25 @@ public static class WavyText
         graphics.DrawWavyText(fontName, x, y, gameTime, text, color);
     }
 
+    /// <summary>
+    /// Draws text with a wavy animation effect, centered horizontally and vertically on the screen, using white color.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="fontName">Name of the font to use.</param>
+    /// <param name="gameTime">Current game time for animation.</param>
+    /// <param name="text">Text to draw.</param>
     public static void DrawWavyText(this GraphicsManager graphics, string fontName, GameTime gameTime, string text)
         => graphics.DrawWavyText(fontName, gameTime, text, Color.White);
 
+    /// <summary>
+    /// Draws text with a wavy animation effect at the specified vertical position, centered horizontally.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="fontName">Name of the font to use.</param>
+    /// <param name="y">Vertical position of the text.</param>
+    /// <param name="gameTime">Current game time for animation.</param>
+    /// <param name="text">Text to draw.</param>
+    /// <param name="color">Color of the text.</param>
     public static void DrawWavyText(this GraphicsManager graphics, string fontName, int y, GameTime gameTime, string text, Color color)
     {
         var x = (graphics.Width - text.Length * graphics.Fonts[fontName].CharacterWidth) / 2;
@@ -26,9 +53,27 @@ public static class WavyText
         graphics.DrawWavyText(fontName, x, y, gameTime, text, color);
     }
 
+    /// <summary>
+    /// Draws text with a wavy animation effect at the specified vertical position, centered horizontally, using white color.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="fontName">Name of the font to use.</param>
+    /// <param name="y">Vertical position of the text.</param>
+    /// <param name="gameTime">Current game time for animation.</param>
+    /// <param name="text">Text to draw.</param>
     public static void DrawWavyText(this GraphicsManager graphics, string fontName, int y, GameTime gameTime, string text)
         => graphics.DrawWavyText(fontName, y, gameTime, text, Color.White);
 
+    /// <summary>
+    /// Draws text with a wavy animation effect at the specified position.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="fontName">Name of the font to use.</param>
+    /// <param name="x">Horizontal position of the text.</param>
+    /// <param name="y">Vertical position of the text.</param>
+    /// <param name="gameTime">Current game time for animation.</param>
+    /// <param name="text">Text to draw.</param>
+    /// <param name="color">Color of the text.</param>
     public static void DrawWavyText(this GraphicsManager graphics, string fontName, int x, int y, GameTime gameTime, string text, Color color)
     {
         var font = graphics.Fonts[fontName];
@@ -41,6 +86,15 @@ public static class WavyText
         }
     }
 
+    /// <summary>
+    /// Draws text with a wavy animation effect at the specified position, using white color.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="fontName">Name of the font to use.</param>
+    /// <param name="x">Horizontal position of the text.</param>
+    /// <param name="y">Vertical position of the text.</param>
+    /// <param name="gameTime">Current game time for animation.</param>
+    /// <param name="text">Text to draw.</param>
     public static void DrawWavyText(this GraphicsManager graphics, string fontName, int x, int y, GameTime gameTime, string text)
         => graphics.DrawWavyText(fontName, x, y, gameTime, text, Color.White);
 }

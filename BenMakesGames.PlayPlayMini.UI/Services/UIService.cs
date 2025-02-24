@@ -1,5 +1,6 @@
 ﻿using System;
 using BenMakesGames.PlayPlayMini.Attributes.DI;
+using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
 using BenMakesGames.PlayPlayMini.UI.Model;
@@ -133,7 +134,7 @@ public sealed class UIService
         {
             var child = e.Children[i];
 
-            if (x >= child.X && x < child.X + child.Width && y >= child.Y && y < child.Y + child.Height)
+            if (child.Contains(x, y))
             {
                 DoMouseOverElement(child, x - child.X, y - child.Y);
                 return;

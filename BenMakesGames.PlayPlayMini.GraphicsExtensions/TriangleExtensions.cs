@@ -5,18 +5,44 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions;
 
+/// <summary>
+/// Extension methods for drawing triangles using the GraphicsManager.
+/// </summary>
 public static class TriangleExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsCounterclockwise(float x1, float y1, float x2, float y2, float x3, float y3)
         => (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1) < 0;
 
+    /// <summary>
+    /// Draws a filled triangle using three Vector2 points.
+    /// </summary>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="v1">First vertex of the triangle.</param>
+    /// <param name="v2">Second vertex of the triangle.</param>
+    /// <param name="v3">Third vertex of the triangle.</param>
+    /// <param name="fillColor">Fill color of the triangle.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void DrawFilledTriangle(this GraphicsManager graphics, Vector2 v1, Vector2 v2, Vector2 v3, Color fillColor)
         => graphics.DrawFilledTriangle(v1.X, v1.Y, v2.X, v2.Y, v3.X, v3.Y, fillColor);
 
-    // adapted from https://web.archive.org/web/20050408192410/http://sw-shader.sourceforge.net/rasterizer.html
-    // note: I already tried using hardware intrinsics to speed up some of the math in here, but it was actually slower, so... 🤷
+    /// <summary>
+    /// Draws a filled triangle using three points specified by their coordinates.
+    /// Uses an adaptation of the software rasterization algorithm from sw-shader.
+    /// </summary>
+    /// <remarks>
+    /// Adapted from https://web.archive.org/web/20050408192410/http://sw-shader.sourceforge.net/rasterizer.html
+    /// 
+    /// Note: I already tried using hardware intrinsics to speed up some of the math in here, but it was actually slower, so... 🤷
+    /// </remarks>
+    /// <param name="graphics">The graphics manager instance.</param>
+    /// <param name="x1">X coordinate of the first vertex.</param>
+    /// <param name="y1">Y coordinate of the first vertex.</param>
+    /// <param name="x2">X coordinate of the second vertex.</param>
+    /// <param name="y2">Y coordinate of the second vertex.</param>
+    /// <param name="x3">X coordinate of the third vertex.</param>
+    /// <param name="y3">Y coordinate of the third vertex.</param>
+    /// <param name="color">Fill color of the triangle.</param>
     public static void DrawFilledTriangle(this GraphicsManager graphics, float x1, float y1, float x2, float y2, float x3, float y3, Color color)
     {
         if(!IsCounterclockwise(x1, y1, x2, y2, x3, y3))

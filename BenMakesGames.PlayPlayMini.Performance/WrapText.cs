@@ -1,5 +1,4 @@
-﻿using System.Text;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenMakesGames.PlayPlayMini.Extensions;
 using BenMakesGames.PlayPlayMini.Model;
 
