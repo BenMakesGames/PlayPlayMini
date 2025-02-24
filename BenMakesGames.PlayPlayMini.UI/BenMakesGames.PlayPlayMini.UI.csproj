@@ -5,7 +5,7 @@
     <Company>Ben Hendel-Doying</Company>
     <Description>An extension for PlayPlayMini, adding a skinnable, object-oriented UI framework.</Description>
     <Copyright>2021-2024 Ben Hendel-Doying</Copyright>
-    <Version>5.1.0</Version>
+    <Version>5.2.0</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>monogame mouse ui framework oo</PackageTags>
@@ -47,10 +47,6 @@
   <ItemGroup>
     <ProjectReference Include="..\BenMakesGames.PlayPlayMini.GraphicsExtensions\BenMakesGames.PlayPlayMini.GraphicsExtensions.csproj" />
     <ProjectReference Include="..\BenMakesGames.PlayPlayMini\BenMakesGames.PlayPlayMini.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>
