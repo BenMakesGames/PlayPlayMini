@@ -14,6 +14,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace BenMakesGames.PlayPlayMini;
 
+/// <summary>
+/// Builder for creating a <see cref="GameStateManager"/>.
+/// </summary>
+/// <remarks>
+/// Creating one of these and calling <c>.Run()</c> on it will start the game. This should generally be done in the entry point of your application (often <c>Program.cs</c>).
+/// </remarks>
 public class GameStateManagerBuilder
 {
     private Type? InitialGameState { get; set; }
@@ -27,6 +33,15 @@ public class GameStateManagerBuilder
     private (int Width, int Height, int Zoom) WindowSize { get; set; } = (1920 / 3, 1080 / 3, 2);
     private bool FixedTimeStep { get; set; }
 
+    /// <summary>
+    /// Sets the window size and zoom level.
+    ///
+    /// If this method is not called, the window defaults to 640x360 with a zoom level of 2.
+    /// </summary>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="zoom"></param>
+    /// <returns></returns>
     public GameStateManagerBuilder SetWindowSize(int width, int height, int zoom)
     {
         WindowSize = (width, height, zoom);
@@ -34,6 +49,13 @@ public class GameStateManagerBuilder
         return this;
     }
 
+    /// <summary>
+    /// Sets the window title.
+    ///
+    /// If this method is not called, the window title defaults to "PlayPlayMini Game".
+    /// </summary>
+    /// <param name="title"></param>
+    /// <returns></returns>
     public GameStateManagerBuilder SetWindowTitle(string title)
     {
         WindowTitle = title;
@@ -41,6 +63,13 @@ public class GameStateManagerBuilder
         return this;
     }
 
+    /// <summary>
+    /// Sets the initial game state.
+    ///
+    /// If this method is not called, an exception will be thrown when <see cref="Run"/> is called.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public GameStateManagerBuilder SetInitialGameState<T>() where T: GameState
     {
         InitialGameState = typeof(T);
@@ -55,6 +84,14 @@ public class GameStateManagerBuilder
         return this;
     }
 
+    /// <summary>
+    /// Sets whether the game should use a fixed time step. When using a fixed time step, the <c>Update</c> method of
+    /// game states will be called an average of 60 times per second, instead of as fast as possible.
+    ///
+    /// If this method is not called, the game will NOT use a fixed time step.
+    /// </summary>
+    /// <param name="fixedTimeStep"></param>
+    /// <returns></returns>
     public GameStateManagerBuilder UseFixedTimeStep(bool fixedTimeStep = true)
     {
         FixedTimeStep = fixedTimeStep;
@@ -85,17 +122,6 @@ public class GameStateManagerBuilder
             throw new ArgumentException("AddServices may only be called once!");
 
         AddServicesCallback = (s, c, _) => callback(s, c);
-
-        return this;
-    }
-
-    [Obsolete("Use AddServices(Action<ContainerBuilder, IConfiguration, ServiceWatcher> callback) instead.")]
-    public GameStateManagerBuilder AddServices(Action<ContainerBuilder> callback)
-    {
-        if (AddServicesCallback is not null)
-            throw new ArgumentException("AddServices may only be called once!");
-
-        AddServicesCallback = (s, _, _) => callback(s);
 
         return this;
     }

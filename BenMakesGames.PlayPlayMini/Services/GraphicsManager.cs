@@ -635,33 +635,6 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         return (currentX, currentY);
     }
 
-    [Obsolete("Use the PlayPlayMini.GraphicsExtensions version of this method, instead, and ditch your outline font. (If you're truly counting frames, call DrawText twice, passing the appropriate fonts and colors... or inspect this method, and copy-paste its source into your code!)")]
-    public void DrawTextWithOutline(Font font, Font outlineFont, int x, int y, string text, Color fill, Color outline)
-    {
-        var currentX = x;
-        var currentY = y;
-
-        foreach (char c in text)
-        {
-            if (c >= font.FirstCharacter)
-            {
-                DrawTexture(outlineFont.Texture, currentX - 1, currentY - 1, FontRectangle(outlineFont, c - font.FirstCharacter), outline);
-
-                currentX += font.CharacterWidth + font.HorizontalSpacing;
-            }
-            else if (c == 10 || c == 13)
-            {
-                currentX = x;
-                currentY += font.CharacterHeight + font.VerticalSpacing;
-            }
-        }
-
-        currentX = x;
-        currentY = y;
-
-        DrawText(font, currentX, currentY, text, fill);
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DrawSprite(string spriteSheetName, int x, int y, int spriteIndex)
         => DrawSprite(SpriteSheets[spriteSheetName], x, y, spriteIndex, Color.White);

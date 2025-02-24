@@ -103,7 +103,11 @@ public static class LineExtensions
 
                 if ((x1 != oldX && y1 != oldY) || i == longest)
                 {
-                    graphics.DrawFilledRectangle(oldX, oldY, x1 - dx1 - oldX + 1, y1 - dy1 - oldY + 1, color);
+                    var rectX = Math.Min(oldX, x1 - dx1);
+                    var rectY = Math.Min(oldY, y1 - dy1);
+                    var rectW = Math.Abs(x1 - dx1 - oldX) + 1;
+                    var rectH = Math.Abs(y1 - dy1 - oldY) + 1;
+                    graphics.DrawFilledRectangle(rectX, rectY, rectW, rectH, color);
                     oldX = x1;
                     oldY = y1;
                 }
@@ -115,7 +119,11 @@ public static class LineExtensions
 
                 if ((x1 != oldX && y1 != oldY) || i == longest)
                 {
-                    graphics.DrawFilledRectangle(oldX, oldY, x1 - dx2 - oldX + 1, y1 - dy2 - oldY + 1, color);
+                    var rectX = Math.Min(oldX, x1 - dx2);
+                    var rectY = Math.Min(oldY, y1 - dy2);
+                    var rectW = Math.Abs(x1 - dx2 - oldX) + 1;
+                    var rectH = Math.Abs(y1 - dy2 - oldY) + 1;
+                    graphics.DrawFilledRectangle(rectX, rectY, rectW, rectH, color);
                     oldX = x1;
                     oldY = y1;
                 }

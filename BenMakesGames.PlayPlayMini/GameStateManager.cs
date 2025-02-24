@@ -11,7 +11,17 @@ namespace BenMakesGames.PlayPlayMini;
 [AutoRegister]
 public sealed class GameStateManager: Game
 {
+    /// <summary>
+    /// The current state of the game.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// if(GSM.CurrentState == this)
+    ///     Mouse.Draw(gameTime);
+    /// </code>
+    /// </example>
     public GameState CurrentState { get; private set; }
+
     public GameState? NextState { get; private set; }
 
     private ILifetimeScope IoCContainer { get; }
@@ -19,9 +29,6 @@ public sealed class GameStateManager: Game
     private ServiceWatcher ServiceWatcher { get; }
 
     public AssetCollection Assets => Config.Assets;
-
-    [Obsolete("Refer to Config.InitialWindowTitle instead.")] public (int Width, int Height, int Zoom) InitialWindowSize => Config.InitialWindowSize;
-    [Obsolete("Refer to Config.InitialGameState instead.")] public Type InitialGameState => Config.InitialGameState;
 
     public Type? LostFocusGameState { get; set; }
 
@@ -165,6 +172,12 @@ public sealed class GameStateManager: Game
         }
     }
 
+    /// <summary>
+    /// Queue up a state change. It will be changed at the beginning of the next frame's Input step.
+    /// </summary>
+    /// <seealso cref="ChangeState{T}()"/>
+    /// <param name="nextState"></param>
+    /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
     public void ChangeState(GameState nextState)
     {
         if (NextState is not null)
@@ -173,6 +186,12 @@ public sealed class GameStateManager: Game
         NextState = nextState;
     }
 
+    /// <summary>
+    /// Queue up a state change. It will be changed at the beginning of the next frame's Input step.
+    /// </summary>
+    /// <seealso cref="ChangeState{T}()"/>
+    /// <param name="nextStateType"></param>
+    /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
     public GameState ChangeState(Type nextStateType)
     {
         if (NextState is not null)
@@ -194,7 +213,7 @@ public sealed class GameStateManager: Game
     }
 
     /// <summary>
-    /// Queue up a state change.
+    /// Queue up a state change. It will be changed at the beginning of the next frame's Input step.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
@@ -210,8 +229,10 @@ public sealed class GameStateManager: Game
     }
 
     /// <summary>
-    /// Queue up a state change. The given config object will be passed to the constructor of the new state.
+    /// Queue up a state change. It will be changed at the beginning of the next frame's Input step.
     ///
+    /// The given config object will be passed to the constructor of the new state.
+    /// </summary>
     /// <example><code>
     /// ChangeState&lt;Playing, PlayingConfig&gt;(new PlayingConfig(123, "abc"));
     ///
@@ -227,7 +248,6 @@ public sealed class GameStateManager: Game
     ///
     /// public sealed record PlayingConfig(int Foo, string Bar);
     /// </code></example>
-    /// </summary>
     /// <param name="config"></param>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TConfig"></typeparam>
