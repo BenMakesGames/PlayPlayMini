@@ -27,8 +27,8 @@ public class GameStateManagerBuilder
 
     private AssetCollection GameAssets { get; } = new();
 
-    private Action<ContainerBuilder, IConfiguration, ServiceWatcher>? AddServicesCallback { get; set; }
-    private Action<IConfigurationBuilder>? ConfigurationCallback { get; set; }
+    private List<Action<ContainerBuilder, IConfiguration, ServiceWatcher>> AddServicesCallbacks { get; } = [ ];
+    private List<Action<IConfigurationBuilder>> ConfigurationCallbacks { get; } = [ ];
     private string WindowTitle { get; set; } = "PlayPlayMini Game";
     private (int Width, int Height, int Zoom) WindowSize { get; set; } = (1920 / 3, 1080 / 3, 2);
     private bool FixedTimeStep { get; set; }
@@ -108,30 +108,21 @@ public class GameStateManagerBuilder
 
     public GameStateManagerBuilder AddServices(Action<ContainerBuilder, IConfiguration, ServiceWatcher> callback)
     {
-        if (AddServicesCallback is not null)
-            throw new ArgumentException("AddServices may only be called once!");
-
-        AddServicesCallback = callback;
+        AddServicesCallbacks.Add(callback);
 
         return this;
     }
 
     public GameStateManagerBuilder AddServices(Action<ContainerBuilder, IConfiguration> callback)
     {
-        if (AddServicesCallback is not null)
-            throw new ArgumentException("AddServices may only be called once!");
-
-        AddServicesCallback = (s, c, _) => callback(s, c);
+        AddServicesCallbacks.Add((s, c, _) => callback(s, c));
 
         return this;
     }
 
     public GameStateManagerBuilder AddConfiguration(Action<IConfigurationBuilder> callback)
     {
-        if (ConfigurationCallback is not null)
-            throw new ArgumentException("AddConfiguration may only be called once!");
-
-        ConfigurationCallback = callback;
+        ConfigurationCallbacks.Add(callback);
 
         return this;
     }
@@ -154,7 +145,8 @@ public class GameStateManagerBuilder
             .AddJsonFile(Path.Combine("Content", "appsettings.json"), optional: true, reloadOnChange: false) // TODO: does this work on Android?
         ;
 
-        ConfigurationCallback?.Invoke(configBuilder);
+        foreach(var callback in ConfigurationCallbacks)
+            callback(configBuilder);
 
         var configuration = configBuilder.Build();
 
@@ -215,7 +207,8 @@ public class GameStateManagerBuilder
             .As(typeof(ILogger<>))
             .SingleInstance();
 
-        AddServicesCallback?.Invoke(builder, configuration, serviceWatcher);
+        foreach(var callback in AddServicesCallbacks)
+            callback(builder, configuration, serviceWatcher);
 
         if(InitialGameState is null)
             throw new ArgumentException("No initial game state set! You must call GameStateManagerBuilder's SetInitialGameState method before calling its Run method.");
