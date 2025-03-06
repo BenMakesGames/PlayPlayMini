@@ -181,3 +181,9 @@ GraphicsManager.DrawWavyText(
     Color color = Color.White
 );
 ```
+
+# Drawing Text with Spans
+
+`DrawText` overloads have been added to `GraphicsManager` to allow you to draw text from a `Span<char>` or `ReadOnlySpan<char>`. (A `char[]` overload was also added, for completeness.)
+
+These overloads may be useful if you only want to draw part of some text (for example in a dialog system where each letter is progressively revealed), since using a span is more efficient than calling `.Substring` or `[]`.
