@@ -72,9 +72,9 @@ In your game state or services, get an `INAudioMusicPlayer` via the constructor 
 Example:
 
 ```c#
-NAudioMusicPlayer
-    .StopAllSongs(1000) // stop all songs, fading them out over 1 second
-    .PlaySong("TitleTheme", 0); // start the TitleTheme with no fade-in time
+// where musicPlayer is an instance of INAudioMusicPlayer:
+musicPlayer.StopAllSongs(1000); // stop all songs, fading them out over 1 second
+musicPlayer.PlaySong("TitleTheme", 0); // start the TitleTheme with no fade-in time
 ```
 
 Refer to the reference, below, for a list of available methods.
@@ -83,7 +83,7 @@ Refer to the reference, below, for a list of available methods.
 
 **Hey, Listen!** Negative fade-in and fade-out times are treated as 0.
 
-### `INAudioMusicPlayer PlaySong(string name, int fadeInMilliseconds = 0)`
+### `PlayingSong PlaySong(string name, int fadeInMilliseconds = 0)`
 
 Starts playing the specific song, fading it in over the specified number of milliseconds.
 
@@ -91,33 +91,25 @@ Songs which are already playing will not be stopped! You must explicitly stop th
 
 If the song is already playing, it will not be played again (you cannot currently play two copies of the same song at the same time). If the song is fading in, its fade-in time will not be changed.  
 
-### `INAudioMusicPlayer StopAllSongs(int fadeOutMilliseconds = 0)`
+### `void StopAllSongs(int fadeOutMilliseconds = 0)`
 
 Stops all songs, fading them out over the specified number of milliseconds.
 
 Songs which are already fading out will not have their fade-out time changed. A fade-out time of 0 will always immediately stops all songs, however.
 
-To cross-fade between songs, you can chain `StopSongs` and `PlaySong` calls. For example:
-
-```c#
-musicPlayer // an instance of INAudioMusicPlayer
-    .StopAllSongs(1000)
-    .PlaySong("TitleTheme");
-```
-
-### `INAudioMusicPlayer StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0)`
+### `void StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0)`
 
 Works like `StopAllSongs` (above), but does NOT stop the songs named in `songsToContinue`.
 
-### `INAudioMusicPlayer StopAllSongsExcept(string name, int fadeOutMilliseconds = 0)`
+### `void StopAllSongsExcept(string name, int fadeOutMilliseconds = 0)`
 
 Works like `StopAllSongs` (above), but does NOT stop the named song.
 
-### `INAudioMusicPlayer StopSong(string name, int fadeOutMilliseconds = 0)`
+### `void StopSong(string name, int fadeOutMilliseconds = 0)`
 
 Like `StopAllSongs` (above), but stops only the named song.
 
-### `INAudioMusicPlayer SetVolume(float volume)`
+### `void SetVolume(float volume)`
 
 Changes the volume for all songs.
 
@@ -125,6 +117,6 @@ Changes the volume for all songs.
 
 Returns `true` if the specific song is currently playing.
 
-### `string[] GetPlayingSongs()`
+### `IEnumerable<PlayingSong> GetPlayingSongs()`
 
 Returns an array of the names of all songs currently playing.

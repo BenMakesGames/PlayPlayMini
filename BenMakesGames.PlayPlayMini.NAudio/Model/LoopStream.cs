@@ -2,6 +2,9 @@
 
 namespace BenMakesGames.PlayPlayMini.NAudio.Model;
 
+/// <summary>
+/// Wraps a <see cref="WaveStream" /> to provide endless looping.
+/// </summary>
 public sealed class LoopStream : WaveStream
 {
     private WaveStream SourceStream { get; }
