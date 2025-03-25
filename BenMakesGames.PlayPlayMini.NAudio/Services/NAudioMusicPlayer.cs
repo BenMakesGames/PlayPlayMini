@@ -17,8 +17,8 @@ public interface INAudioMusicPlayer: IServiceLoadContent, IServiceUpdate
     void SetVolume(float volume);
     float GetVolume();
     bool IsPlaying(string name);
-    IEnumerable<PlayingSong> GetPlayingSongs();
-    PlayingSong? PlaySong(string name, int fadeInMilliseconds = 0, long? startPosition = null);
+    IEnumerable<string> GetPlayingSongs();
+    bool PlaySong(string name, int fadeInMilliseconds = 0, long? startPosition = null, bool loop = true);
     void StopAllSongs(int fadeOutMilliseconds = 0);
     void StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0);
     void StopAllSongsExcept(string name, int fadeOutMilliseconds = 0);
@@ -62,9 +62,8 @@ public interface INAudioMusicPlayer: IServiceLoadContent, IServiceUpdate
 ///
 ///         override void Enter()
 ///         {
-///             MusicPlayer
-///                 .StopAllSongs(1000)
-///                 .PlaySong("BattleTheme");
+///             MusicPlayer.StopAllSongs(1000);
+///             MusicPlayer.PlaySong("BattleTheme");
 ///         }
 ///     }
 /// </summary>
@@ -75,7 +74,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
-    public Dictionary<string, (WaveStream Stream, float Gain)> Songs { get; private set; } = new();
+    public Dictionary<string, (WaveStream Stream, float Gain)> Songs { get; } = new();
 
     private Dictionary<string, PlayingSong> PlayingSongs { get; } = new();
 
@@ -180,13 +179,13 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     /// </summary>
     /// <param name="name"></param>
     /// <returns></returns>
-    public bool IsPlaying(string name) => PlayingSongs.ContainsKey(name);
+    public bool IsPlaying(string name) => PlayingSongs.TryGetValue(name, out var song) && song.IsPlaying;
 
     /// <summary>
     /// Returns a list of all currently-playing songs, including any songs that are fading in or out.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<PlayingSong> GetPlayingSongs() => PlayingSongs.Values.AsEnumerable();
+    public IEnumerable<string> GetPlayingSongs() => PlayingSongs.Keys.AsEnumerable();
 
     /// <summary>
     /// Play the specified song. If the fadeInMilliseconds is greater than 0, the song will fade in over that duration.
@@ -199,27 +198,30 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     /// <param name="name"></param>
     /// <param name="fadeInMilliseconds"></param>
     /// <param name="startPosition">Position to start song from. If null, song resumes from where it left off.</param>
+    /// <param name="loop"></param>
     /// <returns></returns>
-    public PlayingSong? PlaySong(string name, int fadeInMilliseconds = 0, long? startPosition = null)
+    public bool PlaySong(string name, int fadeInMilliseconds = 0, long? startPosition = null, bool loop = true)
     {
         if(!Songs.TryGetValue(name, out var song))
         {
             Logger.LogWarning("There is no song named {Name}", name);
-            return null;
+            return false;
         }
 
-        if(IsPlaying(name))
-            return PlayingSongs[name];
+        if(PlayingSongs.ContainsKey(name))
+            return false;
 
         if(startPosition.HasValue)
             song.Stream.Position = startPosition.Value;
 
         var playingSong = new PlayingSong(name, song.Stream, song.Gain, fadeInMilliseconds);
 
+        playingSong.Loop(loop);
+
         PlaybackEngine?.AddSample(playingSong.SampleProvider);
         PlayingSongs.Add(name, playingSong);
 
-        return playingSong;
+        return true;
     }
 
     /// <summary>
@@ -297,7 +299,10 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     public void StopSong(string name, int fadeOutMilliseconds = 0)
     {
         if (!PlayingSongs.TryGetValue(name, out var song))
+        {
+            Logger.LogInformation("Song {Name} is not playing", name);
             return;
+        }
 
         var fadingSongIndex = FadingSongs.FindIndex(s => s.Name == name);
 
@@ -350,13 +355,13 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     }
 }
 
-public sealed class PlayingSong
+internal sealed class PlayingSong
 {
-    public bool IsPlaying => LoopStream.EnableLooping || WaveStream.Position < WaveStream.Length;
-
     public string Name { get; }
     public WaveStream WaveStream { get; }
     public ISampleProvider SampleProvider { get; }
+
+    public bool IsPlaying => LoopStream.EnableLooping || WaveStream.Position < WaveStream.Length;
 
     private LoopStream LoopStream;
     private FadeInOutSampleProvider FadeInOutSampleProvider;

@@ -17,13 +17,12 @@ public sealed class LoopStream : WaveStream
     public LoopStream(WaveStream sourceStream)
     {
         SourceStream = sourceStream;
-        EnableLooping = true;
     }
 
     /// <summary>
     /// Use this to turn looping on or off
     /// </summary>
-    public bool EnableLooping { get; set; }
+    public bool EnableLooping { get; set; } = true;
 
     /// <summary>
     /// Return source stream's wave format
