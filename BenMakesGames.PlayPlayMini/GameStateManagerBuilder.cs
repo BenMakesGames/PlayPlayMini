@@ -251,4 +251,7 @@ public class GameStateManagerBuilder
         foreach(var t in serviceTypes)
             scope.Resolve(t);
     }
+
+    public bool ContainsAsset<T>(Func<T, bool> predicate) where T: IAsset
+        => GameAssets.Any(asset => asset is T typedAsset && predicate(typedAsset));
 }
