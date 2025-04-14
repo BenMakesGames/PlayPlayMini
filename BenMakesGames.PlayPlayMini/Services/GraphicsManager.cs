@@ -18,6 +18,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 {
     private ILogger<GraphicsManager> Logger { get; }
 
+    /// <inheritdoc />
     public bool FullyLoaded { get; private set; }
 
     public Matrix? TransformMatrix { get; private set; }
@@ -57,6 +58,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         Graphics = new GraphicsDeviceManager(Game);
     }
 
+    /// <inheritdoc />
     public void Initialize(GameStateManager gsm)
     {
         var windowSize = gsm.Config.InitialWindowSize;
@@ -78,6 +80,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         RenderTarget = new RenderTarget2D(GraphicsDevice, Width, Height);
     }
 
+    /// <inheritdoc />
     public void LoadContent(GameStateManager gsm)
     {
         WhitePixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
@@ -177,6 +180,7 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         }
     }
 
+    /// <inheritdoc />
     public void UnloadContent()
     {
         SpriteBatch.Dispose();
@@ -272,9 +276,18 @@ public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
         SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, transformMatrix: TransformMatrix);
     }
 
+    /// <summary>
+    /// Clears the screen to the given color.
+    /// </summary>
+    /// <param name="c"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear(Color c)
-        => GraphicsDevice.Clear(c);
+    public void Clear(Color c) => GraphicsDevice.Clear(c);
+
+    /// <summary>
+    /// Clears the screen to black.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear() => GraphicsDevice.Clear(Color.Black);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Rectangle SpriteRectangle(SpriteSheet spriteSheet, int spriteIndex) => new(

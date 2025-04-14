@@ -2,6 +2,10 @@
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
+/// <summary>
+/// Keeps a list of services that implement the various service lifecycle interfaces, so
+/// that they can be called at the correct time.
+/// </summary>
 public sealed class ServiceWatcher
 {
     private List<IServiceLoadContent> ServiceWithLoadContentEvents { get; } = new();

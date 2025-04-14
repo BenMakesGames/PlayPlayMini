@@ -98,11 +98,9 @@ public sealed class UIService
 
             if (PointsWithinDistance(click.X, click.Y, Cursor.X, Cursor.Y, 2))
             {
-                bool isDoubleClick = PreviousClick != null && (gameTime.TotalGameTime - PreviousClick.When).TotalMilliseconds <= 500;
-
-                if (isDoubleClick)
+                if (PreviousClick is not null && (gameTime.TotalGameTime - PreviousClick.When).TotalMilliseconds <= 500)
                 {
-                    if (click.What == PreviousClick!.What && PointsWithinDistance(click.X, click.Y, PreviousClick.X, PreviousClick.Y, 3))
+                    if (click.What == PreviousClick.What && PointsWithinDistance(click.X, click.Y, PreviousClick.X, PreviousClick.Y, 3))
                         Hovered.DoDoubleClick?.Invoke(new(click.X - Hovered.X, click.Y - Hovered.Y, Cursor.X, Cursor.Y));
 
                     PreviousClick = null;

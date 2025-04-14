@@ -22,6 +22,7 @@ public sealed class ScreenWipe: GameState
         GSM = gsm;
     }
 
+    /// <inheritdoc />
     public override void Update(GameTime gameTime)
     {
         if (GSM.CurrentState != this)
@@ -56,6 +57,7 @@ public sealed class ScreenWipe: GameState
         }
     }
 
+    /// <inheritdoc />
     public override void Draw(GameTime gameTime)
     {
         if (Step == 0)
@@ -157,6 +159,9 @@ public readonly struct ScreenWipeConfig
     }
 }
 
+/// <summary>
+/// Which direction the screen wipe goes.
+/// </summary>
 public enum ScreenWipeDirection
 {
     LeftToRight,

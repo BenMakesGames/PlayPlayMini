@@ -5,7 +5,7 @@
         <Company>Ben Hendel-Doying</Company>
         <Description>An extension for PlayPlayMini which adds methods for generating &amp; playing simple waveforms.</Description>
         <Copyright>2022-2024 Ben Hendel-Doying</Copyright>
-        <Version>0.6.0</Version>
+        <Version>0.7.0</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>monogame playplaymini sound generation square triangle saw sine wave waveform</PackageTags>
@@ -18,7 +18,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
     </PropertyGroup>

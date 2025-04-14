@@ -1,7 +1,7 @@
 using BenMakesGames.PlayPlayMini.Extensions;
 using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace BenMakesGames.PlayPlayMini.Tests;
@@ -33,8 +33,8 @@ public sealed class WordWrapTests
         // Act
         var (actualWidth, actualHeight) = graphicsManager.ComputeDimensionsWithWordWrap(font, maxWidth, text);
 
-        actualWidth.Should().Be(expectedWidth);
-        actualHeight.Should().Be(expectedHeight);
+        actualWidth.ShouldBe(expectedWidth);
+        actualHeight.ShouldBe(expectedHeight);
     }
 
     private static readonly Font Font = new(null!, 1, 1, 0, 0, ' ');
@@ -46,6 +46,6 @@ public sealed class WordWrapTests
     [InlineData("Hello, world", 12, "Hello, world")]
     public void StringExtensionsWordWrap_ReturnsExpected(string originalText, int maxWidth, string expectedText)
     {
-        originalText.WrapText(Font, maxWidth).Should().Be(expectedText);
+        originalText.WrapText(Font, maxWidth).ShouldBe(expectedText);
     }
 }

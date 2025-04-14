@@ -74,6 +74,7 @@ public sealed class MouseManager : IServiceInput
         MouseState = Mouse.GetState();
     }
 
+    /// <inheritdoc />
     public void Input(GameTime gameTime)
     {
         PreviousMouseState = MouseState;

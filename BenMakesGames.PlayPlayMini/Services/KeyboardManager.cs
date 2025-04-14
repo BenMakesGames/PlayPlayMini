@@ -18,6 +18,7 @@ public sealed class KeyboardManager : IServiceInput
         KeyboardState = Keyboard.GetState();
     }
 
+    /// <inheritdoc />
     public void Input(GameTime gameTime)
     {
         PreviousKeyboardState = KeyboardState;

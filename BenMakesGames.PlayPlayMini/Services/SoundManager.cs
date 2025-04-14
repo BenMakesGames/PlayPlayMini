@@ -111,6 +111,7 @@ public sealed class SoundManager : IServiceLoadContent
         MediaPlayer.Stop();
     }
 
+    /// <inheritdoc />
     public void LoadContent(GameStateManager gsm)
     {
         SoundEffects = gsm.Assets.GetAll<SoundEffectMeta>().ToDictionary(m => m.Key, _ => (SoundEffect)null!);
@@ -127,6 +128,7 @@ public sealed class SoundManager : IServiceLoadContent
         Task.Run(() => LoadDeferredContent(gsm.Assets));
     }
 
+    /// <inheritdoc />
     public void UnloadContent()
     {
     }

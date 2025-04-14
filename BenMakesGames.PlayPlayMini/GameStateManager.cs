@@ -57,6 +57,7 @@ public sealed class GameStateManager: Game
         CurrentState = new NoState();
     }
 
+    /// <inheritdoc />
     protected override void LoadContent()
     {
         base.LoadContent();
@@ -65,6 +66,7 @@ public sealed class GameStateManager: Game
             s.LoadContent(this);
     }
 
+    /// <inheritdoc />
     protected override void UnloadContent()
     {
         base.UnloadContent();
@@ -73,6 +75,7 @@ public sealed class GameStateManager: Game
             s.UnloadContent();
     }
 
+    /// <inheritdoc />
     protected override void Initialize()
     {
         Window.Title = Config.InitialWindowTitle; // https://community.monogame.net/t/cant-set-window-title-in-game1-constructor/9465
@@ -96,6 +99,7 @@ public sealed class GameStateManager: Game
         CurrentState.Input(gameTime);
     }
 
+    /// <inheritdoc />
     protected override void Update(GameTime gameTime)
     {
         SwitchState();
@@ -137,12 +141,14 @@ public sealed class GameStateManager: Game
         CurrentState.Update(gameTime);
     }
 
+    /// <inheritdoc />
     protected override bool BeginDraw()
     {
         Graphics.BeginDraw();
         return base.BeginDraw();
     }
 
+    /// <inheritdoc />
     protected override void Draw(GameTime gameTime)
     {
         base.Draw(gameTime);
@@ -153,6 +159,7 @@ public sealed class GameStateManager: Game
             s.Draw(gameTime);
     }
 
+    /// <inheritdoc />
     protected override void EndDraw()
     {
         Graphics.EndDraw();

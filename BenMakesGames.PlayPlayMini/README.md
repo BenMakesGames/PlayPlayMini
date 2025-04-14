@@ -10,6 +10,12 @@ If you prefer learning purely by example, check out [Block-break](https://github
 
 [![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
 
+# Upgrading from 5.x to 6.0.0
+
+## Breaking Changes
+1. Upgraded to MonoGame 3.8.3
+2. Upgraded to .NET 9.0
+
 # Upgrading from 4.x to 5.0.0
 
 ## Breaking Changes

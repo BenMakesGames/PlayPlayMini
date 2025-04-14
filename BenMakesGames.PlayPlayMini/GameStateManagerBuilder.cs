@@ -138,6 +138,10 @@ public class GameStateManagerBuilder
         return listOfAssemblies;
     }
 
+    /// <summary>
+    /// Call to build & run the game.
+    /// </summary>
+    /// <exception cref="ArgumentException"></exception>
     public void Run()
     {
         var configBuilder = new ConfigurationBuilder()
