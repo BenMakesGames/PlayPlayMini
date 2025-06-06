@@ -13,7 +13,7 @@ namespace BenMakesGames.PlayPlayMini.Services;
 /// For example:
 ///
 ///     private FrameCounter FrameCounter { get; }
-/// 
+///
 ///     public MyGameState(FrameCounter frameCounter)
 ///     {
 ///         FrameCounter = frameCounter;
@@ -36,6 +36,7 @@ public sealed class FrameCounter: IServiceDraw
 
     private Queue<float> SampleBuffer { get;} = new();
 
+    /// <inheritdoc />
     public void Draw(GameTime gameTime)
     {
         float deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;

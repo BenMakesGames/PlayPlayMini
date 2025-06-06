@@ -6,6 +6,40 @@ using BenMakesGames.PlayPlayMini.Model;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
+/// <summary>
+/// Service for getting mouse input and drawing a custom mouse cursor.
+/// </summary>
+/// <example>
+/// <code>
+/// public sealed class YourGameState : GameState
+/// {
+///     private GameStateManager GSM { get; }
+///     private MouseManager Mouse { get; }
+///
+///     public YourGameState(
+///         GameStateManager gsm, MouseManager mouse
+///     )
+///     {
+///         GSM = gsm;
+///         Mouse = mouse
+///     }
+///
+///     public override void Input(GameTime gameTime)
+///     {
+///         if(Mouse.LeftClicked &amp;&amp; Mouse.IsInWindow())
+///         {
+///             // do something, possibly using Mouse.X and/or Mouse.Y
+///         }
+///     }
+///
+///     public override void Draw(GameTime gameTime)
+///     {
+///         if(GSM.CurrentState == this)
+///             Mouse.Draw(gameTime);
+///     }
+/// }
+/// </code>
+/// </example>
 [AutoRegister]
 public sealed class MouseManager : IServiceInput
 {

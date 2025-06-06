@@ -5,5 +5,5 @@ namespace BenMakesGames.PlayPlayMini.Model;
 
 public class AssetCollection : List<IAsset>
 {
-    public IEnumerable<T> GetAll<T>() => this.Where(a => a.GetType() == typeof(T)).Cast<T>();
+    public IEnumerable<T> GetAll<T>() where T: IAsset => this.Where(a => a.GetType() == typeof(T)).Cast<T>();
 }

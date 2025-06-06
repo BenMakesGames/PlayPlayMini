@@ -13,6 +13,9 @@ using BenMakesGames.PlayPlayMini.Extensions;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
+/// <summary>
+/// Service for drawing sprites, pictures, fonts, and primitives to the screen.
+/// </summary>
 [AutoRegister]
 public sealed class GraphicsManager: IServiceLoadContent, IServiceInitialize
 {

@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
+/// <summary>
+/// Service for getting keyboard input.
+/// </summary>
 [AutoRegister]
 public sealed class KeyboardManager : IServiceInput
 {

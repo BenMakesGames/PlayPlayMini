@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
+/// <summary>
+/// Service for playing music and sound effects.
+/// </summary>
 [AutoRegister]
 public sealed class SoundManager : IServiceLoadContent
 {
