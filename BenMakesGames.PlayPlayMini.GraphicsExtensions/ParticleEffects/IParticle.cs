@@ -1,4 +1,5 @@
-﻿using BenMakesGames.PlayPlayMini.Services;
+﻿using System.Collections.Generic;
+using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.ParticleEffects;
@@ -26,8 +27,9 @@ public interface IParticle
     /// <summary>
     /// Update the particle's state.
     /// </summary>
+    /// <param name="particleSpawner"></param>
     /// <param name="gameTime"></param>
-    void Update(GameTime gameTime);
+    void Update(IParticleSpawner particleSpawner, GameTime gameTime);
 
     /// <summary>
     /// Draw the particle.

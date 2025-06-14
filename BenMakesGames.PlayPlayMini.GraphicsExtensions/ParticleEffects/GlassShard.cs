@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.ParticleEffects;
 
+/// <summary>
+/// A tumbling shard of glass that launches away from its starting point, and falls under gravity.
+/// </summary>
 public sealed class GlassShard : IParticle
 {
     /// <inheritdoc />
@@ -74,7 +77,7 @@ public sealed class GlassShard : IParticle
     }
 
     /// <inheritdoc />
-    public void Update(GameTime gameTime)
+    public void Update(IParticleSpawner particleSpawner, GameTime gameTime)
     {
         YSpeed += 0.2 * gameTime.ElapsedGameTime.TotalSeconds * 60;
 

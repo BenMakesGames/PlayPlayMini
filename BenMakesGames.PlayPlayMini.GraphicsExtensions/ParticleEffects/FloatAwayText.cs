@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.ParticleEffects;
 
+/// <summary>
+/// A piece of text that floats away from a starting position at a specified angle and speed.
+/// </summary>
 public sealed class FloatAwayText: IParticle
 {
     public required string Text { get; init; }
@@ -23,7 +26,7 @@ public sealed class FloatAwayText: IParticle
     public int Y => (int)(StartingY - Math.Sin(Angle) * TimeAlive * Speed);
 
     /// <inheritdoc />
-    public void Update(GameTime gameTime)
+    public void Update(IParticleSpawner particleSpawner, GameTime gameTime)
     {
         TimeAlive += gameTime.ElapsedGameTime.TotalSeconds;
     }

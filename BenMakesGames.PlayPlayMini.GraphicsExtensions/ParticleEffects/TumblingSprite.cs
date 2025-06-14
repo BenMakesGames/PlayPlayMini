@@ -38,7 +38,7 @@ public sealed class TumblingSprite : IParticle
     }
 
     /// <inheritdoc />
-    public void Update(GameTime gameTime)
+    public void Update(IParticleSpawner particleSpawner, GameTime gameTime)
     {
         CenterX += XVelocity * gameTime.ElapsedGameTime.TotalSeconds * 60;
         CenterY += YVelocity * gameTime.ElapsedGameTime.TotalSeconds * 60;

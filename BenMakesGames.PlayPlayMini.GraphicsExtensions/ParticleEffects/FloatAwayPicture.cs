@@ -21,7 +21,7 @@ public sealed class FloatAwayPicture: IParticle
     public int Y => (int)(StartingY - Math.Sin(Angle) * TimeAlive * Speed);
 
     /// <inheritdoc />
-    public void Update(GameTime gameTime)
+    public void Update(IParticleSpawner particleSpawner, GameTime gameTime)
     {
         TimeAlive += gameTime.ElapsedGameTime.TotalSeconds;
     }

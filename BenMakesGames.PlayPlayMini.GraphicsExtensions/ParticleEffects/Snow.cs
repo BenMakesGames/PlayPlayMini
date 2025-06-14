@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.ParticleEffects;
 
+/// <summary>
+/// A particle of snow that falls to the ground, waving slightly as it falls.
+/// </summary>
 public sealed class Snow: IParticle
 {
     private Color Color { get; }
@@ -29,7 +32,7 @@ public sealed class Snow: IParticle
     }
 
     /// <inheritdoc />
-    public void Update(GameTime gameTime)
+    public void Update(IParticleSpawner particleSpawner, GameTime gameTime)
     {
         X -= gameTime.ElapsedGameTime.TotalSeconds * 4 * Size * Speed;
         Y += gameTime.ElapsedGameTime.TotalSeconds * 16 * Size * Speed;
