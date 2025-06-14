@@ -35,6 +35,20 @@ public sealed class ParticleCollection: IParticleSpawner
     }
 
     /// <summary>
+    /// Clears all particles, including those queued for spawning.
+    /// </summary>
+    public void Clear()
+    {
+        Particles.Clear();
+        SpawnQueue.Clear();
+    }
+
+    /// <summary>
+    /// Returns true if there are no particles in the collection, including those queued for spawning.
+    /// </summary>
+    public bool IsEmpty => Particles.Count == 0 && SpawnQueue.Count == 0;
+
+    /// <summary>
     /// Updates all particles in the collection.
     /// </summary>
     /// <remarks>
