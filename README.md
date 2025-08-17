@@ -4,7 +4,7 @@
 
 It provides a state engine with lifecycle events, dependency injection using `Autofac`, and several built-in services to help with common tasks such as drawing sprites & fonts, and getting user input.
 
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+> [🧚 **Hey, listen!** You can support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)
 
 This repository contains the following libraries:
 

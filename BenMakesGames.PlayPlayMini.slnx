@@ -1,0 +1,15 @@
+﻿<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="BenMakesGames.PlayPlayMini.BeepBoop\BenMakesGames.PlayPlayMini.BeepBoop.csproj" Type="Classic C#" />
+  <Project Path="BenMakesGames.PlayPlayMini.GraphicsExtensions\BenMakesGames.PlayPlayMini.GraphicsExtensions.csproj" Type="Classic C#" />
+  <Project Path="BenMakesGames.PlayPlayMini.NAudio\BenMakesGames.PlayPlayMini.NAudio.csproj" Type="Classic C#" />
+  <Project Path="BenMakesGames.PlayPlayMini.Performance\BenMakesGames.PlayPlayMini.Performance.csproj" Type="Classic C#" />
+  <Project Path="BenMakesGames.PlayPlayMini.Tests\BenMakesGames.PlayPlayMini.Tests.csproj" Type="Classic C#" />
+  <Project Path="BenMakesGames.PlayPlayMini.UI\BenMakesGames.PlayPlayMini.UI.csproj" Type="Classic C#" />
+  <Project Path="BenMakesGames.PlayPlayMini\BenMakesGames.PlayPlayMini.csproj" Type="Classic C#" />
+</Solution>
