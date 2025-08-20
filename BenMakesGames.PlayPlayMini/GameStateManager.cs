@@ -5,6 +5,7 @@ using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace BenMakesGames.PlayPlayMini;
 
@@ -58,6 +59,20 @@ public sealed class GameStateManager: Game
     }
 
     /// <inheritdoc />
+    protected override void Initialize()
+    {
+        Window.Title = Config.InitialWindowTitle; // https://community.monogame.net/t/cant-set-window-title-in-game1-constructor/9465
+        IsMouseVisible = false;
+
+        foreach (var s in ServiceWatcher.InitializedServices)
+            s.Initialize(this);
+
+        base.Initialize(); // calls LoadContent, btw
+
+        ChangeState(Config.InitialGameState);
+    }
+
+    /// <inheritdoc />
     protected override void LoadContent()
     {
         base.LoadContent();
@@ -73,20 +88,6 @@ public sealed class GameStateManager: Game
 
         foreach (var s in ServiceWatcher.ContentLoadingServices)
             s.UnloadContent();
-    }
-
-    /// <inheritdoc />
-    protected override void Initialize()
-    {
-        Window.Title = Config.InitialWindowTitle; // https://community.monogame.net/t/cant-set-window-title-in-game1-constructor/9465
-        IsMouseVisible = false;
-
-        foreach (var s in ServiceWatcher.InitializedServices)
-            s.Initialize(this);
-
-        base.Initialize(); // calls LoadContent, btw
-
-        ChangeState(Config.InitialGameState);
     }
 
     private void Input(GameTime gameTime)
@@ -142,28 +143,21 @@ public sealed class GameStateManager: Game
     }
 
     /// <inheritdoc />
-    protected override bool BeginDraw()
-    {
-        Graphics.BeginDraw();
-        return base.BeginDraw();
-    }
-
-    /// <inheritdoc />
     protected override void Draw(GameTime gameTime)
     {
-        base.Draw(gameTime);
+        Graphics.BeginDraw();
 
-        CurrentState.Draw(gameTime);
+        using (Graphics.WithShader((Effect?)null))
+        {
+            base.Draw(gameTime);
 
-        foreach (var s in ServiceWatcher.DrawnServices)
-            s.Draw(gameTime);
-    }
+            CurrentState.Draw(gameTime);
 
-    /// <inheritdoc />
-    protected override void EndDraw()
-    {
+            foreach (var s in ServiceWatcher.DrawnServices)
+                s.Draw(gameTime);
+        }
+
         Graphics.EndDraw();
-        base.EndDraw();
     }
 
     private void SwitchState()
