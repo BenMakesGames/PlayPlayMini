@@ -12,4 +12,11 @@ public sealed record NAudioSongMeta(string Key, string Path, bool PreLoaded = fa
     /// right direction. The default Gain is 1.0.
     /// </summary>
     public float Gain { get; init; } = 1.0f;
+
+    /// <param name="keyAndPath">If the key and path are the same in your application, use this constructor</param>
+    /// <param name="preLoaded">Whether to load this resource BEFORE entering the first GameState</param>
+    public NAudioSongMeta(string keyAndPath, bool preLoaded = false)
+        : this(keyAndPath, keyAndPath, preLoaded)
+    {
+    }
 }
