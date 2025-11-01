@@ -4,7 +4,7 @@ An extension for [PlayPlayMini](https://github.com/BenMakesGames/PlayPlayMini) w
 
 This library is in the early stages of development, and has some known issues (for example, it refuses to play notes after a while, for reasons which are still unclear to me). It is not suitable for use in a final product.
 
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+> [🧚 **Hey, listen!** You can support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)
 
 # How to Use
 

@@ -6,7 +6,7 @@ Seamlessy-looping music is important for many games, but MonoGame's built-in mus
 
 **Hey, Listen!** `PlayPlayMini.NAudio` is in early release; the API may change dramatically even between minor version numbers.
 
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+> [🧚 **Hey, listen!** You can support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)
 
 ## How To Use
 

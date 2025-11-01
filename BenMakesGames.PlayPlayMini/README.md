@@ -8,7 +8,17 @@ If you don't know what all of those things are, don't worry: they're awesome, an
 
 If you prefer learning purely by example, check out [Block-break](https://github.com/BenMakesGames/BlockBreak), a demo game made with PlayPlayMini, EntityFramework, and Serliog that uses fonts, sprite sheets, pictures, and sounds.
 
-[![Buy Me a Coffee at ko-fi.com](https://raw.githubusercontent.com/BenMakesGames/AssetsForNuGet/main/buymeacoffee.png)](https://ko-fi.com/A0A12KQ16)
+> [🧚 **Hey, listen!** You can support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)
+
+# Upgrading from 6.x to 7.0.0
+
+## Breaking Changes
+1. Upgraded to .NET 10.0
+2. `GameState`s which use a configuration class must inherit `GameState<TConfig>` instead of `GameState`
+   * ☝ After upgrading to 7.0.0, you will see errors on calls to `.ChangeState<..., ...>`. To resolve these, upgrade the game state in question to inherit `GameState<TConfig>` instead of `GameState`.   
+3. Use the new `AbstractGameState` if you need to store a reference to a `GameState` and/or `GameState<TConfig>`
+   * Do not inherit from `AbstractGameState` yourself. This class may be removed if C# gains F#'s ability to have negative generic constraints. 
+4. `GraphicsManager.DrawPoints` has (finally) been moved to the `PlayPlayMini.GraphicsExtensions` package
 
 # Upgrading from 5.x to 6.0.0
 

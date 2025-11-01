@@ -3,10 +3,10 @@ using BenMakesGames.PlayPlayMini.Services;
 
 namespace BenMakesGames.PlayPlayMini;
 
-/// <summary>
+/// <remark>
 /// Do not inherit from this class directly; your game states should inherit from one of
 /// <see cref="GameState"/> or <see cref="GameState{TConfig}"/>.
-/// </summary>
+/// </remark>
 public abstract class AbstractGameState
 {
     /// <summary>
