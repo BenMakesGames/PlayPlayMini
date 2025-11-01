@@ -196,7 +196,10 @@ public class GameStateManagerBuilder
             }
 
             builder.RegisterAssemblyTypes(assembly)
-                .Where(t => t.IsAssignableTo<GameState>())
+                .Where(t =>
+                    t.IsAssignableTo<GameState>() ||
+                    (t.BaseType is { IsGenericType: true } && t.BaseType.GetGenericTypeDefinition() == typeof(GameState<>))
+                )
                 .AsSelf()
                 .InstancePerDependency()
                 .OnActivating(s => serviceWatcher.RegisterService(s.Instance))
