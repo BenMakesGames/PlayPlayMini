@@ -69,7 +69,7 @@ public static class StringExtensions
 /// </summary>
 /// <example><code>
 /// var lines = new LineSplitEnumerator("Text\nto\r\nsplit");
-///
+///&nbsp;
 /// foreach(var (line, _) in lines)
 /// {
 ///     // do something with "line"

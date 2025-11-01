@@ -2,6 +2,9 @@
 
 namespace BenMakesGames.PlayPlayMini.BeepBoop;
 
+/// <summary>
+/// A musical note.
+/// </summary>
 public enum Note
 {
     C,
@@ -15,11 +18,17 @@ public enum Note
     Ab,
     A,
     Bb,
-    B    
+    B
 }
 
 public static class NoteExtensions
 {
+    /// <summary>
+    /// Gets the frequency, in hertz, of a given note at a given octave.
+    /// </summary>
+    /// <param name="note"></param>
+    /// <param name="octave"></param>
+    /// <returns></returns>
     public static float GetFrequency(this Note note, int octave)
     {
         // The frequency of the reference note A4 in hertz

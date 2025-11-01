@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.GameStateTransitions;
 
-public sealed class ScreenWipe: GameState
+public sealed class ScreenWipe: GameState<ScreenWipeConfig>
 {
     private GraphicsManager Graphics { get; }
     private ScreenWipeConfig Config { get; }
@@ -144,8 +144,8 @@ public sealed class ScreenWipe: GameState
 
 public readonly struct ScreenWipeConfig
 {
-    public required GameState PreviousState { get; init; }
-    public required GameState NextState { get; init; }
+    public required AbstractGameState PreviousState { get; init; }
+    public required AbstractGameState NextState { get; init; }
     public string? Message { get; init; }
     public Color? MessageColor { get; init; }
     public Func<bool>? HoldUntil { get; init; }

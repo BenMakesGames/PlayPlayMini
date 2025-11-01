@@ -21,9 +21,9 @@ public sealed class GameStateManager: Game
     ///     Mouse.Draw(gameTime);
     /// </code>
     /// </example>
-    public GameState CurrentState { get; private set; }
+    public AbstractGameState CurrentState { get; private set; }
 
-    public GameState? NextState { get; private set; }
+    public AbstractGameState? NextState { get; private set; }
 
     private ILifetimeScope IoCContainer { get; }
     private GraphicsManager Graphics { get; }
@@ -179,7 +179,7 @@ public sealed class GameStateManager: Game
     /// <seealso cref="ChangeState{T}()"/>
     /// <param name="nextState"></param>
     /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
-    public void ChangeState(GameState nextState)
+    public void ChangeState(AbstractGameState nextState)
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
@@ -193,7 +193,7 @@ public sealed class GameStateManager: Game
     /// <seealso cref="ChangeState{T}()"/>
     /// <param name="nextStateType"></param>
     /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
-    public GameState ChangeState(Type nextStateType)
+    public AbstractGameState ChangeState(Type nextStateType)
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
@@ -203,7 +203,7 @@ public sealed class GameStateManager: Game
         return NextState;
     }
 
-    public GameState ChangeState<TConfig>(Type nextStateType, TConfig config)
+    public AbstractGameState ChangeState<TConfig>(Type nextStateType, TConfig config)
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
@@ -236,17 +236,17 @@ public sealed class GameStateManager: Game
     /// </summary>
     /// <example><code>
     /// ChangeState&lt;Playing, PlayingConfig&gt;(new PlayingConfig(123, "abc"));
-    ///
+    ///&nbsp;
     /// ...
-    ///
-    /// public sealed class Playing: GameState
+    ///&nbsp;
+    /// public sealed class Playing: GameState&lt;PlayingConfig&gt;
     /// {
-    ///     public Playing(PlayingConfig config, GameStateManager gsm, GraphicsManager graphics, ...)
+    ///     public Playing(PlayingConfig config, ...)
     ///     {
     ///         ...
     ///     }
     /// }
-    ///
+    ///&nbsp;
     /// public sealed record PlayingConfig(int Foo, string Bar);
     /// </code></example>
     /// <param name="config"></param>
@@ -254,7 +254,7 @@ public sealed class GameStateManager: Game
     /// <typeparam name="TConfig"></typeparam>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException">If ChangeState was already called this update cycle.</exception>
-    public T ChangeState<T, TConfig>(TConfig config) where T: GameState
+    public T ChangeState<T, TConfig>(TConfig config) where T: GameState<TConfig>
     {
         if (NextState is not null)
             throw new InvalidOperationException("A next state is already ready!");
@@ -268,7 +268,7 @@ public sealed class GameStateManager: Game
     public T CreateState<T>() where T: GameState => IoCContainer.Resolve<T>();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T CreateState<T, TConfig>(TConfig config) where T : GameState
+    public T CreateState<T, TConfig>(TConfig config) where T : GameState<TConfig>
         => IoCContainer.Resolve<T>(new TypedParameter(typeof(TConfig), config));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -281,12 +281,12 @@ public sealed class GameStateManager: Game
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public GameState CreateState<TConfig>(Type nextStateType, TConfig config)
+    public GameState<TConfig> CreateState<TConfig>(Type nextStateType, TConfig config)
     {
-        if(!nextStateType.IsSubclassOf(typeof(GameState)))
+        if(!nextStateType.IsSubclassOf(typeof(GameState<TConfig>)))
             throw new ArgumentException("nextStateType must be a GameState", nameof(nextStateType));
 
-        return (GameState)IoCContainer.Resolve(nextStateType, new TypedParameter(typeof(TConfig), config));
+        return (GameState<TConfig>)IoCContainer.Resolve(nextStateType, new TypedParameter(typeof(TConfig), config));
     }
 
     private sealed class NoState: GameState;

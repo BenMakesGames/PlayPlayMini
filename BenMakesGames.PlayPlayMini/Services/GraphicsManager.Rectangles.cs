@@ -83,19 +83,6 @@ public sealed partial class GraphicsManager
     }
 
     /// <summary>
-    /// Draw a series of points in the given color.
-    /// </summary>
-    /// <param name="points"></param>
-    /// <param name="color"></param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    [Obsolete("This method will be moved to the PlayPlayMini.GraphicsExtensions package.")]
-    public void DrawPoints(IEnumerable<(int x, int y)> points, Color color)
-    {
-        foreach (var p in points)
-            DrawPoint(p.x, p.y, color);
-    }
-
-    /// <summary>
     /// Draws the outline of a rectangle.
     /// </summary>
     /// <param name="x"></param>

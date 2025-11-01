@@ -5,7 +5,7 @@
         <Company>Ben Hendel-Doying</Company>
         <Description>Some GraphicsManager extensions for PlayPlayMini.</Description>
         <Copyright>2023-2025 Ben Hendel-Doying</Copyright>
-        <Version>6.3.0</Version>
+        <Version>7.0.0-rc1</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>monogame playplaymini graphics extensions animations text</PackageTags>
@@ -18,7 +18,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
     </PropertyGroup>

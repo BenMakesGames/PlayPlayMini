@@ -462,7 +462,7 @@ Here's how you can draw two states at once, for example, to show a pause screen 
 ```c#
 public sealed class PauseScreen: GameState
 {
-	public GameState PreviousState { get; }
+	public AbstractGameState PreviousState { get; }
     
     ...
     

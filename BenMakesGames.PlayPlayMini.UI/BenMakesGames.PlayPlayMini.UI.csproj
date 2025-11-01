@@ -5,7 +5,7 @@
     <Company>Ben Hendel-Doying</Company>
     <Description>An extension for PlayPlayMini, adding a skinnable, object-oriented UI framework.</Description>
     <Copyright>2021-2024 Ben Hendel-Doying</Copyright>
-    <Version>6.1.0</Version>
+    <Version>7.0.0-rc1</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>monogame mouse ui framework oo</PackageTags>
@@ -18,7 +18,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
   </PropertyGroup>

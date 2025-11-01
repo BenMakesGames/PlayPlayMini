@@ -15,7 +15,7 @@ namespace BenMakesGames.PlayPlayMini.Services;
 /// {
 ///     private GameStateManager GSM { get; }
 ///     private MouseManager Mouse { get; }
-///
+///&nbsp;
 ///     public YourGameState(
 ///         GameStateManager gsm, MouseManager mouse
 ///     )
@@ -23,7 +23,7 @@ namespace BenMakesGames.PlayPlayMini.Services;
 ///         GSM = gsm;
 ///         Mouse = mouse
 ///     }
-///
+///&nbsp;
 ///     public override void Input(GameTime gameTime)
 ///     {
 ///         if(Mouse.LeftClicked &amp;&amp; Mouse.IsInWindow())
@@ -31,7 +31,7 @@ namespace BenMakesGames.PlayPlayMini.Services;
 ///             // do something, possibly using Mouse.X and/or Mouse.Y
 ///         }
 ///     }
-///
+///&nbsp;
 ///     public override void Draw(GameTime gameTime)
 ///     {
 ///         if(GSM.CurrentState == this)
