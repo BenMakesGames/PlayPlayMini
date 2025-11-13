@@ -17,7 +17,7 @@ If you prefer learning purely by example, check out [Block-break](https://github
 2. `GameState`s which use a configuration class must inherit `GameState<TConfig>` instead of `GameState`
    * ☝ After upgrading to 7.0.0, you will see errors on calls to `.ChangeState<..., ...>`. To resolve these, upgrade the game state in question to inherit `GameState<TConfig>` instead of `GameState`.   
 3. Use the new `AbstractGameState` if you need to store a reference to a `GameState` and/or `GameState<TConfig>`
-   * Do not inherit from `AbstractGameState` yourself. This class may be removed if C# gains F#'s ability to have negative generic constraints. 
+   * Do not inherit from `AbstractGameState` yourself. 
 4. `GraphicsManager.DrawPoints` has (finally) been moved to the `PlayPlayMini.GraphicsExtensions` package
 
 # Upgrading from 5.x to 6.0.0
