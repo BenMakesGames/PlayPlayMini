@@ -298,8 +298,33 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => GraphicsDevice.Clear(Color.Black);
 
-    public IDisposable WithShader(Effect? pixelShader, Action<Effect>? configure = null) => new ShaderScope(this, pixelShader, configure);
-    public IDisposable WithShader(string pixelShaderName, Action<Effect>? configure = null) => new ShaderScope(this, PixelShaders[pixelShaderName], configure);
+    public IDisposable WithShader(Effect? pixelShader, Action<Effect>? configure = null)
+        => new ShaderScope(this, pixelShader, configure);
+
+    /// <summary>
+    /// Applies the given pixel shader to the wrapped graphics calls.
+    /// </summary>
+    /// <example>
+    /// Call for using a shader without parameters:
+    /// <code>
+    /// using(Graphics.WithShader("MyShader"))
+    /// {
+    ///     // draw sprites, rectangles, etc.
+    /// }
+    /// </code>
+    /// Call for using a shader WITH parameters:
+    /// <code>
+    /// using(Graphics.WithShader("MyShader", e => e.Parameters["SomeShaderParameter"].SetValue(12345)))
+    /// {
+    ///     // draw sprites, rectangles, etc.
+    /// }
+    /// </code>
+    /// </example>
+    /// <param name="pixelShaderName">Name of the shader to use.</param>
+    /// <param name="configure">Optional configuration delegate.</param>
+    /// <returns></returns>
+    public IDisposable WithShader(string pixelShaderName, Action<Effect>? configure = null)
+        => new ShaderScope(this, PixelShaders[pixelShaderName], configure);
 }
 
 internal sealed class ShaderScope : IDisposable

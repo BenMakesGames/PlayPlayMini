@@ -87,12 +87,19 @@ public sealed class MouseManager : IServiceInput
     /// When the mouse is not Enabled, *Down, *Click, and Moved properties are always false, Wheel is 0, and X and Y are int.MinValue.
     /// </summary>
     public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// If true, <c>Enabled</c> will be set to true when the mouse is moved.
+    /// </summary>
     public bool EnableOnMove { get; set; } = true;
 
+    /// <summary>
+    /// If true, <c>Enabled</c> will be set to false when any key is pressed.
+    /// </summary>
     public bool DisableOnKeyPress { get; set; } = false;
 
     /// <summary>
-    /// When ClampToWindow is set, the on-screen mouse cursor will be confined to the window.
+    /// When ClampToWindow is set, <c>X</c> &amp; <c>Y</c> will be confined to the window, regardless of the mouse's physical position.
     /// </summary>
     public bool ClampToWindow { get; set; } = false;
 

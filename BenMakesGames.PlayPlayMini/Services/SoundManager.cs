@@ -28,9 +28,17 @@ public sealed class SoundManager : IServiceLoadContent
     public Dictionary<string, SoundEffect> SoundEffects { get; private set; } = new();
     public Dictionary<string, Song> Songs { get; private set; } = new();
 
+    /// <summary>
+    /// The volume level of sounds.
+    /// </summary>
     public float SoundVolume { get; private set; } = 1.0f;
+
+    /// <summary>
+    /// The volume level of music.
+    /// </summary>
     public float MusicVolume { get; private set; } = 1.0f;
 
+    /// <inheritdoc />
     public bool FullyLoaded { get; private set; }
 
     public SoundManager(ILogger<SoundManager> logger)

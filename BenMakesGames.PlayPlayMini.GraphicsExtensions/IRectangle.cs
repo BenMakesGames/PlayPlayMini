@@ -49,16 +49,6 @@ public static class RectangleExtensions
         rectangle.Contains(mouse.X, mouse.Y);
 
     /// <summary>
-    /// Checks if the mouse is within the graphics viewport.
-    /// </summary>
-    /// <param name="graphics">The graphics manager instance.</param>
-    /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
-    /// <returns>True if the mouse is within the viewport, false otherwise.</returns>
-    public static bool Contains(this GraphicsManager graphics, MouseManager mouse) =>
-        mouse.X >= 0 && mouse.X < graphics.Width &&
-        mouse.Y >= 0 && mouse.Y < graphics.Height;
-
-    /// <summary>
     /// Checks if a rectangle contains a point specified by coordinates.
     /// </summary>
     /// <typeparam name="T">The numeric type used for coordinates.</typeparam>
@@ -91,31 +81,41 @@ public static class RectangleExtensions
         mouse.X >= rectangle.X && mouse.X < rectangle.X + rectangle.Width &&
         mouse.Y >= rectangle.Y && mouse.Y < rectangle.Y + rectangle.Height;
 
-    /// <summary>
-    /// Draws the outline of a rectangle.
-    /// </summary>
     /// <param name="graphics"></param>
-    /// <param name="rectangle"></param>
-    /// <param name="outlineColor"></param>
-    public static void DrawRectangle(this GraphicsManager graphics, IRectangle<int> rectangle, Color outlineColor)
-        => graphics.DrawRectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, outlineColor);
+    extension(GraphicsManager graphics)
+    {
+        /// <summary>
+        /// Draws the outline of a rectangle.
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="outlineColor"></param>
+        public void DrawRectangle(IRectangle<int> rectangle, Color outlineColor)
+            => graphics.DrawRectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, outlineColor);
 
-    /// <summary>
-    /// Draws a filled rectangle.
-    /// </summary>
-    /// <param name="graphics"></param>
-    /// <param name="rectangle"></param>
-    /// <param name="fillColor"></param>
-    public static void DrawFilledRectangle(this GraphicsManager graphics, IRectangle<int> rectangle, Color fillColor)
-        => graphics.DrawFilledRectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, fillColor);
+        /// <summary>
+        /// Draws a filled rectangle.
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="fillColor"></param>
+        public void DrawFilledRectangle(IRectangle<int> rectangle, Color fillColor)
+            => graphics.DrawFilledRectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, fillColor);
 
-    /// <summary>
-    /// Draws a filled rectangle.
-    /// </summary>
-    /// <param name="graphics"></param>
-    /// <param name="rectangle"></param>
-    /// <param name="fillColor"></param>
-    /// <param name="outlineColor"></param>
-    public static void DrawFilledRectangle(this GraphicsManager graphics, IRectangle<int> rectangle, Color fillColor, Color outlineColor)
-        => graphics.DrawFilledRectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, fillColor, outlineColor);
+        /// <summary>
+        /// Draws a filled rectangle.
+        /// </summary>
+        /// <param name="rectangle"></param>
+        /// <param name="fillColor"></param>
+        /// <param name="outlineColor"></param>
+        public void DrawFilledRectangle(IRectangle<int> rectangle, Color fillColor, Color outlineColor)
+            => graphics.DrawFilledRectangle(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, fillColor, outlineColor);
+
+        /// <summary>
+        /// Checks if the mouse is within the graphics viewport.
+        /// </summary>
+        /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
+        /// <returns>True if the mouse is within the viewport, false otherwise.</returns>
+        public bool Contains(MouseManager mouse) =>
+            mouse.X >= 0 && mouse.X < graphics.Width &&
+            mouse.Y >= 0 && mouse.Y < graphics.Height;
+    }
 }
