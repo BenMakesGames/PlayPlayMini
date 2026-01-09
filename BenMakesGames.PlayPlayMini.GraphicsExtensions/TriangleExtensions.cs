@@ -66,13 +66,13 @@ public static class TriangleExtensions
         var deltaY31 = fixedY3 - fixedY1;
 
         // Fixed-point deltas
-        var FDX12 = deltaX12 << 4;
-        var FDX23 = deltaX23 << 4;
-        var FDX31 = deltaX31 << 4;
+        var fdx12 = deltaX12 << 4;
+        var fdx23 = deltaX23 << 4;
+        var fdx31 = deltaX31 << 4;
 
-        var FDY12 = deltaY12 << 4;
-        var FDY23 = deltaY23 << 4;
-        var FDY31 = deltaY31 << 4;
+        var fdy12 = deltaY12 << 4;
+        var fdy23 = deltaY23 << 4;
+        var fdy31 = deltaY31 << 4;
 
         // Bounding rectangle
         var minX = (Math.Min(fixedX1, Math.Min(fixedX2, fixedX3)) + 0xF) >> 4;
@@ -135,22 +135,22 @@ public static class TriangleExtensions
                     graphics.DrawFilledRectangle(x, y, q, q, color);
                 else   // Partially covered block
                 {
-                    var CY1 = c1 + deltaX12 * blockY1 - deltaY12 * blockX1;
-                    var CY2 = c2 + deltaX23 * blockY1 - deltaY23 * blockX1;
-                    var CY3 = c3 + deltaX31 * blockY1 - deltaY31 * blockX1;
+                    var cy1 = c1 + deltaX12 * blockY1 - deltaY12 * blockX1;
+                    var cy2 = c2 + deltaX23 * blockY1 - deltaY23 * blockX1;
+                    var cy3 = c3 + deltaX31 * blockY1 - deltaY31 * blockX1;
 
                     for(var iy = y; iy < y + q; iy++)
                     {
-                        var CX1 = CY1;
-                        var CX2 = CY2;
-                        var CX3 = CY3;
+                        var cx1 = cy1;
+                        var cx2 = cy2;
+                        var cx3 = cy3;
 
                         var startX = -1;
                         var width = 0;
 
                         for(var ix = x; ix < x + q; ix++)
                         {
-                            if(CX1 > 0 && CX2 > 0 && CX3 > 0)
+                            if(cx1 > 0 && cx2 > 0 && cx3 > 0)
                             {
                                 if(startX == -1) startX = ix;
                                 width++;
@@ -158,16 +158,16 @@ public static class TriangleExtensions
                             else if(startX != -1)
                                 break;
 
-                            CX1 -= FDY12;
-                            CX2 -= FDY23;
-                            CX3 -= FDY31;
+                            cx1 -= fdy12;
+                            cx2 -= fdy23;
+                            cx3 -= fdy31;
                         }
 
                         graphics.DrawRow(startX, startX + width - 1, iy, color);
 
-                        CY1 += FDX12;
-                        CY2 += FDX23;
-                        CY3 += FDX31;
+                        cy1 += fdx12;
+                        cy2 += fdx23;
+                        cy3 += fdx31;
                     }
                 }
             }

@@ -55,7 +55,7 @@ public sealed class SoundManager : IServiceLoadContent
     }
 
     /// <summary>
-    ///
+    /// Sets the volume level of sounds.
     /// </summary>
     /// <remarks>The volume level of sounds that are currently playing WILL NOT be adjusted.</remarks>
     /// <param name="volume"></param>
@@ -65,7 +65,7 @@ public sealed class SoundManager : IServiceLoadContent
     }
 
     /// <summary>
-    ///
+    /// Sets the volume level of music.
     /// </summary>
     /// <remarks>The volume level of songs that are currently playing will be adjusted.</remarks>
     /// <param name="volume"></param>
@@ -75,6 +75,13 @@ public sealed class SoundManager : IServiceLoadContent
         MediaPlayer.Volume = volume;
     }
 
+    /// <summary>
+    /// Plays a sound effect.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="volume"></param>
+    /// <param name="pitch"></param>
+    /// <param name="pan"></param>
     public void PlaySound(string name, float volume = 1.0f, float pitch = 0.0f, float pan = 0.0f)
     {
         if (!SoundEffects.TryGetValue(name, out var soundEffect))
@@ -117,6 +124,9 @@ public sealed class SoundManager : IServiceLoadContent
         MediaPlayer.Play(song);
     }
 
+    /// <summary>
+    /// Stops the currently playing song, if any.
+    /// </summary>
     public void StopMusic()
     {
         MediaPlayer.Stop();

@@ -21,10 +21,10 @@ public sealed partial class GraphicsManager
         => DrawTextureRotatedAndScaled(Pictures[pictureName], x, y, angle, scale, color);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawPictureWithTransformations(string pictureName, int x, int y, Rectangle? clippingRectangle, SpriteEffects flip, float angle, float scale, Color c)
+    public void DrawPictureWithTransformations(string pictureName, int centerX, int centerY, Rectangle? clippingRectangle, SpriteEffects flip, float angle, float scale, Color c)
         => DrawTextureWithTransformations(
             Pictures[pictureName],
-            x, y,
+            centerX, centerY,
             clippingRectangle,
             flip,
             angle,

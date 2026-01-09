@@ -53,7 +53,14 @@ public sealed class MouseManager : IServiceInput
     public string? PictureName { get; private set; }
     public (int X, int Y) Hotspot { get; private set; }
 
+    /// <summary>
+    /// The mouse's current X position in pixels, relative to the game window's upper-left corner.
+    /// </summary>
     public int X { get; private set; }
+
+    /// <summary>
+    /// The mouse's current Y position in pixels, relative to the game window's upper-left corner.
+    /// </summary>
     public int Y { get; private set; }
 
     /// <summary>

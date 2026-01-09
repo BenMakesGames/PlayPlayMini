@@ -9,6 +9,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace BenMakesGames.PlayPlayMini;
 
+/// <summary>
+/// The core game manager. Handles the game loop (input, update, draw), and game state transitions.
+/// </summary>
+/// <remarks>
+/// It extends MonoGame's <see cref="Game"/> class.
+/// </remarks>
 [AutoRegister]
 public sealed class GameStateManager: Game
 {
@@ -23,6 +29,9 @@ public sealed class GameStateManager: Game
     /// </example>
     public AbstractGameState CurrentState { get; private set; }
 
+    /// <summary>
+    /// The game state that will be switched to at the beginning of the next update cycle.
+    /// </summary>
     public AbstractGameState? NextState { get; private set; }
 
     private ILifetimeScope IoCContainer { get; }

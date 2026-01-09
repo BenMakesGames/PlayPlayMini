@@ -5,7 +5,7 @@
         <Company>Ben Hendel-Doying</Company>
         <Description>Some GraphicsManager extensions for PlayPlayMini.</Description>
         <Copyright>2023-2025 Ben Hendel-Doying</Copyright>
-        <Version>7.1.0</Version>
+        <Version>7.2.0</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>monogame playplaymini graphics extensions animations text</PackageTags>

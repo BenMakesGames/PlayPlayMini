@@ -8,5 +8,9 @@ namespace BenMakesGames.PlayPlayMini;
 /// </summary>
 public interface IServiceUpdate
 {
+    /// <summary>
+    /// Called during PlayPlayMini's Update step. Should not be called manually.
+    /// </summary>
+    /// <param name="gameTime"></param>
     void Update(GameTime gameTime);
 }

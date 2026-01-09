@@ -11,17 +11,17 @@ public sealed partial class GraphicsManager
     /// rotated around that point.
     /// </summary>
     /// <param name="texture"></param>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
+    /// <param name="centerX"></param>
+    /// <param name="centerY"></param>
     /// <param name="angle"></param>
     /// <param name="scale"></param>
     /// <param name="color"></param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureRotatedAndScaled(Texture2D texture, int x, int y, float angle, float scale, Color color)
+    public void DrawTextureRotatedAndScaled(Texture2D texture, int centerX, int centerY, float angle, float scale, Color color)
     {
         SpriteBatch.Draw(
             texture,
-            new Rectangle(x, y, (int)(texture.Width * scale), (int)(texture.Height * scale)),
+            new Rectangle(centerX, centerY, (int)(texture.Width * scale), (int)(texture.Height * scale)),
             null,
             color,
             angle,
@@ -35,13 +35,13 @@ public sealed partial class GraphicsManager
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureWithTransformations(Texture2D texture, int x, int y, Rectangle? clippingRectangle, SpriteEffects flip, float angle, float scaleX, float scaleY, Color c)
+    public void DrawTextureWithTransformations(Texture2D texture, int centerX, int centerY, Rectangle? clippingRectangle, SpriteEffects flip, float angle, float scaleX, float scaleY, Color c)
     {
         var rectangle = clippingRectangle ?? new Rectangle(0, 0, texture.Width, texture.Height);
 
         SpriteBatch.Draw(
             texture,
-            new Rectangle(x, y, (int)(rectangle.Width * scaleX), (int)(rectangle.Height * scaleY)),
+            new Rectangle(centerX, centerY, (int)(rectangle.Width * scaleX), (int)(rectangle.Height * scaleY)),
             clippingRectangle,
             c,
             angle,
@@ -54,11 +54,11 @@ public sealed partial class GraphicsManager
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawTextureRotatedAndScaled(Texture2D texture, int x, int y, Rectangle? clippingRectangle, float angle, float scale, Color c)
+    public void DrawTextureRotatedAndScaled(Texture2D texture, int centerX, int centerY, Rectangle? clippingRectangle, float angle, float scale, Color c)
         => DrawTextureWithTransformations(
             texture,
-            x,
-            y,
+            centerX,
+            centerY,
             clippingRectangle,
             SpriteEffects.None,
             angle,

@@ -77,11 +77,11 @@ public static class StringExtensions
 /// </code></example>
 public ref struct LineSplitEnumerator
 {
-    private ReadOnlySpan<char> _str;
+    private ReadOnlySpan<char> Str;
 
     public LineSplitEnumerator(ReadOnlySpan<char> str)
     {
-        _str = str;
+        Str = str;
         Current = default;
     }
 
@@ -90,14 +90,14 @@ public ref struct LineSplitEnumerator
 
     public bool MoveNext()
     {
-        var span = _str;
+        var span = Str;
         if (span.Length == 0) // Reach the end of the string
             return false;
 
         var index = span.IndexOfAny('\r', '\n');
         if (index == -1) // The string is composed of only one line
         {
-            _str = ReadOnlySpan<char>.Empty; // The remaining string is an empty string
+            Str = ReadOnlySpan<char>.Empty; // The remaining string is an empty string
             Current = new LineSplitEntry(span, ReadOnlySpan<char>.Empty);
             return true;
         }
@@ -109,13 +109,13 @@ public ref struct LineSplitEnumerator
             if (next == '\n')
             {
                 Current = new LineSplitEntry(span.Slice(0, index), span.Slice(index, 2));
-                _str = span.Slice(index + 2);
+                Str = span.Slice(index + 2);
                 return true;
             }
         }
 
         Current = new LineSplitEntry(span.Slice(0, index), span.Slice(index, 1));
-        _str = span.Slice(index + 1);
+        Str = span.Slice(index + 1);
         return true;
     }
 
@@ -128,11 +128,11 @@ public ref struct LineSplitEnumerator
 /// </summary>
 public ref struct SpaceSplitEnumerator
 {
-    private ReadOnlySpan<char> _str;
+    private ReadOnlySpan<char> Str;
 
     public SpaceSplitEnumerator(ReadOnlySpan<char> str)
     {
-        _str = str;
+        Str = str;
         Current = default;
     }
 
@@ -141,20 +141,20 @@ public ref struct SpaceSplitEnumerator
 
     public bool MoveNext()
     {
-        var span = _str;
+        var span = Str;
         if (span.Length == 0) // Reach the end of the string
             return false;
 
         var index = span.IndexOf(' ');
         if (index == -1) // The string is composed of only one line
         {
-            _str = ReadOnlySpan<char>.Empty; // The remaining string is an empty string
+            Str = ReadOnlySpan<char>.Empty; // The remaining string is an empty string
             Current = new LineSplitEntry(span, ReadOnlySpan<char>.Empty);
             return true;
         }
 
         Current = new LineSplitEntry(span.Slice(0, index), span.Slice(index, 1));
-        _str = span.Slice(index + 1);
+        Str = span.Slice(index + 1);
         return true;
     }
 

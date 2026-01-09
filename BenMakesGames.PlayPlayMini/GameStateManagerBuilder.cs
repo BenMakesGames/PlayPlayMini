@@ -77,7 +77,12 @@ public class GameStateManagerBuilder
         return this;
     }
 
-    public GameStateManagerBuilder SetLostFocusGameState<T>() where T: GameState
+    /// <summary>
+    /// Sets the game state to use when the window loses focus.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public GameStateManagerBuilder SetLostFocusGameState<T>() where T: GameState<LostFocusConfig>
     {
         LostFocusGameState = typeof(T);
 

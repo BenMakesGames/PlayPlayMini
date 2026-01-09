@@ -16,10 +16,10 @@ public sealed partial class GraphicsManager
     );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteWithTransformations(string spriteSheetName, int x, int y, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
+    public void DrawSpriteWithTransformations(string spriteSheetName, int centerX, int centerY, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
         => DrawTextureWithTransformations(
             SpriteSheets[spriteSheetName].Texture,
-            x, y,
+            centerX, centerY,
             SpriteRectangle(SpriteSheets[spriteSheetName], spriteIndex),
             flip,
             angle,
@@ -29,10 +29,10 @@ public sealed partial class GraphicsManager
         );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteWithTransformations(SpriteSheet spriteSheet, int x, int y, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
+    public void DrawSpriteWithTransformations(SpriteSheet spriteSheet, int centerX, int centerY, int spriteIndex, SpriteEffects flip, float angle, float scale, Color tint)
         => DrawTextureWithTransformations(
             spriteSheet.Texture,
-            x, y,
+            centerX, centerY,
             SpriteRectangle(spriteSheet, spriteIndex),
             flip,
             angle,
@@ -42,11 +42,11 @@ public sealed partial class GraphicsManager
         );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteRotatedAndScaled(string spriteSheet, int x, int y, int spriteIndex, float angle, float scale, Color c) =>
+    public void DrawSpriteRotatedAndScaled(string spriteSheet, int centerX, int centerY, int spriteIndex, float angle, float scale, Color c) =>
         DrawTextureWithTransformations(
             SpriteSheets[spriteSheet].Texture,
-            x,
-            y,
+            centerX,
+            centerY,
             SpriteRectangle(SpriteSheets[spriteSheet], spriteIndex),
             SpriteEffects.None,
             angle,
@@ -57,11 +57,11 @@ public sealed partial class GraphicsManager
     ;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DrawSpriteRotatedAndScaled(SpriteSheet spriteSheet, int x, int y, int spriteIndex, float angle, float scale, Color c) =>
+    public void DrawSpriteRotatedAndScaled(SpriteSheet spriteSheet, int centerX, int centerY, int spriteIndex, float angle, float scale, Color c) =>
         DrawTextureWithTransformations(
             spriteSheet.Texture,
-            x,
-            y,
+            centerX,
+            centerY,
             SpriteRectangle(spriteSheet, spriteIndex),
             SpriteEffects.None,
             angle,
