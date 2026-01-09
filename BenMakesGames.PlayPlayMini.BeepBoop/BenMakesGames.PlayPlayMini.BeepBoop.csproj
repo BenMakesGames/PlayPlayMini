@@ -4,7 +4,7 @@
         <Authors>Ben Hendel-Doying</Authors>
         <Company>Ben Hendel-Doying</Company>
         <Description>An extension for PlayPlayMini which adds methods for generating &amp; playing simple waveforms.</Description>
-        <Copyright>2022-2024 Ben Hendel-Doying</Copyright>
+        <Copyright>2022-2026 Ben Hendel-Doying</Copyright>
         <Version>0.11.0</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

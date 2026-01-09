@@ -4,7 +4,7 @@
     <Authors>Ben Hendel-Doying</Authors>
     <Company>Ben Hendel-Doying</Company>
     <Description>An opinionated framework for making smallish games with MonoGame.</Description>
-    <Copyright>2021-2025 Ben Hendel-Doying</Copyright>
+    <Copyright>2021-2026 Ben Hendel-Doying</Copyright>
     <Version>7.2.0</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

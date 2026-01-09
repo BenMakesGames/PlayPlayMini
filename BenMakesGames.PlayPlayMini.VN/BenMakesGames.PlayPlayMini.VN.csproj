@@ -4,7 +4,7 @@
         <Authors>Ben Hendel-Doying</Authors>
         <Company>Ben Hendel-Doying</Company>
         <Description>Add-on for PlayPlayMini to facilitate adding visual novel segments to your games.</Description>
-        <Copyright>2025 Ben Hendel-Doying</Copyright>
+        <Copyright>2026 Ben Hendel-Doying</Copyright>
         <Version>1.0.0-rc1</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

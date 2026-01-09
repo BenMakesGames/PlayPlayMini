@@ -1,10 +1,12 @@
 # VN
 
-**PlayPlayMini.VN** adds a visual novel engine to the PlayPlayMini framework, which is itself built on top of MonoGame, a kinda'-sorta'-vaguely popular framework for making games. (Stardew Valley was made in MonoGame, so I guess that's something!)
+**PlayPlayMini.VN** adds a visual novel engine to the PlayPlayMini framework, which is itself built on top of MonoGame.
 
 You can use **PlayPlayMini.VN** it to make a 100% VN game, or to add visual novel sequences within other games. 
 
 Some basic understanding of PlayPlayMini will be required.
+
+> [🧚 **Hey, listen!** You can support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)
 
 ## Installing
 
