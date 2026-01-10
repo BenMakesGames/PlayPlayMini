@@ -1,18 +1,87 @@
-# What Is It?
+# Upgrading from 7.x to 8.0.0-rc1
 
-**PlayPlayMini** is an opinionated framework for making smallish 2D games with **MonoGame**.
+`8.0.0-rc#` builds are release candidates; the following may change by the time 8.0.0 is released:
 
-It provides a state engine with lifecycle events, a `GraphicsManager` that provides methods for easily drawing sprites & fonts with a variety of effects, and dependency injection using **Autofac**.
+## Breaking Changes
 
-If you don't know what all of those things are, don't worry: they're awesome, and this readme will show you how to use them (with code examples!), and explain their benefits.
+### `MouseManager.Draw` now takes an `AbstractGameState` instead of a `GameTime`
 
-If you prefer learning purely by example, check out [Block-break](https://github.com/BenMakesGames/BlockBreak), a demo game made with PlayPlayMini, EntityFramework, and Serliog that uses fonts, sprite sheets, pictures, and sounds.
+(If you're not using custom cursors, this doesn't affect you.)
 
-> [🧚 **Hey, listen!** You can support my development of open-source software on Patreon](https://www.patreon.com/BenMakesGames)
+When using a custom cursor, if the passed game state is not the current state, the cursor will not be drawn.
 
-# Upgrading
+```c#
+// ❌ don't do this anymore:
+if(GSM.CurrentState == this)
+    Mouse.Draw(gameTime);
 
-For information on how to upgrade from one major verison to the next, see [UPGRADE.md](./UPGRADE.md5).
+// ✔ do this now:
+Mouse.Draw(this);
+```
+
+If for some reason you DO want to always draw the custom cursor, pass `null` (for example: `Mouse.Draw(null);`).
+
+## New Stuff
+1. Added `GetCenter()` method to `IRectangle<int>` and `IRectangle<float>`
+2. Added `Gravity` property to `TumblingSprite`
+   * it defaults to `0.2`, which is the value that previous versions of the library were using internally
+3. As always: a few more docblocks
+
+# Upgrading from 6.x to 7.0.0
+
+## Breaking Changes
+1. Upgraded to .NET 10.0
+2. `GameState`s which use a configuration class must inherit `GameState<TConfig>` instead of `GameState`
+   * ☝ After upgrading to 7.0.0, you will see errors on calls to `.ChangeState<..., ...>`. To resolve these, upgrade the game state in question to inherit `GameState<TConfig>` instead of `GameState`.   
+3. Use the new `AbstractGameState` if you need to store a reference to a `GameState` and/or `GameState<TConfig>`
+   * Do not inherit from `AbstractGameState` yourself. 
+4. `GraphicsManager.DrawPoints` has (finally) been moved to the `PlayPlayMini.GraphicsExtensions` package
+
+# Upgrading from 5.x to 6.0.0
+
+## Breaking Changes
+1. Upgraded to MonoGame 3.8.3
+2. Upgraded to .NET 9.0
+
+# Upgrading from 4.x to 5.0.0
+
+## Breaking Changes
+1. Upgraded to MonoGame 3.8.2.1105
+2. The "Pixel" `Texture2D` is no longer available via the `GraphicsManager`'s `Pictures` dictionary, and can no longer be overridden by adding `PictureMeta` for "Pixel"; if you still need to use this texture, it's available as `WhitePixel` on the `GraphicsManager` service
+   * Replace uses `graphics.Pictures["Pixel"]` with `graphics.WhitePixel`
+
+# Upgrading from 3.x to 4.0.0
+
+## Breaking Changes
+
+1. Upgraded to .NET 8.0.
+2. `FontMeta` has three new properties: `FirstCharacter`, `HorizontalSpacing`, and `VerticalSpacing`. These default to `' '`, `1`, and `1`, respectively. Previous behavior was equivalent to a horizontal and vertical spacing of `0`.
+   * **Quick fix:** update your fonts' `FontMeta` to set the `HorizontalSpacing` and `VerticalSpacing` properties to `0`; OR:
+   * **Better fix:** update your fonts' images to remove spacing between characters; update the `Width` and `Height` properties accordingly.
+3. The `[Obsolete]` `Generators` methods and class for drawing primitive shapes (lines, circles) have been removed.
+   * Use the `BenMakesGames.PlayPlayMini.GraphicsExtensions` package for drawing primitives. It's capable of drawing more shapes, and has _much_ better performance!
+
+# Upgrading from 2.x to 3.0.0
+
+## Breaking Changes
+
+1. The lifecycle methods `ActiveInput`, `ActiveUpdate`, `AlwaysUpdate`, `ActiveDraw`, and `AlwaysDraw` have been removed from `GameState`, replaced with `Input`, `Update`, and `Draw`.
+    * Use `GameStateManager.CurrentState` to check the current state, as needed.
+2. The `GraphicsManager`'s many `[Obsolete]` methods have been removed.
+3. `Random` is no longer registered as a singleton service automatically.
+    * Use the C#-built-in `Random.Shared`, instead, OR:
+    * Register `Random` manually in `AddServices` (if you actually use different implementations of an RNG, for example in unit tests).
+4. Updated **Autofac** from 6.5.0 to 7.1.0
+    * **PlayPlayMini** users will probably not experience any of the very few breaking changes introduced by this upgrade. See https://docs.autofac.org/en/latest/whats-new/upgradingfrom6to7.html for more information.
+
+## Additions & Other Changes
+
+1. `GameState` now has a `FixedUpdate` method, which is called ~60 times per second regardless of the game's frame rate.
+    * If you're using `GameStateManagerBuilder`'s `UseFixedTimeStep(true)`, there is little practical difference between `FixedUpdate` and `Update`.
+2. Specifying a lifetime value for the `[AutoRegister]` is now optional; the default is `Lifetime.Singleton`.
+3. Added in 2.7.0, but: `GameStateManagerBuilder` now has a `.SetLostFocusGameState<T>()` method, which allows you to set a game state to be used when the game loses focus (for example, when the player alt-tabs out of the game).
+    * This game state will receive a `LostFocusConfig` object in its constructor, containing a reference to the previous game state.
+    * See the **PlayPlayMini** skeleton projects for examples.
 
 # How to Use
 
@@ -20,7 +89,7 @@ For information on how to upgrade from one major verison to the next, see [UPGRA
 
 1. Install the **PlayPlayMini** project templates:
    * `dotnet new install BenMakesGames.PlayPlayMini.Templates`
-2. Optional, but recommended: create an empty solution.
+2. Optional: create an empty solution.
 3. Create a new project:
    * `dotnet new playplaymini.skeleton -n MyGame`
    * Make sure to run this within the solution directory, if you created a solution in step 2.
@@ -30,7 +99,7 @@ For information on how to upgrade from one major verison to the next, see [UPGRA
 
 A "game state" is something like "the title menu", "exploring a town", "lock-picking mini-game", etc.
 
-Game states get user input, update your game data, and draw graphics.  In **PlayPlayMini**, there is always exactly one active game state. It's possible to layer game states, for example to handle nested menus.
+In **PlayPlayMini**, your game is always in at least one game state.
 
 If you used one of the **PlayPlayMini** template projects, check out the `Startup` class in the `GameStates` folder. It should look like this:
 
@@ -96,7 +165,7 @@ GSM.ChangeState<Playing>();
 
 Finally, you may have noticed that the `Startup` game state has a constructor. You'll never call `new Startup(...)` anywhere, however! This is because **PlayPlayMini** uses a dependency injection framework called **Autofac** under the hood.
 
-If you're not familiar with dependency injection, you may find yourself wanting to `new` up game states and `MouseManager`s and things. Stop! Don't do it! That path leads to madness. Read on to learn an easier way to manage a class's dependencies:
+If you're not familiar with dependency injection, you may find yourself wanting to `new` up game states and `MouseManager`s and things. Stop right there! Don't do it! That path leads to madness. Read on to learn an easier way to manage a class's dependencies:
 
 ## A Brief Intro to Dependency Injection
 
@@ -104,15 +173,15 @@ Feel free to skip/skim this section if you're like "yes, I know all about IoC/DI
 
 Consider this line, from the above code:
 
-```c#
+```
 public Startup(GraphicsManager graphics, GameStateManager gsm, MouseManager mouse)
 ```
 
-Here, rather than the `Startup` class `new`ing up its own graphics manager, game state manager, or mouse, it asks those things to be given via its constructor. That's the main principle of dependency injection: "inversion of control". Rather than a class creating the things it needs, it gives up control of that task to something else.
+Here, rather than the `Startup` class `new`ing up its own graphics manager, game state manager, or mouse, it asks those things to be given via its constructor. That's the main principle of dependency injection frameworks: "inversion of control". Rather than a class creating the things it needs, it gives up control of that task to something else.
 
 You may wonder: "Why bother? I'll just have to provide them all when I call `new Startup(...)` anyway!"
 
-However, with a dependency injection _framework_, you will never write `new Startup(...)`!
+However, with a dependency injection framework, you will never write `new Startup(...)`!
 
 So how do the game states get made?
 
@@ -121,7 +190,7 @@ Hold that thought. Let's take a moment to look at some of the advantages of neve
 ### Advantages of Dependency Injection Frameworks
 
 First: as your game states grow in number and complexity, you'll want to give them more
-"services" like the `GraphicsManager`, `FrameCounter`, and others you make yourself (perhaps a SQLite database connection to save and load the game).
+"services" like the `GraphicsManager`, `FrameCounter`, and others you make yourself (perhaps a SQLite database connection to save and load te game).
 If you were `new`ing up the game states "manually", then every time you added a new service to a constructor,
 you'd have to find all the places you made a `new` one, and give them the new things they need.
 
@@ -129,9 +198,9 @@ you'd have to find all the places you made a `new` one, and give them the new th
 new Startup(new MouseManager(...???), new GameStateManager(?!!?!?));
 ```
 
-Second: if you `new` up a game state manually, and it needs a `MouseManager`, you'd also have to create a `new MouseManager()` for it... but the `MouseManager`'s constructor also has arguments! How are you supposed to get _those?!_
+Second: if you `new` up a game state manually, and it needs a `MouseManager`, you'd also have to create a `new MouseManager()` for it... but what if the `MouseManager`'s constructor also has arguments? Now you'll have to `new` up those, too!
 
-A DI framework eliminates all these problems. You register all the classes you'll ever want `new`d, and it `new`s them up for you whenever one is needed. This allows you to easily add/remove/change a class's dependencies without making any other changes across your codebase. Nice!
+But again: with a DI framework, you don't have to `new` any of this stuff up. You're free to add more dependencies, as constructor arguments, without making any other changes across your codebase. Nice!
 
 Third: Many services, like the `MouseManager`, you really only need one of, so you can use the same instance over and over. You _could_ write global statics, but if you've done that in a big project before, you know the trouble and performance problems that can lead to. Dependency injection frameworks, like **Autofac**, can be configured to find existing instances of certain service classes, and use those instead of making a new ones, with very little effort. (No need to write lazy-initalization logic, etc.)
 
@@ -141,8 +210,8 @@ In order for a dependency injection framework to do this, any classes you want i
 
 ### Final Tips
 
-1. Only objects containing "business logic" get registered with DI. Data-only objects like `PictureMeta`, ORM entities, and other DTOs should still be `new`ed up manually, and should never ask for a service in their own constructors.
-2. If a method, or collection of methods, has no dependencies, and no internal state, don't make a service - a collection of `static` methods will be more-performant, easier to re-use (copy-paste into other projects), and easier to test. (If such static methods later grow to the point that they want services, create a new service that calls the static methods + does the extra service-ful logic.)
+1. Only objects containing "business logic" get registered with DI. Data-only objects like `PictureMeta` should still be `new`ed up manually, and should never ask for a service in their constructor.
+2. If a method, or collection of methods, has no dependencies, and no internal state, don't make a service - a collection of `static` methods will be more-performant, easier to re-use (copy-paste into other projects), and easier to test.
 
 ### Learn More
 * https://www.google.com/search?q=advantages+of+dependency+injection
@@ -209,7 +278,7 @@ Next:
     .SetLostFocusGameState<LostFocus>()
 ```
 
-This is optional; it configures a game state to be used when your game loses focus. If you don't want this feature, you can delete this line, and the `LostFocus` class that comes with the template.
+This is optional; it configured a game state to be used when your game loses focus. If you don't want this feature, you can delete this line, and the `LostFocus` class that comes with the template.
 
 Next up:
 
@@ -234,14 +303,12 @@ Moving on:
         new PictureMeta("Cursor", "Graphics/Cursor", true),
 ```
 
-`FontMeta` (along with `PictureMeta` and `SpriteSheetMeta`) contains everything the
+`FontMeta` (along with `PictureMeta` and `SpriteSheetMeta`) is a struct that contains everything the
 `GraphicsManager` needs to load and store graphics.
 
 The first argument is the name/key/ID/whatever-you-wanna-call-it which you're assigning to the
-asset. It can be anything, and spaces and other punctuation are allowed
-(it's just a string, after all!) This name is what you'll use when referring to the asset, for example when asking the `GraphicsManager` to draw a picture, or the `SoundManager` to play a sound.
-
-> 🧚‍♀️ **Hey, listen!** To prevent mistakes, it can be helpful to use `const`s for these names.
+image. It can be anything, and spaces and other punctuation are allowed, if you want/need them
+(it's just a string, after all!) You'll refer to this later, when drawing images.
 
 The second argument is a path to the image, matching your `Content/Content.mgcb` file's definition of
 the image.
@@ -254,7 +321,7 @@ the mouse cursor can be shown while the rest of the assets are loading.
 
 Unless every single one of your assets are set to load before the game's startup state (which is not recommended!), you'll need to wait for them to load before starting the rest of the game.
 
-The template-provided `Startup` game state does this by checking the `GraphicsManager`'s `FullyLoaded` attribute (seen in an earlier code example).
+The template-provided `Startup` game state does this by checking the `GraphicsManager`'s `FullyLoaded` attribute, seen in an early code example.
 
 If you also have deferred sound effect or music assets, inject the `SoundManager`, and check on _its_ `FullyLoaded` property, as well.
 
@@ -262,13 +329,11 @@ Remember: if you try to use an asset before it's loaded, your application will c
 
 ## Services
 
-A "service" is just any class that's been registered with the DI framework (**Autofac**, in our case).
-
-**PlayPlayMini** provides many such services, but you can also make your own.
-
-Suppose you make a `CombatManager` class to control the logic of a turn-based combat system. If you register it as a service, you can ask for a `CombatManager` in the constructor of any other service (including game states), _and_ you can ask for other services in the constructor of your `CombatManager`.
+If you're familiar with DI, you already know this, but you can create your own services. A service is just any class that's been registered with the DI framework (**Autofac**, in our case). Suppose you make a `ParticleEffectService` class... once your register it as a service, you can ask for a `ParticleEffectService` in the constructor of any other class, and you can ask for other services in the constructor of your `ParticleEffectService`.
 
 See "Creating Your Own Services" below for more info, as well as tips on how to avoid "circular dependencies" (instances where two services request one another in their constructors!)
+
+For now, here are the service built into `BenMakesGames.PlayPlayMini`:
 
 ### Built-in Services
 
@@ -290,13 +355,13 @@ The `SoundManager` has methods for playing sounds and looping music.
 
 It uses **MonoGame**'s built-in sound library, which has some limitations, and even some audible bugs on some platforms (such as poor looping of music tracks on Windows).
 
-If/when you get your game to a good state, and you really want to upgrade your game's sound and music, I recommend either:
-* Finding a C# FMOD library, like https://github.com/Martenfur/ChaiFoxes.FMODAudio. You'll have to hook it manually; I recommend creating your own sound manager service to wrap it up!
-* Using [PlayPlayMini.NAudio](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.NAudio#readme-body-tab), though it is Windows-only!
+If/when you get your game to a good state, and you really want to upgrade your game's sound and music, I recommend finding a C# FMOD library, like https://github.com/Martenfur/ChaiFoxes.FMODAudio. You'll have to hook it manually; I recommend creating your own sound manager service to wrap it up!
+
+I'm working on an "official" FMOD package for **PlayPlayMini**, but don't currently have an ETA. If you beat me to the punch, let others (and me) know!
 
 #### KeyboardManager
 
-You can still use **MonoGame**'s `Keyboard` class directly; the `KeyboardManager` provides some additional features, like checking whether or not a particular key was JUST pressed (without having to write checks for that yourself).
+You can use still **MonoGame**'s `Keyboard` class directly; the `KeyboardManager` provides some additional features, like checking whether or not a particular key was JUST pressed (without having to write checks for that yourself).
 
 Whether or not you use this class really depends on the kind of game you're making, and whether or not you want to/need to write your own keyboard controls.
 
@@ -305,6 +370,8 @@ Whether or not you use this class really depends on the kind of game you're maki
 You can use still **MonoGame**'s `Mouse` class directly; the `MouseManager` provides some additional features, including a method for drawing a custom cursor, and disabling the mouse when there's keyboard activity.
 
 Whether or not you use this class really depends on the kind of game you're making, and whether or not you want to/need to write your own mouse controls.
+
+If you're using the `BenMakesGames.PlayPlayMini.UI` extension package, the `MouseManager` becomes a requirement.
 
 #### FrameCounter
 
@@ -324,7 +391,7 @@ A simple example, registering a singleton service without any interface (the mos
 [AutoRegister]
 sealed class MyService
 {
-    ...
+	...
 }
 ```
 
@@ -395,7 +462,6 @@ This can be resolved in two ways:
 1. Create a new service, `ServiceC`, that services A and B depend on, instead of depending on one another. Move the method or methods needed into `ServiceC`, and update your code accordingly.
 2. Register either `ServiceA` or `ServiceB` as a lazy service. There are a few ways to do this; one is to use this NuGet package: https://github.com/servicetitan/lazy-proxy-autofac
    * When registering services as lazy services, you'll have to manually register them; you can't use `[AutoRegister]` for quick registration.
-   * This should be considered a last resort. Usually when two services come to depend on one another, it's a result of the services having poorly-defined scopes/responsibilities.
 
 #### Advanced Services Configuration: Service Lifetime Events
 
@@ -411,7 +477,6 @@ There are several interfaces which services can implement, each allowing the ser
   * Example services which implements this interface are the built-in `KeyboardManager` and `MouseManager`.
 * `IServiceLoadContent`
   * The service class must implement a `LoadContent` method, and `FullyLoaded` getter. The `LoadContent` method is called in **MonoGame**'s `LoadContent` method. It's up to the service class's author to implement `FullyLoaded` accurately (probably as `public bool FullyLoaded { get; private set; }`, setting it to true when `LoadContent` has completed).
-  * The `GraphicsManager` implements this interface; just as your game's startup game service waits on `GraphicsManager.FullyLoaded`, you should almost certainly check `FullyLoaded` on _all_ such services before starting the rest of the game.
 * `IServiceUpdate`
   * The service class must implement an `Update` method, which will be called before the current state's `Update` method.
 
@@ -422,43 +487,43 @@ There are several interfaces which services can implement, each allowing the ser
 Here's how you can draw two states at once, for example, to show a pause screen on top of another game state:
 
 ```c#
-public sealed class PauseScreen: GameState<AbstractGameState>
+public sealed class PauseScreen: GameState
 {
-    private AbstractGameState PreviousState { get; }
+	public AbstractGameState PreviousState { get; }
     
     ...
     
-    public PauseScreen(..., AbstractGameState previousState)
+    public PauseScreen(..., GameState previousState)
     {
-        ...
+    	...
     	
-        PreviousState = previousState;
+    	PreviousState = previousState;
     }
     
     public override void Draw(GameTime gameTime)
     {
-        PreviousState.Draw(gameTime);
+    	PreviousState.Draw(gameTime);
     	
-        // rest of drawing logic here, for example:
-        Graphics.DrawFilledRectangle(0, 0, GraphicsManager.Width, GraphicsManager.Height, new Color(0, 0, 0, 0.8));
+    	// rest of drawing logic here, for example:
+    	Graphics.DrawFilledRectangle(0, 0, GraphicsManager.Width, GraphicsManager.Height, new Color(0, 0, 0, 0.8));
     	
-        Graphics.DrawPicture("Paused", 100, 200);
+    	Graphics.DrawPicture("Paused", 100, 200);
     }
     
     public override void Update(GameTime gameTime)
     {
-        PreviousState.Update(gameTime);
-
-        // pause screen's own update logic goes here, if any
+    	PreviousState.Update(gameTime);
+    	
+    	// pause screen's own update logic goes here, if any
     }
     
-    public override void Input(GameTime gameTime)
+	public override void Input(GameTime gameTime)
     {
         // press Escape to un-pause
-        if(Keyboard.PressedKey(Keys.Escape))
+    	if(Keyboard.PressedKey(Keys.Escape))
         {
             // we have a reference to a GameState, so we can invoke ChangeState this way:
-            GSM.ChangeState(PreviousState);
+        	GSM.ChangeState(PreviousState);
         }
     }
     
@@ -471,15 +536,15 @@ The pause screen would then be opened like this:
 ```C#
 public sealed class CombatEncounter: GameState
 {
-    ...
+	...
 	
-    public override void Input(GameTime gameTime)
+	public override void Input(GameTime gameTime)
     {
-        ...
+    	...
     	
-        if(KeyboardManager.PressedKey(Keys.Escape))
+    	if(KeyboardManager.PressedKey(Keys.Escape))
         {
-            GSM.ChangeState<PauseScreen, AbstractGameState>(this);
+        	GSM.ChangeState<PauseScreen, GameState>(this);
         }
     }
     
@@ -491,33 +556,13 @@ By the way, this `ChangeState` method can be used to pass more complex parameter
 
 ```c#
 GSM.ChangeState<PauseScreen, PauseScreenConfig>(new PauseScreenConfig() {
-    PreviousState = this,
-    BackgroundOpacity = 0.5f,
-    PausePicture = "Pause",
+	PreviousState = this,
+	BackgroundOpacity = 0.5f,
+	PausePicture = "Pause",
 });
 ```
 
-The `PauseScreen` game state would then be written like this:
-
-```c#
-public sealed class PauseScreen: GameState<PauseScreenConfig>
-{
-    private PauseScreenConfig Config { get; }
-
-    private AbstractGameState PreviousState => config.PreviousState; // optional, as convenient
-    
-    ...
-    
-    public PauseScreen(..., PauseScreenConfig config)
-    {
-        ...
-    	
-        Config = config;
-    }
-    
-    ...
-}
-```
+The `PauseScreen` game state can then ask for the `PauseScreenConfig` in its constructor. 
 
 ## Reference
 

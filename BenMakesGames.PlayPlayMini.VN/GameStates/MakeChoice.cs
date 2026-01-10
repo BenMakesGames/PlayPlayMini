@@ -53,6 +53,7 @@ public sealed class MakeChoice: GameState<MakeChoiceConfig>
         HoveredChoice = Choices.FirstOrDefault(c => c.Contains(Mouse));
     }
 
+    /// <inheritdoc/>
     public override void Input(GameTime gameTime)
     {
         if(Mouse.Moved)
@@ -62,11 +63,13 @@ public sealed class MakeChoice: GameState<MakeChoiceConfig>
             choice.Action();
     }
 
+    /// <inheritdoc/>
     public override void Update(GameTime gameTime)
     {
         PreviousState.Update(gameTime);
     }
 
+    /// <inheritdoc/>
     public override void Draw(GameTime gameTime)
     {
         PreviousState.Draw(gameTime);
@@ -81,8 +84,7 @@ public sealed class MakeChoice: GameState<MakeChoiceConfig>
             Graphics.DrawText("Font", choice.X + 3, choice.Y + 2, choice.Label, textColor);
         }
 
-        if (GSM.CurrentState == this)
-            Mouse.Draw(gameTime);
+        Mouse.Draw(this);
     }
 }
 

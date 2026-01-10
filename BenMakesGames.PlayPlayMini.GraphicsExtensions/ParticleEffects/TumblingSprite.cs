@@ -3,6 +3,9 @@ using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions.ParticleEffects;
 
+/// <summary>
+/// "Tosses" a sprite; it spins as it moves, and is pulled to the bottom of the screen by gravity.
+/// </summary>
 public sealed class TumblingSprite : IParticle
 {
     private string SpriteSheet { get; }
@@ -15,6 +18,8 @@ public sealed class TumblingSprite : IParticle
     private double SpinSpeed { get; }
     private double XVelocity { get; set; }
     private double YVelocity { get; set; }
+
+    public double Gravity { get; set; } = 0.2;
 
     /// <inheritdoc />
     public bool IsAlive => CenterY < MaxY;
@@ -44,6 +49,6 @@ public sealed class TumblingSprite : IParticle
         CenterY += YVelocity * gameTime.ElapsedGameTime.TotalSeconds * 60;
         Angle += SpinSpeed * gameTime.ElapsedGameTime.TotalSeconds * 60;
 
-        YVelocity += 0.2 * gameTime.ElapsedGameTime.TotalSeconds * 60;
+        YVelocity += Gravity * gameTime.ElapsedGameTime.TotalSeconds * 60;
     }
 }

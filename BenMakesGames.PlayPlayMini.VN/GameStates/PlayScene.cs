@@ -27,6 +27,7 @@ public sealed class PlayScene: GameState<PlaySceneConfig>
         OnComplete = config.OnComplete;
     }
 
+    /// <inheritdoc/>
     public override void Input(GameTime gameTime)
     {
         if (SceneController.IsDone)
@@ -35,6 +36,7 @@ public sealed class PlayScene: GameState<PlaySceneConfig>
         SceneController.Input(GSM, Graphics, Mouse);
     }
 
+    /// <inheritdoc/>
     public override void Update(GameTime gameTime)
     {
         if (SceneController.IsDone)
@@ -48,12 +50,13 @@ public sealed class PlayScene: GameState<PlaySceneConfig>
         SceneController.Update(gameTime);
     }
 
+    /// <inheritdoc/>
     public override void Draw(GameTime gameTime)
     {
         SceneController.Draw(Graphics);
 
-        if (GSM.CurrentState == this && !SceneController.IsDone)
-            Mouse.Draw(gameTime);
+        if (!SceneController.IsDone)
+            Mouse.Draw(this);
     }
 }
 

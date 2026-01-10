@@ -5,7 +5,7 @@
     <Company>Ben Hendel-Doying</Company>
     <Description>An opinionated framework for making smallish games with MonoGame.</Description>
     <Copyright>2021-2026 Ben Hendel-Doying</Copyright>
-    <Version>7.2.0</Version>
+    <Version>8.0.0-rc1</Version>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>monogame game engine framework di state</PackageTags>
@@ -46,6 +46,10 @@
     <None Include="package-icon.png">
       <Pack>True</Pack>
       <PackagePath />
+    </None>
+    <None Update="UPGRADE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
   <ItemGroup>

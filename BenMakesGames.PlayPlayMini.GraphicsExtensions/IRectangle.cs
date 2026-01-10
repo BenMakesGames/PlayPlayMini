@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace BenMakesGames.PlayPlayMini.GraphicsExtensions;
 
@@ -21,32 +22,39 @@ public interface IRectangle<out T> where T: INumber<T>
 /// </summary>
 public static class RectangleExtensions
 {
-    /// <summary>
-    /// Checks if a rectangle contains the current mouse position.
-    /// </summary>
-    /// <param name="rectangle">The rectangle to check.</param>
-    /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
-    /// <returns>True if the rectangle contains the mouse position, false otherwise.</returns>
-    public static bool Contains(this IRectangle<int> rectangle, MouseManager mouse) =>
-        rectangle.Contains(mouse.X, mouse.Y);
+    extension(IRectangle<int> rectangle)
+    {
+        /// <summary>
+        /// Checks if a rectangle contains the current mouse position.
+        /// </summary>
+        /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
+        /// <returns>True if the rectangle contains the mouse position, false otherwise.</returns>
+        public bool Contains(MouseManager mouse) => rectangle.Contains(mouse.X, mouse.Y);
 
-    /// <summary>
-    /// Checks if a rectangle contains the current mouse position.
-    /// </summary>
-    /// <param name="rectangle">The rectangle to check.</param>
-    /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
-    /// <returns>True if the rectangle contains the mouse position, false otherwise.</returns>
-    public static bool Contains(this IRectangle<float> rectangle, MouseManager mouse) =>
-        rectangle.Contains(mouse.X, mouse.Y);
+        public Vector2 GetCenter() => new(rectangle.X + rectangle.Width / 2f, rectangle.Y + rectangle.Height / 2f);
+    }
 
-    /// <summary>
-    /// Checks if a rectangle contains the current mouse position.
-    /// </summary>
-    /// <param name="rectangle">The rectangle to check.</param>
-    /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
-    /// <returns>True if the rectangle contains the mouse position, false otherwise.</returns>
-    public static bool Contains(this IRectangle<double> rectangle, MouseManager mouse) =>
-        rectangle.Contains(mouse.X, mouse.Y);
+    extension(IRectangle<float> rectangle)
+    {
+        /// <summary>
+        /// Checks if a rectangle contains the current mouse position.
+        /// </summary>
+        /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
+        /// <returns>True if the rectangle contains the mouse position, false otherwise.</returns>
+        public bool Contains(MouseManager mouse) => rectangle.Contains(mouse.X, mouse.Y);
+
+        public Vector2 GetCenter() => new(rectangle.X + rectangle.Width / 2f, rectangle.Y + rectangle.Height / 2f);
+    }
+
+    extension(IRectangle<double> rectangle)
+    {
+        /// <summary>
+        /// Checks if a rectangle contains the current mouse position.
+        /// </summary>
+        /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
+        /// <returns>True if the rectangle contains the mouse position, false otherwise.</returns>
+        public bool Contains(MouseManager mouse) => rectangle.Contains(mouse.X, mouse.Y);
+    }
 
     /// <summary>
     /// Checks if a rectangle contains a point specified by coordinates.
@@ -60,28 +68,28 @@ public static class RectangleExtensions
         x >= rectangle.X && x < rectangle.X + rectangle.Width &&
         y >= rectangle.Y && y < rectangle.Y + rectangle.Height;
 
-    /// <summary>
-    /// Checks if a rectangle contains a point specified by coordinates.
-    /// </summary>
-    /// <param name="rectangle">The rectangle to check.</param>
-    /// <param name="x">X coordinate of the point.</param>
-    /// <param name="y">Y coordinate of the point.</param>
-    /// <returns>True if the rectangle contains the point, false otherwise.</returns>
-    public static bool Contains(this Rectangle rectangle, int x, int y) =>
-        x >= rectangle.X && x < rectangle.X + rectangle.Width &&
-        y >= rectangle.Y && y < rectangle.Y + rectangle.Height;
+    extension(Rectangle rectangle)
+    {
+        /// <summary>
+        /// Checks if a rectangle contains a point specified by coordinates.
+        /// </summary>
+        /// <param name="x">X coordinate of the point.</param>
+        /// <param name="y">Y coordinate of the point.</param>
+        /// <returns>True if the rectangle contains the point, false otherwise.</returns>
+        public bool Contains(int x, int y) =>
+            x >= rectangle.X && x < rectangle.X + rectangle.Width &&
+            y >= rectangle.Y && y < rectangle.Y + rectangle.Height;
 
-    /// <summary>
-    /// Checks if the mouse is within the graphics viewport.
-    /// </summary>
-    /// <param name="rectangle">The rectangle to check.</param>
-    /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
-    /// <returns>True if the rectangle contains the point, false otherwise.</returns>
-    public static bool Contains(this Rectangle rectangle, MouseManager mouse) =>
-        mouse.X >= rectangle.X && mouse.X < rectangle.X + rectangle.Width &&
-        mouse.Y >= rectangle.Y && mouse.Y < rectangle.Y + rectangle.Height;
+        /// <summary>
+        /// Checks if the mouse is within the graphics viewport.
+        /// </summary>
+        /// <param name="mouse">The <see cref="MouseManager">MouseManager</see> instance.</param>
+        /// <returns>True if the rectangle contains the point, false otherwise.</returns>
+        public bool Contains(MouseManager mouse) =>
+            mouse.X >= rectangle.X && mouse.X < rectangle.X + rectangle.Width &&
+            mouse.Y >= rectangle.Y && mouse.Y < rectangle.Y + rectangle.Height;
+    }
 
-    /// <param name="graphics"></param>
     extension(GraphicsManager graphics)
     {
         /// <summary>

@@ -43,7 +43,7 @@ namespace BenMakesGames.PlayPlayMini.Services;
 [AutoRegister]
 public sealed class MouseManager : IServiceInput
 {
-    private GraphicsManager GraphicsManager { get; }
+    private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
 
@@ -112,9 +112,9 @@ public sealed class MouseManager : IServiceInput
 
     public MouseDrawingMode DrawingMode { get; private set; } = MouseDrawingMode.System;
 
-    public MouseManager(GraphicsManager gm, KeyboardManager keyboard, GameStateManager gsm)
+    public MouseManager(GraphicsManager graphics, KeyboardManager keyboard, GameStateManager gsm)
     {
-        GraphicsManager = gm;
+        Graphics = graphics;
         Keyboard = keyboard;
         GSM = gsm;
 
@@ -149,13 +149,13 @@ public sealed class MouseManager : IServiceInput
         {
             if (ClampToWindow)
             {
-                X = Math.Min(Math.Max(MouseState.X / GraphicsManager.Zoom, 0), GraphicsManager.Width - 1);
-                Y = Math.Min(Math.Max(MouseState.Y / GraphicsManager.Zoom, 0), GraphicsManager.Height - 1);
+                X = Math.Min(Math.Max(MouseState.X / Graphics.Zoom, 0), Graphics.Width - 1);
+                Y = Math.Min(Math.Max(MouseState.Y / Graphics.Zoom, 0), Graphics.Height - 1);
             }
             else
             {
-                X = MouseState.X / GraphicsManager.Zoom;
-                Y = MouseState.Y / GraphicsManager.Zoom;
+                X = MouseState.X / Graphics.Zoom;
+                Y = MouseState.Y / Graphics.Zoom;
             }
 
             Moved = PreviousMouseState.X != MouseState.X || PreviousMouseState.Y != MouseState.Y;
@@ -182,25 +182,31 @@ public sealed class MouseManager : IServiceInput
     }
 
     /// <summary>
-    /// Call in your GameState's Draw method to draw a custom mouse cursor.
+    /// Call in your game state's Draw method to draw a custom mouse cursor.
     /// </summary>
     /// <remarks>If you will NEVER use a custom mouse cursor, you never need to call this method.</remarks>
-    /// <param name="gameTime"></param>
-    public void Draw(GameTime gameTime)
+    /// <param name="gameState">The <see cref="AbstractGameState"/> that called this Draw method. If this is not the <see cref="GameStateManager.CurrentState"/>, the custom cursor will not be drawn.</param>
+    public void Draw(AbstractGameState? gameState)
     {
-        if(DrawingMode != MouseDrawingMode.Custom)
+        if (
+            DrawingMode != MouseDrawingMode.Custom ||
+            !Enabled ||
+            (gameState is not null && GSM.CurrentState != gameState) ||
+            PictureName is null
+        )
+        {
             return;
+        }
 
-        if(Enabled && PictureName is { } pictureName)
-            GraphicsManager.DrawPicture(pictureName, X - Hotspot.X, Y - Hotspot.Y);
+        Graphics.DrawPicture(PictureName, X - Hotspot.X, Y - Hotspot.Y);
     }
 
     /// <summary>
-    /// The operating system's mouse cursor will be drawn as normal. Calling MouseManager.Draw will draw the picture
+    /// The operating system's mouse cursor will NOT be drawn. Calling <see cref="MouseManager.Draw"/> will draw the picture
     /// specified here at the current mouse position.
     /// </summary>
     /// <param name="pictureName"></param>
-    /// <param name="hotspot">The point in the picture that is visually where clicks take place - the end of an arrow,or center of a cross-hair, for example.</param>
+    /// <param name="hotspot">The point in the picture that is visually where clicks take place - the end of an arrow, or center of a cross-hair, for example.</param>
     public void UseCustomCursor(string pictureName, (int x, int y) hotspot)
     {
         DrawingMode = MouseDrawingMode.Custom;
@@ -210,7 +216,7 @@ public sealed class MouseManager : IServiceInput
     }
 
     /// <summary>
-    /// The operating system's mouse cursor will be drawn as normal. Calling MouseManager.Draw will have no effect.
+    /// The operating system's mouse cursor will be drawn as normal. Calling <see cref="MouseManager.Draw"/> will have no effect.
     /// </summary>
     public void UseSystemCursor()
     {
@@ -219,8 +225,8 @@ public sealed class MouseManager : IServiceInput
     }
 
     /// <summary>
-    /// The operating system's mouse cursor will be hidden while it is over the game window, and Calling
-    /// MouseManager.Draw will have no effect.
+    /// The operating system's mouse cursor will be hidden while it is over the game window, and calling
+    /// <see cref="MouseManager.Draw"/> will have no effect.
     /// </summary>
     public void UseNoCursor()
     {
@@ -249,7 +255,7 @@ public sealed class MouseManager : IServiceInput
     /// Returns true if the mouse is currently in the window.
     /// </summary>
     /// <returns></returns>
-    public bool IsInWindow() => X >= 0 && X < GraphicsManager.Width && Y >= 0 && Y < GraphicsManager.Height;
+    public bool IsInWindow() => X >= 0 && X < Graphics.Width && Y >= 0 && Y < Graphics.Height;
 
     /// <summary>
     /// Returns true if the mouse is currently in the specified circle.
@@ -267,4 +273,12 @@ public sealed class MouseManager : IServiceInput
     /// <param name="radius"></param>
     /// <returns></returns>
     public bool IsInCircle(Point center, int radius) => Math.Pow(X - center.X, 2) + Math.Pow(Y - center.Y, 2) < Math.Pow(radius, 2);
+
+    /// <summary>
+    /// Returns true if the mouse is currently in the specified circle.
+    /// </summary>
+    /// <param name="center"></param>
+    /// <param name="radius"></param>
+    /// <returns></returns>
+    public bool IsInCircle(Vector2 center, int radius) => Math.Pow(X - center.X, 2) + Math.Pow(Y - center.Y, 2) < Math.Pow(radius, 2);
 }
