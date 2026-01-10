@@ -186,8 +186,8 @@ public sealed class AnimatedDialog
         if (WrappedText.Count == 0)
             return;
 
-        if(TimeAlive * 40 < WrappedText[0].Length)
-            TimeAlive = WrappedText[0].Length / 40.0;
+        if(TimeAlive * VNSettings.DialogSpeed < WrappedText[0].Length)
+            TimeAlive = WrappedText[0].Length / VNSettings.DialogSpeed;
         else
         {
             WrappedText.RemoveAt(0);
@@ -207,8 +207,8 @@ public sealed class AnimatedDialog
 
         var text = WrappedText[0].AsSpan();
 
-        if (TimeAlive * 40 < WrappedText[0].Length)
-            text = text[..(int)(TimeAlive * 40)];
+        if (TimeAlive * VNSettings.DialogSpeed < WrappedText[0].Length)
+            text = text[..(int)(TimeAlive * VNSettings.DialogSpeed)];
 
         if (DialogStyle == DialogStyle.Speaking)
         {

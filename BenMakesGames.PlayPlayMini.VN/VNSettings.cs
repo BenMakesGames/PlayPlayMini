@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BenMakesGames.PlayPlayMini.VN.Model;
+using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.VN;
 
@@ -20,6 +21,16 @@ public static class VNSettings
     /// The name of the PlayPlayMini font to use for writing dialog text.
     /// </summary>
     public static string DialogFont { get; set; } = "Font";
+
+	/// <summary>
+	/// Default number of rows of text to give dialog boxes when using <see cref="StoryStep.SetCharacterDialog"/> and similar.
+	/// </summary>
+	public static int DialogDefaultRows { get; set; } = 2;
+
+    /// <summary>
+    /// The speed at which dialog text is displayed.
+    /// </summary>
+    public static float DialogSpeed { get; set; } = 40;
 
     /// <summary>
     /// If this is set, characters will be drawn with a 1px outline in this color.

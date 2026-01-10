@@ -30,21 +30,21 @@ public sealed class StoryStep
         return this;
     }
 
-    public StoryStep SetCharacterDialog(Character speaker, string text, int lines = 2)
+    public StoryStep SetCharacterDialog(Character speaker, string text, int? rows = null)
     {
-        Dialog = new CharacterDialog(text, speaker, lines);
+        Dialog = new CharacterDialog(text, speaker, rows ?? VNSettings.DialogDefaultRows);
         return this;
     }
 
-    public StoryStep SetTransparentDialog(string text, bool invertedText = false, int lines = 2)
+    public StoryStep SetTransparentDialog(string text, bool invertedText = false, int? rows = null)
     {
-        Dialog = new TransparentDialog(text, invertedText, lines);
+        Dialog = new TransparentDialog(text, invertedText, rows ?? VNSettings.DialogDefaultRows);
         return this;
     }
 
-    public StoryStep SetThinkingDialog(string text, int lines = 2)
+    public StoryStep SetThinkingDialog(string text, int? rows = null)
     {
-        Dialog = new ThinkingDialog(text, lines);
+        Dialog = new ThinkingDialog(text, rows ?? VNSettings.DialogDefaultRows);
         return this;
     }
 }
