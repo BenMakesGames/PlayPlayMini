@@ -14,16 +14,17 @@ public static class GraphicsManagerExtensions
         var textX = xOffset + 5;
         var font = graphics.Fonts[VNSettings.DialogFont];
         var dialogHeight = dialogLines * (font.CharacterHeight + font.VerticalSpacing) + 7;
+        var speakerLength = speaker.Name.Length * (font.CharacterWidth + font.HorizontalSpacing) - font.HorizontalSpacing;
 
         graphics.DrawFilledRectangle(xOffset, graphics.Height - dialogHeight, graphics.Width, dialogHeight, VNSettings.DialogSpeakingBackgroundColor);
 
-        graphics.DrawFilledRectangle(textX - 1, graphics.Height - dialogHeight - 11, speaker.Name.Length * 6 + 3, 1, VNSettings.DialogSpeakingBackgroundColor);
-        graphics.DrawFilledRectangle(textX - 2, graphics.Height - dialogHeight - 10, speaker.Name.Length * 6 + 5, 1, VNSettings.DialogSpeakingBackgroundColor);
-        graphics.DrawFilledRectangle(textX - 3, graphics.Height - dialogHeight - 9, speaker.Name.Length * 6 + 7, 11, VNSettings.DialogSpeakingBackgroundColor);
-        graphics.DrawFilledRectangle(textX - 1, graphics.Height - dialogHeight - 10, speaker.Name.Length * 6 + 3, 1, speaker.SpeakingColor);
-        graphics.DrawFilledRectangle(textX - 2, graphics.Height - dialogHeight - 9, speaker.Name.Length * 6 + 5, 10, speaker.SpeakingColor);
+        graphics.DrawFilledRectangle(textX - 1, graphics.Height - dialogHeight - font.CharacterHeight - 1, speakerLength + 3, 1, VNSettings.DialogSpeakingBackgroundColor);
+        graphics.DrawFilledRectangle(textX - 2, graphics.Height - dialogHeight - font.CharacterHeight, speakerLength + 5, 1, VNSettings.DialogSpeakingBackgroundColor);
+        graphics.DrawFilledRectangle(textX - 3, graphics.Height - dialogHeight - font.CharacterHeight + 1, speakerLength + 7, font.CharacterHeight + 1, VNSettings.DialogSpeakingBackgroundColor);
+        graphics.DrawFilledRectangle(textX - 1, graphics.Height - dialogHeight - font.CharacterHeight, speakerLength + 3, 1, speaker.SpeakingColor);
+        graphics.DrawFilledRectangle(textX - 2, graphics.Height - dialogHeight - font.CharacterHeight + 1, speakerLength + 5, font.CharacterHeight, speaker.SpeakingColor);
         graphics.DrawFilledRectangle(xOffset, graphics.Height - dialogHeight + 1, graphics.Width, 1, speaker.SpeakingColor);
-        graphics.DrawText(font, textX, graphics.Height - dialogHeight - 10 + 2, speaker.Name, VNSettings.DialogSpeakingBackgroundColor);
+        graphics.DrawText(font, textX, graphics.Height - dialogHeight - font.CharacterHeight + 2, speaker.Name, VNSettings.DialogSpeakingBackgroundColor);
 
         graphics.DrawText(font, textX, graphics.Height - dialogHeight + 5, wrappedText, VNSettings.DialogSpeakingTextColor);
     }
