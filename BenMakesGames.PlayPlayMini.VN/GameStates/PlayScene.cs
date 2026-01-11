@@ -10,18 +10,21 @@ public sealed class PlayScene: GameState<PlaySceneConfig>
     private GameStateManager GSM { get; }
     private GraphicsManager Graphics { get; }
     private MouseManager Mouse { get; }
+    private KeyboardManager Keyboard { get; }
 
     private SceneController SceneController { get; }
     private Action OnComplete { get; }
 
     public PlayScene(
         PlaySceneConfig config,
-        ILifetimeScope iocContainer, GraphicsManager graphics, MouseManager mouse, GameStateManager gsm
+        ILifetimeScope iocContainer, GraphicsManager graphics, MouseManager mouse, GameStateManager gsm,
+        KeyboardManager keyboard
     )
     {
         Graphics = graphics;
         Mouse = mouse;
         GSM = gsm;
+        Keyboard = keyboard;
 
         SceneController = new SceneController(this, iocContainer, config.Steps);
         OnComplete = config.OnComplete;
@@ -33,7 +36,7 @@ public sealed class PlayScene: GameState<PlaySceneConfig>
         if (SceneController.IsDone)
             return;
 
-        SceneController.Input(GSM, Graphics, Mouse);
+        SceneController.Input(GSM, Graphics, Mouse, Keyboard);
     }
 
     /// <inheritdoc/>

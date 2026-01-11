@@ -48,7 +48,8 @@ public static class WavyText
         /// <param name="color">Color of the text.</param>
         public void DrawWavyText(string fontName, int y, GameTime gameTime, string text, Color color)
         {
-            var x = (graphics.Width - text.Length * graphics.Fonts[fontName].CharacterWidth) / 2;
+            var font = graphics.Fonts[fontName];
+            var x = (graphics.Width - text.Length * font.CharacterWidth - (text.Length - 1) * font.HorizontalSpacing) / 2;
 
             graphics.DrawWavyText(fontName, x, y, gameTime, text, color);
         }

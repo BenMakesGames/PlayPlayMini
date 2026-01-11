@@ -7,6 +7,7 @@ using BenMakesGames.PlayPlayMini.VN.GameStates;
 using BenMakesGames.PlayPlayMini.VN.Model.Dialog;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace BenMakesGames.PlayPlayMini.VN.Model;
 
@@ -70,7 +71,7 @@ internal sealed class SceneController: ISceneController
         }
     }
 
-    public void Input(GameStateManager gsm, GraphicsManager graphics, MouseManager mouse)
+    public void Input(GameStateManager gsm, GraphicsManager graphics, MouseManager mouse, KeyboardManager keyboard)
     {
         if (mouse.Moved && BackgroundPicture != null)
         {
@@ -81,7 +82,7 @@ internal sealed class SceneController: ISceneController
             TargetBackgroundImageY = Math.Clamp(mouse.Y, 0, graphics.Height) * yOverflow / graphics.Height;
         }
 
-        if (mouse.LeftClicked && graphics.Contains(mouse) && gsm.IsActive)
+        if (((mouse.LeftClicked && graphics.Contains(mouse)) || keyboard.PressedAnyKey(VNSettings.SelectKeys)) && gsm.IsActive)
         {
             if (Dialog == null)
             {

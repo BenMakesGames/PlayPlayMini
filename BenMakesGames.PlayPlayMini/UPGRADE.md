@@ -21,6 +21,10 @@ Mouse.Draw(this);
 
 If for some reason you DO want to always draw the custom cursor, pass `null` (for example: `Mouse.Draw(null);`).
 
+## Fixes
+
+1. One of the `DrawWavyText` overloads was not correctly computing the width of the text, resulting in it being off-center when the font had any horizontal spacing. This has been fixed.
+
 ## New Stuff
 1. Added `GetCenter()` method to `IRectangle<int>` and `IRectangle<float>`
 2. Added `Gravity` property to `TumblingSprite`

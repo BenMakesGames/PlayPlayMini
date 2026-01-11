@@ -1,5 +1,6 @@
 ﻿using BenMakesGames.PlayPlayMini.VN.Model;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace BenMakesGames.PlayPlayMini.VN;
 
@@ -54,4 +55,14 @@ public static class VNSettings
     public static Color ChoiceTextColor { get; set; } = Color.Black;
     public static Color ChoiceHoveredBackgroundColor { get; set; } = Color.Navy;
     public static Color ChoiceHoveredTextColor { get; set; } = Color.White;
+
+    public static Keys[] UpKeys = [ Keys.W, Keys.Up, Keys.NumPad8 ];
+    public static Keys[] DownKeys = [ Keys.S, Keys.Down, Keys.NumPad2 ];
+    public static Keys[] LeftKeys = [ Keys.A, Keys.Left, Keys.NumPad4 ];
+    public static Keys[] RightKeys = [ Keys.D, Keys.Right, Keys.NumPad6 ];
+
+    /// <summary>
+    /// Used to confirm choices, and advance the dialog.
+    /// </summary>
+    public static Keys[] SelectKeys = [ Keys.Enter, Keys.Space ];
 }
