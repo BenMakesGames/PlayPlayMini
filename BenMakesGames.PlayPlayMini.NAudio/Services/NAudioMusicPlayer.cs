@@ -134,7 +134,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
             {
                 WaveStream = stream,
                 Gain = gain,
-                Tags = new Track(stream)
+                Tags = new Track(filePath)
             };
         }
         catch(Exception e)
