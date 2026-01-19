@@ -5,7 +5,7 @@
         <Company>Ben Hendel-Doying</Company>
         <Description>Add-on for PlayPlayMini to facilitate adding visual novel segments to your games.</Description>
         <Copyright>2026 Ben Hendel-Doying</Copyright>
-        <Version>1.0.0-rc2.6</Version>
+        <Version>1.0.0-rc2.7</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>visual novel engine monogame</PackageTags>
@@ -40,7 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.102">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
