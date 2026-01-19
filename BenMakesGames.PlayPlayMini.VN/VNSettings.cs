@@ -1,4 +1,5 @@
 ﻿using BenMakesGames.PlayPlayMini.VN.Model;
+using BenMakesGames.PlayPlayMini.VN.Model.Buttons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -56,9 +57,24 @@ public static class VNSettings
     public static Color ChoiceHoveredBackgroundColor { get; set; } = Color.Navy;
     public static Color ChoiceHoveredTextColor { get; set; } = Color.White;
 
+    /// <summary>
+    /// Used to navigate choices and other buttons within a <see cref="ButtonCollection"/>.
+    /// </summary>
     public static Keys[] UpKeys = [ Keys.W, Keys.Up, Keys.NumPad8 ];
+
+    /// <summary>
+    /// Used to navigate choices and other buttons within a <see cref="ButtonCollection"/>.
+    /// </summary>
     public static Keys[] DownKeys = [ Keys.S, Keys.Down, Keys.NumPad2 ];
+
+    /// <summary>
+    /// Used to navigate choices and other buttons within a <see cref="ButtonCollection"/>.
+    /// </summary>
     public static Keys[] LeftKeys = [ Keys.A, Keys.Left, Keys.NumPad4 ];
+
+    /// <summary>
+    /// Used to navigate choices and other buttons within a <see cref="ButtonCollection"/>.
+    /// </summary>
     public static Keys[] RightKeys = [ Keys.D, Keys.Right, Keys.NumPad6 ];
 
     /// <summary>
