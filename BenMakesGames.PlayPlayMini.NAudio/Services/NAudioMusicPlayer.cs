@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,8 @@ public interface INAudioMusicPlayer: IServiceLoadContent, IServiceUpdate
     void StopAllSongsExcept(string[] songsToContinue, int fadeOutMilliseconds = 0);
     void StopAllSongsExcept(string name, int fadeOutMilliseconds = 0);
     void StopSong(string name, int fadeOutMilliseconds = 0);
+
+    IReadOnlyDictionary<string, NAudioSong> Songs { get; }
 }
 
 /// <summary>
@@ -75,7 +78,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
-    public Dictionary<string, NAudioSong> Songs { get; } = new();
+    public IReadOnlyDictionary<string, NAudioSong> Songs { get; private set; } = new Dictionary<string, NAudioSong>().ToFrozenDictionary();
 
     private Dictionary<string, PlayingSong> PlayingSongs { get; } = new();
 
@@ -93,16 +96,19 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
         var allSongs = gsm.Assets.GetAll<NAudioSongMeta>().ToList();
 
+        var songs = new Dictionary<string, NAudioSong>();
+
         foreach(var song in allSongs.Where(s => s.PreLoaded))
-            LoadSong(song.Key, song.Path, song.Gain);
+            LoadSong(songs, song.Key, song.Path, song.Gain);
 
         Task.Run(() =>
         {
             foreach(var song in allSongs.Where(s => !s.PreLoaded))
-                LoadSong(song.Key, song.Path, song.Gain);
+                LoadSong(songs, song.Key, song.Path, song.Gain);
 
             Logger.LogInformation("Fully loaded!");
 
+            Songs = songs.ToFrozenDictionary();
             FullyLoaded = true;
         });
     }
@@ -112,7 +118,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         // unloading is done in Dispose()
     }
 
-    private void LoadSong(string name, string filePath, float gain)
+    private void LoadSong(Dictionary<string, NAudioSong> songs, string name, string filePath, float gain)
     {
         try
         {
@@ -130,12 +136,12 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
                 return;
             }
 
-            Songs[name] = new NAudioSong()
+            songs.Add(name, new NAudioSong()
             {
                 WaveStream = stream,
                 Gain = gain,
                 Tags = new Track(filePath)
-            };
+            });
         }
         catch(Exception e)
         {
@@ -336,8 +342,6 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     {
         foreach (var song in Songs.Values)
             song.WaveStream.Dispose();
-
-        Songs.Clear();
 
         if(PlaybackEngine is IDisposable disposablePlaybackEngine)
             disposablePlaybackEngine.Dispose();
