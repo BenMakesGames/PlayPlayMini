@@ -77,7 +77,7 @@ public static class Intro
         return
         [
             new StoryStep()
-                .ControlMusic(m => m.StopAllSongs(1000))
+                .ControlSound(s => s.StopMusic())
                 .SetCharacterDialog("Hm...", player)
                 .AddCharacter(player, 16, 0), // 16, 0 represent the X, Y coordinate to place the character
 

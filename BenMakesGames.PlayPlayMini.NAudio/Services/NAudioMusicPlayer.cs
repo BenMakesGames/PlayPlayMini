@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ATL;
 using Autofac;
 using BenMakesGames.PlayPlayMini.NAudio.Model;
 using Microsoft.Extensions.Logging;
@@ -74,7 +75,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
-    public Dictionary<string, (WaveStream Stream, float Gain)> Songs { get; } = new();
+    public Dictionary<string, NAudioSong> Songs { get; } = new();
 
     private Dictionary<string, PlayingSong> PlayingSongs { get; } = new();
 
@@ -129,7 +130,12 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
                 return;
             }
 
-            Songs[name] = (stream, gain);
+            Songs[name] = new NAudioSong()
+            {
+                WaveStream = stream,
+                Gain = gain,
+                Tags = new Track(stream)
+            };
         }
         catch(Exception e)
         {
@@ -212,9 +218,9 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
             return false;
 
         if(startPosition.HasValue)
-            song.Stream.Position = startPosition.Value;
+            song.WaveStream.Position = startPosition.Value;
 
-        var playingSong = new PlayingSong(name, song.Stream, song.Gain, fadeInMilliseconds);
+        var playingSong = new PlayingSong(name, song, fadeInMilliseconds);
 
         playingSong.Loop(loop);
 
@@ -329,7 +335,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     public void Dispose()
     {
         foreach (var song in Songs.Values)
-            song.Stream.Dispose();
+            song.WaveStream.Dispose();
 
         Songs.Clear();
 
@@ -358,7 +364,8 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 internal sealed class PlayingSong
 {
     public string Name { get; }
-    public WaveStream WaveStream { get; }
+    public NAudioSong Song { get; }
+    public WaveStream WaveStream => Song.WaveStream;
     public ISampleProvider SampleProvider { get; }
 
     public bool IsPlaying => LoopStream.EnableLooping || WaveStream.Position < WaveStream.Length;
@@ -366,18 +373,18 @@ internal sealed class PlayingSong
     private LoopStream LoopStream;
     private FadeInOutSampleProvider FadeInOutSampleProvider;
 
-    public PlayingSong(string name, WaveStream waveStream, float gain, double fadeInMilliseconds = 0)
+    public PlayingSong(string name, NAudioSong song, double fadeInMilliseconds = 0)
     {
         Name = name;
-        WaveStream = waveStream;
+        Song = song;
 
         var initiallySilent = fadeInMilliseconds > 0;
 
-        LoopStream = new LoopStream(waveStream);
+        LoopStream = new LoopStream(WaveStream);
 
-        var gainAdjusted = Math.Abs(gain - 1) < 0.001
+        var gainAdjusted = Math.Abs(Song.Gain - 1) < 0.001
             ? LoopStream.ToSampleProvider()
-            : new VolumeSampleProvider(LoopStream.ToSampleProvider()) { Volume = gain };
+            : new VolumeSampleProvider(LoopStream.ToSampleProvider()) { Volume = Song.Gain };
 
         FadeInOutSampleProvider = new FadeInOutSampleProvider(gainAdjusted, initiallySilent);
 
