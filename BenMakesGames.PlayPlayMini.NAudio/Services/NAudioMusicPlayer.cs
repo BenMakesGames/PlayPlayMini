@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
@@ -83,6 +83,9 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private Dictionary<string, PlayingSong> PlayingSongs { get; } = new();
 
     private List<(string Name, ISampleProvider SampleProvider, DateTimeOffset EndTime)> FadingSongs { get; } = new();
+
+    // kept at the class level to prevent per-frame allocations
+    private List<string> SongsToRemove { get; } = new();
 
     public NAudioMusicPlayer(ILogger<NAudioMusicPlayer<T>> logger, ILifetimeScope iocContainer)
     {
@@ -362,6 +365,21 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
             FadingSongs.RemoveAt(i);
         }
+
+        // remove songs that have finished playing (non-looping songs that reached the end)
+        foreach (var (name, song) in PlayingSongs)
+        {
+            if (!song.IsPlaying)
+                SongsToRemove.Add(name);
+        }
+
+        foreach (var name in SongsToRemove)
+        {
+            PlaybackEngine?.RemoveSample(PlayingSongs[name].SampleProvider);
+            PlayingSongs.Remove(name);
+        }
+
+        SongsToRemove.Clear();
     }
 }
 
