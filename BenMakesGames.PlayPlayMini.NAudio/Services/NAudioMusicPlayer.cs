@@ -93,10 +93,9 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         IocContainer = iocContainer;
     }
 
+    /// <inheritdoc/>
     public void LoadContent(GameStateManager gsm)
     {
-        Logger.LogInformation("LoadContent() started");
-
         var allSongs = gsm.Assets.GetAll<NAudioSongMeta>().ToList();
 
         var songs = new Dictionary<string, NAudioSong>();
@@ -104,18 +103,19 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
         foreach(var song in allSongs.Where(s => s.PreLoaded))
             LoadSong(songs, song.Key, song.Path, song.Gain);
 
+        Songs = songs.ToFrozenDictionary();
+
         Task.Run(() =>
         {
             foreach(var song in allSongs.Where(s => !s.PreLoaded))
                 LoadSong(songs, song.Key, song.Path, song.Gain);
-
-            Logger.LogInformation("Fully loaded!");
 
             Songs = songs.ToFrozenDictionary();
             FullyLoaded = true;
         });
     }
 
+    /// <inheritdoc/>
     public void UnloadContent()
     {
         // unloading is done in Dispose()
