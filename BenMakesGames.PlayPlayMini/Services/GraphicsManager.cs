@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -40,11 +41,11 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     private GraphicsDeviceManager Graphics = null!;
     public SpriteBatch SpriteBatch { get; set; } = null!;
 
-    public Dictionary<string, Texture2D> Pictures { get; private set; } = new();
+    public IDictionary<string, Texture2D> Pictures { get; private set; } = new Dictionary<string, Texture2D>();
     public Texture2D WhitePixel { get; private set; } = null!;
-    public Dictionary<string, SpriteSheet> SpriteSheets { get; private set; } = new();
-    public Dictionary<string, Font> Fonts { get; private set; } = new();
-    public Dictionary<string, Effect> PixelShaders { get; private set; } = new();
+    public IDictionary<string, SpriteSheet> SpriteSheets { get; private set; } = new Dictionary<string, SpriteSheet>();
+    public IDictionary<string, Font> Fonts { get; private set; } = new Dictionary<string, Font>();
+    public IDictionary<string, Effect> PixelShaders { get; private set; } = new Dictionary<string, Effect>();
 
     internal ShaderScope? CurrentShaderScope;
 
@@ -118,14 +119,22 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         foreach(var meta in assets.GetAll<PictureMeta>().Where(m => !m.PreLoaded))
             LoadPicture(meta);
 
+        Pictures = Pictures.ToFrozenDictionary();
+
         foreach(var meta in assets.GetAll<SpriteSheetMeta>().Where(m => !m.PreLoaded))
             LoadSpriteSheet(meta);
+
+        SpriteSheets = SpriteSheets.ToFrozenDictionary();
 
         foreach(var meta in assets.GetAll<FontMeta>().Where(m => !m.PreLoaded))
             LoadFont(meta);
 
+        Fonts = Fonts.ToFrozenDictionary();
+
         foreach(var meta in assets.GetAll<PixelShaderMeta>().Where(m => !m.PreLoaded))
             LoadPixelShader(meta);
+
+        PixelShaders = PixelShaders.ToFrozenDictionary();
 
         FullyLoaded = true;
     }

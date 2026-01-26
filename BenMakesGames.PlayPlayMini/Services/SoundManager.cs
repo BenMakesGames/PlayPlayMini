@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -25,8 +26,8 @@ public sealed class SoundManager : IServiceLoadContent
 
     private ContentManager Content => Game.Content;
 
-    public Dictionary<string, SoundEffect> SoundEffects { get; private set; } = new();
-    public Dictionary<string, Song> Songs { get; private set; } = new();
+    public IDictionary<string, SoundEffect> SoundEffects { get; private set; } = new Dictionary<string, SoundEffect>();
+    public IDictionary<string, Song> Songs { get; private set; } = new Dictionary<string, Song>();
 
     /// <summary>
     /// The volume level of sounds.
@@ -159,8 +160,12 @@ public sealed class SoundManager : IServiceLoadContent
         foreach (var meta in assets.GetAll<SoundEffectMeta>().Where(m => !m.PreLoaded))
             LoadSoundEffect(meta);
 
+        SoundEffects = SoundEffects.ToFrozenDictionary();
+
         foreach (var meta in assets.GetAll<SongMeta>().Where(s => !s.PreLoaded))
             LoadSong(meta);
+
+        Songs = Songs.ToFrozenDictionary();
 
         FullyLoaded = true;
     }
