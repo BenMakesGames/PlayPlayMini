@@ -78,7 +78,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
     private ILogger<NAudioMusicPlayer<T>> Logger { get; }
     private ILifetimeScope IocContainer { get; }
 
-    public IReadOnlyDictionary<string, NAudioSong> Songs { get; private set; } = new Dictionary<string, NAudioSong>().ToFrozenDictionary();
+    public IReadOnlyDictionary<string, NAudioSong> Songs { get; private set; } = new Dictionary<string, NAudioSong>();
 
     private Dictionary<string, PlayingSong> PlayingSongs { get; } = new();
 
@@ -105,6 +105,7 @@ public sealed class NAudioMusicPlayer<T>: INAudioMusicPlayer, IDisposable
 
         Songs = songs.ToFrozenDictionary();
 
+        // deferred
         Task.Run(() =>
         {
             foreach(var song in allSongs.Where(s => !s.PreLoaded))

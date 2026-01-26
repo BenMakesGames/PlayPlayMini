@@ -41,11 +41,11 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     private GraphicsDeviceManager Graphics = null!;
     public SpriteBatch SpriteBatch { get; set; } = null!;
 
-    public IDictionary<string, Texture2D> Pictures { get; private set; } = new Dictionary<string, Texture2D>();
+    public IReadOnlyDictionary<string, Texture2D> Pictures { get; private set; } = new Dictionary<string, Texture2D>();
     public Texture2D WhitePixel { get; private set; } = null!;
-    public IDictionary<string, SpriteSheet> SpriteSheets { get; private set; } = new Dictionary<string, SpriteSheet>();
-    public IDictionary<string, Font> Fonts { get; private set; } = new Dictionary<string, Font>();
-    public IDictionary<string, Effect> PixelShaders { get; private set; } = new Dictionary<string, Effect>();
+    public IReadOnlyDictionary<string, SpriteSheet> SpriteSheets { get; private set; } = new Dictionary<string, SpriteSheet>();
+    public IReadOnlyDictionary<string, Font> Fonts { get; private set; } = new Dictionary<string, Font>();
+    public IReadOnlyDictionary<string, Effect> PixelShaders { get; private set; } = new Dictionary<string, Effect>();
 
     internal ShaderScope? CurrentShaderScope;
 
@@ -92,58 +92,64 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         WhitePixel = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
         WhitePixel.SetData([ Color.White ]);
 
-        Pictures = gsm.Assets.GetAll<PictureMeta>().ToDictionary(meta => meta.Key, _ => (Texture2D)null!);
-        SpriteSheets = gsm.Assets.GetAll<SpriteSheetMeta>().ToDictionary(meta => meta.Key, _ => (SpriteSheet)null!);
-        Fonts = gsm.Assets.GetAll<FontMeta>().ToDictionary(meta => meta.Key, _ => (Font)null!);
-        PixelShaders = gsm.Assets.GetAll<PixelShaderMeta>().ToDictionary(meta => meta.Key, _ => (Effect)null!);
+        var pictures = gsm.Assets.GetAll<PictureMeta>().ToDictionary(meta => meta.Key, _ => (Texture2D)null!);
+        var spriteSheets = gsm.Assets.GetAll<SpriteSheetMeta>().ToDictionary(meta => meta.Key, _ => (SpriteSheet)null!);
+        var fonts = gsm.Assets.GetAll<FontMeta>().ToDictionary(meta => meta.Key, _ => (Font)null!);
+        var pixelShaders = gsm.Assets.GetAll<PixelShaderMeta>().ToDictionary(meta => meta.Key, _ => (Effect)null!);
 
         // load immediately
         foreach(var meta in gsm.Assets.GetAll<PictureMeta>().Where(m => m.PreLoaded))
-            LoadPicture(meta);
+            LoadPicture(pictures, meta);
+
+        Pictures = pictures.ToFrozenDictionary();
 
         foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => m.PreLoaded))
-            LoadSpriteSheet(meta);
+            LoadSpriteSheet(spriteSheets, meta);
+
+        SpriteSheets = spriteSheets.ToFrozenDictionary();
 
         foreach(var meta in gsm.Assets.GetAll<FontMeta>().Where(m => m.PreLoaded))
-            LoadFont(meta);
+            LoadFont(fonts, meta);
+
+        Fonts = fonts.ToFrozenDictionary();
 
         foreach(var meta in gsm.Assets.GetAll<PixelShaderMeta>().Where(m => m.PreLoaded))
-            LoadPixelShader(meta);
+            LoadPixelShader(pixelShaders, meta);
+
+        PixelShaders = pixelShaders.ToFrozenDictionary();
 
         // deferred
-        Task.Run(() => LoadDeferredContent(gsm.Assets));
+        Task.Run(() =>
+        {
+            foreach(var meta in gsm.Assets.GetAll<PictureMeta>().Where(m => !m.PreLoaded))
+                LoadPicture(pictures, meta);
+
+            Pictures = pictures.ToFrozenDictionary();
+
+            foreach(var meta in gsm.Assets.GetAll<SpriteSheetMeta>().Where(m => !m.PreLoaded))
+                LoadSpriteSheet(spriteSheets, meta);
+
+            SpriteSheets = spriteSheets.ToFrozenDictionary();
+
+            foreach(var meta in gsm.Assets.GetAll<FontMeta>().Where(m => !m.PreLoaded))
+                LoadFont(fonts, meta);
+
+            Fonts = fonts.ToFrozenDictionary();
+
+            foreach(var meta in gsm.Assets.GetAll<PixelShaderMeta>().Where(m => !m.PreLoaded))
+                LoadPixelShader(pixelShaders, meta);
+
+            PixelShaders = pixelShaders.ToFrozenDictionary();
+
+            FullyLoaded = true;
+        });
     }
 
-    private void LoadDeferredContent(AssetCollection assets)
-    {
-        foreach(var meta in assets.GetAll<PictureMeta>().Where(m => !m.PreLoaded))
-            LoadPicture(meta);
-
-        Pictures = Pictures.ToFrozenDictionary();
-
-        foreach(var meta in assets.GetAll<SpriteSheetMeta>().Where(m => !m.PreLoaded))
-            LoadSpriteSheet(meta);
-
-        SpriteSheets = SpriteSheets.ToFrozenDictionary();
-
-        foreach(var meta in assets.GetAll<FontMeta>().Where(m => !m.PreLoaded))
-            LoadFont(meta);
-
-        Fonts = Fonts.ToFrozenDictionary();
-
-        foreach(var meta in assets.GetAll<PixelShaderMeta>().Where(m => !m.PreLoaded))
-            LoadPixelShader(meta);
-
-        PixelShaders = PixelShaders.ToFrozenDictionary();
-
-        FullyLoaded = true;
-    }
-
-    private void LoadFont(FontMeta font)
+    private void LoadFont(Dictionary<string, Font> fonts, FontMeta font)
     {
         try
         {
-            Fonts[font.Key] = new Font(
+            fonts[font.Key] = new Font(
                 Content.Load<Texture2D>(font.Path),
                 font.Width,
                 font.Height,
@@ -158,11 +164,11 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         }
     }
 
-    private void LoadPicture(PictureMeta picture)
+    private void LoadPicture(Dictionary<string, Texture2D> pictures, PictureMeta picture)
     {
         try
         {
-            Pictures[picture.Key] = Content.Load<Texture2D>(picture.Path);
+            pictures[picture.Key] = Content.Load<Texture2D>(picture.Path);
         }
         catch (Exception e)
         {
@@ -170,11 +176,11 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         }
     }
 
-    private void LoadSpriteSheet(SpriteSheetMeta spriteSheet)
+    private void LoadSpriteSheet(Dictionary<string, SpriteSheet> spriteSheets, SpriteSheetMeta spriteSheet)
     {
         try
         {
-            SpriteSheets[spriteSheet.Key] = new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height);
+            spriteSheets[spriteSheet.Key] = new SpriteSheet(Content.Load<Texture2D>(spriteSheet.Path), spriteSheet.Width, spriteSheet.Height);
         }
         catch (Exception e)
         {
@@ -182,11 +188,11 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         }
     }
 
-    private void LoadPixelShader(PixelShaderMeta pixelShader)
+    private void LoadPixelShader(Dictionary<string, Effect> pixelShaders, PixelShaderMeta pixelShader)
     {
         try
         {
-            PixelShaders[pixelShader.Key] = Content.Load<Effect>(pixelShader.Path);
+            pixelShaders[pixelShader.Key] = Content.Load<Effect>(pixelShader.Path);
         }
         catch (Exception e)
         {
