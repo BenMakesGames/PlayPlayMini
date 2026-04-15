@@ -85,9 +85,11 @@ public ref struct LineSplitEnumerator
         Current = default;
     }
 
-    // Needed to be compatible with the foreach operator
+    /// <summary>Returns this instance as an enumerator.</summary>
     public LineSplitEnumerator GetEnumerator() => this;
 
+    /// <summary>Advances the enumerator to the next line of the span.</summary>
+    /// <returns><see langword="true"/> if the enumerator successfully advanced to the next line; <see langword="false"/> if the enumerator has passed the end of the span.</returns>
     public bool MoveNext()
     {
         var span = Str;
@@ -119,6 +121,7 @@ public ref struct LineSplitEnumerator
         return true;
     }
 
+    /// <summary>Gets the line at the current position of the enumerator.</summary>
     public LineSplitEntry Current { get; private set; }
 }
 
@@ -136,9 +139,11 @@ public ref struct SpaceSplitEnumerator
         Current = default;
     }
 
-    // Needed to be compatible with the foreach operator
+    /// <summary>Returns this instance as an enumerator.</summary>
     public SpaceSplitEnumerator GetEnumerator() => this;
 
+    /// <summary>Advances the enumerator to the next word of the span.</summary>
+    /// <returns><see langword="true"/> if the enumerator successfully advanced to the next word; <see langword="false"/> if the enumerator has passed the end of the span.</returns>
     public bool MoveNext()
     {
         var span = Str;
@@ -158,35 +163,57 @@ public ref struct SpaceSplitEnumerator
         return true;
     }
 
+    /// <summary>Gets the word at the current position of the enumerator.</summary>
     public LineSplitEntry Current { get; private set; }
 }
 
-/// <summary>
-/// Supports zero-allocation splitting of a string into lines.
-/// From https://www.meziantou.net/split-a-string-into-lines-without-allocation.htm
-/// </summary>
+/// <summary>Represents a single line produced by <see cref="LineSplitEnumerator"/>, along with the line-ending separator that followed it.</summary>
+/// <remarks>From https://www.meziantou.net/split-a-string-into-lines-without-allocation.htm</remarks>
 public readonly ref struct LineSplitEntry
 {
+    /// <summary>Initializes a new <see cref="LineSplitEntry"/> with the specified line and separator.</summary>
+    /// <param name="line">The line content, excluding any trailing line-ending characters.</param>
+    /// <param name="separator">The line-ending sequence that followed <paramref name="line"/> in the source, or empty if the line was the last in the source.</param>
     public LineSplitEntry(ReadOnlySpan<char> line, ReadOnlySpan<char> separator)
     {
         Line = line;
         Separator = separator;
     }
 
+    /// <summary>Gets the line content, excluding any trailing line-ending characters.</summary>
     public ReadOnlySpan<char> Line { get; }
+
+    /// <summary>Gets the line-ending sequence that followed <see cref="Line"/> in the source, or empty if the line was the last in the source.</summary>
     public ReadOnlySpan<char> Separator { get; }
 
-    // This method allow to deconstruct the type, so you can write any of the following code
-    // foreach (var entry in str.SplitLines()) { _ = entry.Line; }
-    // foreach (var (line, endOfLine) in str.SplitLines()) { _ = line; }
-    // https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct?WT.mc_id=DT-MVP-5003978#deconstructing-user-defined-types
+    /// <summary>Deconstructs the current <see cref="LineSplitEntry"/> into its line and separator components.</summary>
+    /// <param name="line">The line content.</param>
+    /// <param name="separator">The line-ending separator.</param>
+    /// <remarks>
+    /// This enables tuple-style destructuring in a <c>foreach</c> loop, so you can pull out just the pieces you care about:
+    /// <code>
+    /// foreach (var (line, endOfLine) in new LineSplitEnumerator(text))
+    /// {
+    ///     // use "line" directly, without having to write "entry.Line"
+    /// }
+    /// </code>
+    /// See <see href="https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/deconstruct#deconstructing-user-defined-types"/> for more on user-defined deconstruction.
+    /// </remarks>
     public void Deconstruct(out ReadOnlySpan<char> line, out ReadOnlySpan<char> separator)
     {
         line = Line;
         separator = Separator;
     }
 
-    // This method allow to implicitly cast the type into a ReadOnlySpan<char>, so you can write the following code
-    // foreach (ReadOnlySpan<char> entry in str.SplitLines())
+    /// <summary>Implicitly converts a <see cref="LineSplitEntry"/> to a <see cref="ReadOnlySpan{T}"/> of its <see cref="Line"/>.</summary>
+    /// <remarks>
+    /// This lets you iterate lines directly as <see cref="ReadOnlySpan{T}"/> when you don't need the separator:
+    /// <code>
+    /// foreach (ReadOnlySpan&lt;char&gt; line in new LineSplitEnumerator(text))
+    /// {
+    ///     // "line" is the line content, with no line-ending characters
+    /// }
+    /// </code>
+    /// </remarks>
     public static implicit operator ReadOnlySpan<char>(LineSplitEntry entry) => entry.Line;
 }

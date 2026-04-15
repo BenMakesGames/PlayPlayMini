@@ -18,6 +18,9 @@ namespace BenMakesGames.PlayPlayMini;
 [AutoRegister]
 public sealed class GameStateManager: Game
 {
+    private const double TargetFixedUpdatesPerSecond = 60.0;
+    private const double FixedTimestepMs = 1000.0 / TargetFixedUpdatesPerSecond;
+
     /// <summary>
     /// The current state of the game.
     /// </summary>
@@ -51,6 +54,8 @@ public sealed class GameStateManager: Game
         SoundManager soundManager, GameStateManagerConfig config
     )
     {
+        InactiveSleepTime = TimeSpan.Zero;
+
         IoCContainer = iocContainer;
         Graphics = graphics;
         ServiceWatcher = serviceWatcher;
@@ -136,16 +141,16 @@ public sealed class GameStateManager: Game
 
         FixedUpdateAccumulator += gameTime.ElapsedGameTime.TotalMilliseconds;
 
-        if (FixedUpdateAccumulator >= 16.6667)
+        while (FixedUpdateAccumulator >= FixedTimestepMs)
         {
             CurrentState.FixedUpdate(new GameTime()
             {
                 TotalGameTime = gameTime.TotalGameTime,
                 IsRunningSlowly = gameTime.IsRunningSlowly,
-                ElapsedGameTime = TimeSpan.FromMilliseconds(FixedUpdateAccumulator),
+                ElapsedGameTime = TimeSpan.FromMilliseconds(FixedTimestepMs),
             });
 
-            FixedUpdateAccumulator -= 16.6667;
+            FixedUpdateAccumulator -= FixedTimestepMs;
         }
 
         CurrentState.Update(gameTime);
