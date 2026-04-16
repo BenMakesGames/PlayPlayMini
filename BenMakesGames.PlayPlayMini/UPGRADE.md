@@ -1,6 +1,4 @@
-# Upgrading from 7.x to 8.0.0-rc1
-
-`8.0.0-rc#` builds are release candidates; the following may change by the time 8.0.0 is released:
+# Upgrading from 7.x to 8.0.0
 
 ## Breaking Changes
 
@@ -24,6 +22,15 @@ If for some reason you DO want to always draw the custom cursor, pass `null` (fo
 ## Fixes
 
 1. One of the `DrawWavyText` overloads was not correctly computing the width of the text, resulting in it being off-center when the font had any horizontal spacing. This has been fixed.
+2. `FixedUpdate` calls are no longer fired in rapid succession after leaving the game in the background for a while.
+3. `FixedUpdate` calls always receive a delta time of 16.6666...ms
+4. `FixedUpdate` is now called every 1000.0 / 60.0 ms instead of every 16.6667ms.
+
+## Other Changes
+
+1. Games no longer slow down to 1 frame per 20ms when focus is lost.
+   * If prefer the old behavior, set `GSM.InactiveSleepTime = TimeSpan.FromMilliseconds(20);` in your game's startup class.
+2. `GameStateManagerBuilder.AddAssets` now accepts an `IEnumerable<IAsset>` (instead of an `IList<IAsset>`).
 
 ## New Stuff
 1. Added `GetCenter()` method to `IRectangle<int>` and `IRectangle<float>`

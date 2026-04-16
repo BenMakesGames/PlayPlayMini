@@ -69,9 +69,7 @@ public sealed class Startup: GameState
     {
         // TODO: draw loading screen
 
-        // only draw the mouse once
-        if(GSM.CurrentState == this)
-            Mouse.ActiveDraw(gameTime);
+        Mouse.Draw(this);
     }
 }
 ```
