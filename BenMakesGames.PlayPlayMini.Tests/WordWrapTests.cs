@@ -28,7 +28,7 @@ public sealed class WordWrapTests
     {
         // Arrange
         var graphicsManager = new GraphicsManager(null!);
-        var font = new Font(null!, charWidth, charHeight, horizontalSpacing, verticalSpacing, ' ');
+        var font = new FontSheet(null!, charWidth, charHeight, horizontalSpacing, verticalSpacing, ' ');
 
         // Act
         var (actualWidth, actualHeight) = graphicsManager.ComputeDimensionsWithWordWrap(font, maxWidth, text);
@@ -37,7 +37,7 @@ public sealed class WordWrapTests
         actualHeight.ShouldBe(expectedHeight);
     }
 
-    private static readonly Font Font = new(null!, 1, 1, 0, 0, ' ');
+    private static readonly FontSheet FontSheet = new(null!, 1, 1, 0, 0, ' ');
 
     [Theory]
     [InlineData("Hello, world", 6, "Hello,\nworld")]
@@ -46,6 +46,6 @@ public sealed class WordWrapTests
     [InlineData("Hello, world", 12, "Hello, world")]
     public void StringExtensionsWordWrap_ReturnsExpected(string originalText, int maxWidth, string expectedText)
     {
-        originalText.WrapText(Font, maxWidth).ShouldBe(expectedText);
+        originalText.WrapText(FontSheet, maxWidth).ShouldBe(expectedText);
     }
 }

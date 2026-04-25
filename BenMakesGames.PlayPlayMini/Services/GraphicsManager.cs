@@ -147,21 +147,29 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
 
     private void LoadFont(Dictionary<string, Font> fonts, FontMeta font)
     {
-        try
+        List<FontSheet> fontSheets = [];
+
+        foreach(var fontSheetMeta in font.FontSheets)
         {
-            fonts[font.Key] = new Font(
-                Content.Load<Texture2D>(font.Path),
-                font.Width,
-                font.Height,
-                font.HorizontalSpacing,
-                font.VerticalSpacing,
-                font.FirstCharacter
-            );
+            try
+            {
+                fontSheets.Add(new FontSheet(
+                    Content.Load<Texture2D>(fontSheetMeta.Path),
+                    fontSheetMeta.Width,
+                    fontSheetMeta.Height,
+                    fontSheetMeta.HorizontalSpacing,
+                    fontSheetMeta.VerticalSpacing,
+                    fontSheetMeta.FirstCharacter
+                ));
+            }
+            catch (Exception e)
+            {
+                Logger.LogError("Failed to load Font (Texture2D) {Path}: {Message}", fontSheetMeta.Path, e.Message);
+            }
         }
-        catch (Exception e)
-        {
-            Logger.LogError("Failed to load Font (Texture2D) {Path}: {Message}", font.Path, e.Message);
-        }
+
+        if(fontSheets.Count > 0)
+            fonts[font.Key] = new Font(fontSheets);
     }
 
     private void LoadPicture(Dictionary<string, Texture2D> pictures, PictureMeta picture)

@@ -1,6 +1,5 @@
 using BenMakesGames.PlayPlayMini.Model;
 using BenMakesGames.PlayPlayMini.Services;
-using Microsoft.Xna.Framework;
 
 namespace BenMakesGames.PlayPlayMini.VN.Model.Buttons;
 
@@ -18,7 +17,7 @@ public sealed class TextButton: IButton
     {
         X = x;
         Y = y;
-        Width = Math.Max(minWidth ?? 0, (font.CharacterWidth + font.HorizontalSpacing) * label.Length - font.HorizontalSpacing + 8);
+        Width = Math.Max(minWidth ?? 0, font.ComputeWidth(label) + 8);
         Height = font.CharacterHeight + 4;
         Label = label;
         Click = click;

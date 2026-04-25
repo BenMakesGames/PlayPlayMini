@@ -28,22 +28,22 @@ public static class DrawTextWithSpans
         /// <summary>
         /// Use a font to draw text. Newline characters are respected. For automatic wrapping, use DrawTextWithWordWrap.
         /// </summary>
-        /// <param name="font"></param>
+        /// <param name="fontSheet"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="text"></param>
         /// <param name="color"></param>
         /// <returns></returns>
-        public (int x, int y) DrawText(Font font, int x, int y, ReadOnlySpan<char> text, Color color)
+        public (int x, int y) DrawText(FontSheet fontSheet, int x, int y, ReadOnlySpan<char> text, Color color)
         {
             var position = (x, y);
 
             for (var i = 0; i < text.Length; i++)
             {
                 if (text[i] is '\r' or '\n')
-                    position = (x, position.y + font.CharacterHeight + font.VerticalSpacing);
+                    position = (x, position.y + fontSheet.CharacterHeight + fontSheet.VerticalSpacing);
                 else
-                    position = graphics.DrawText(font, position.x, position.y, text[i], color);
+                    position = graphics.DrawText(fontSheet, position.x, position.y, text[i], color);
             }
 
             return position;
@@ -64,22 +64,22 @@ public static class DrawTextWithSpans
         /// <summary>
         /// Use a font to draw text. Newline characters are respected. For automatic wrapping, use DrawTextWithWordWrap.
         /// </summary>
-        /// <param name="font"></param>
+        /// <param name="fontSheet"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="text"></param>
         /// <param name="color"></param>
         /// <returns></returns>
-        public (int x, int y) DrawText(Font font, int x, int y, Span<char> text, Color color)
+        public (int x, int y) DrawText(FontSheet fontSheet, int x, int y, Span<char> text, Color color)
         {
             var position = (x, y);
 
             for (var i = 0; i < text.Length; i++)
             {
                 if (text[i] is '\r' or '\n')
-                    position = (x, position.y + font.CharacterHeight + font.VerticalSpacing);
+                    position = (x, position.y + fontSheet.CharacterHeight + fontSheet.VerticalSpacing);
                 else
-                    position = graphics.DrawText(font, position.x, position.y, text[i], color);
+                    position = graphics.DrawText(fontSheet, position.x, position.y, text[i], color);
             }
 
             return position;
@@ -96,6 +96,18 @@ public static class DrawTextWithSpans
         /// <returns></returns>
         public (int x, int y) DrawText(string fontName, int x, int y, char[] text, Color color)
             => graphics.DrawText(graphics.Fonts[fontName], x, y, text.AsSpan(), color);
+
+        /// <summary>
+        /// Use a font to draw text. Newline characters are respected. For automatic wrapping, use DrawTextWithWordWrap.
+        /// </summary>
+        /// <param name="fontSheet"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public (int x, int y) DrawText(FontSheet fontSheet, int x, int y, char[] text, Color color)
+            => graphics.DrawText(fontSheet, x, y, text.AsSpan(), color);
 
         /// <summary>
         /// Use a font to draw text. Newline characters are respected. For automatic wrapping, use DrawTextWithWordWrap.

@@ -7,7 +7,6 @@ using BenMakesGames.PlayPlayMini.VN.GameStates;
 using BenMakesGames.PlayPlayMini.VN.Model.Dialog;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace BenMakesGames.PlayPlayMini.VN.Model;
 

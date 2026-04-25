@@ -71,7 +71,7 @@ public sealed class ScreenWipe: GameState<ScreenWipeConfig>
 
             if(Config.Message != null && Config.MessageColor.HasValue)
             {
-                var x = (Graphics.Width - Config.Message.Length * Graphics.Fonts["Font"].CharacterWidth) / 2;
+                var x = (Graphics.Width - Graphics.Fonts["Font"].ComputeWidth(Config.Message)) / 2;
                 Graphics.DrawText("Font", x, Graphics.Height / 2 - 5, Config.Message, Config.MessageColor.Value);
             }
         }

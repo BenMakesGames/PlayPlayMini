@@ -9,7 +9,7 @@ namespace BenMakesGames.PlayPlayMini.Services;
 public sealed partial class GraphicsManager
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Rectangle FontRectangle(Font font, int character) => new(
+    private static Rectangle FontRectangle(FontSheet font, int character) => new(
         (character % font.Columns) * font.CharacterWidth,
         (character / font.Columns) * font.CharacterHeight,
         font.CharacterWidth,
@@ -38,7 +38,7 @@ public sealed partial class GraphicsManager
     /// <param name="text"></param>
     /// <param name="color"></param>
     /// <returns></returns>
-    public (int x, int y) DrawText(Font font, int x, int y, string text, Color color)
+    public (int x, int y) DrawText(FontSheet font, int x, int y, string text, Color color)
     {
         var position = (x, y);
 
@@ -75,7 +75,7 @@ public sealed partial class GraphicsManager
     /// <param name="character"></param>
     /// <param name="color"></param>
     /// <returns></returns>
-    public (int x, int y) DrawText(Font font, int x, int y, char character, Color color)
+    public (int x, int y) DrawText(FontSheet font, int x, int y, char character, Color color)
     {
         var position = (x, y);
 
@@ -112,7 +112,7 @@ public sealed partial class GraphicsManager
     /// <param name="maxWidth"></param>
     /// <param name="text"></param>
     /// <returns></returns>
-    public (int Width, int Height) ComputeDimensionsWithWordWrap(Font font, int maxWidth, string text)
+    public (int Width, int Height) ComputeDimensionsWithWordWrap(FontSheet font, int maxWidth, string text)
     {
         var wrappedLines = text.WrapText(font, maxWidth).Split('\n');
         var longestLine = wrappedLines.Max(l => l.Length);
@@ -128,10 +128,10 @@ public sealed partial class GraphicsManager
         => DrawTextWithWordWrap(Fonts[fontName], x, y, maxWidth, text, color);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public (int, int) DrawTextWithWordWrap(Font font, int x, int y, int maxWidth, string text, Color color)
+    public (int, int) DrawTextWithWordWrap(FontSheet font, int x, int y, int maxWidth, string text, Color color)
         => DrawText(font, x, y, text.WrapText(font, maxWidth), color);
 
-    public (int, int) PretendDrawText(Font font, int x, int y, string text)
+    public (int, int) PretendDrawText(FontSheet font, int x, int y, string text)
     {
         var currentX = x;
         var currentY = y;

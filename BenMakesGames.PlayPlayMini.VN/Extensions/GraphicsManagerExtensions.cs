@@ -14,7 +14,7 @@ public static class GraphicsManagerExtensions
         var textX = xOffset + 5;
         var font = graphics.Fonts[VNSettings.DialogFont];
         var dialogHeight = dialogLines * (font.CharacterHeight + font.VerticalSpacing) + 7;
-        var speakerLength = speaker.Name.Length * (font.CharacterWidth + font.HorizontalSpacing) - font.HorizontalSpacing;
+        var speakerLength = font.ComputeWidth(speaker.Name);
 
         graphics.DrawFilledRectangle(xOffset, graphics.Height - dialogHeight, graphics.Width, dialogHeight, VNSettings.DialogSpeakingBackgroundColor);
 

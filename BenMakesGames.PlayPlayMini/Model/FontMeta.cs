@@ -1,22 +1,28 @@
-﻿namespace BenMakesGames.PlayPlayMini.Model;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-/// <param name="Key">Name that uniquely identifies this font</param>
-/// <param name="Path">Relative path to image, excluding file extension (ex: "Fonts/Consolas")</param>
-/// <param name="Width">Width of an individual character</param>
-/// <param name="Height">Height of an individual character</param>
-/// <param name="PreLoaded">Whether to load this resource BEFORE entering the first GameState</param>
-public sealed record FontMeta(string Key, string Path, int Width, int Height, bool PreLoaded = false) : IAsset
+namespace BenMakesGames.PlayPlayMini.Model;
+
+public sealed class FontMeta: IAsset
 {
-    public char FirstCharacter { get; init; } = ' ';
-    public int HorizontalSpacing { get; init; } = 1;
-    public int VerticalSpacing { get; init; } = 1;
+    public string Key { get; }
+    public bool PreLoaded { get; }
+    public List<FontSheetMeta> FontSheets { get; }
 
-    /// <param name="keyAndPath">If the key and path are the same in your application, use this constructor</param>
-    /// <param name="width">Width of an individual character</param>
-    /// <param name="height">Height of an individual character</param>
-    /// <param name="preLoaded">Whether to load this resource BEFORE entering the first GameState</param>
+    public FontMeta(string key, IEnumerable<FontSheetMeta> fontSheets, bool preLoaded = false)
+    {
+        Key = key;
+        PreLoaded = preLoaded;
+        FontSheets = fontSheets.ToList();
+    }
+
+    public FontMeta(string key, string path, int width, int height, bool preLoaded = false)
+        : this(key, [ new FontSheetMeta(path, width, height) ], preLoaded)
+    {
+    }
+
     public FontMeta(string keyAndPath, int width, int height, bool preLoaded = false)
-        : this(keyAndPath, keyAndPath, width, height, preLoaded)
+        : this(keyAndPath, [ new FontSheetMeta(keyAndPath, width, height) ], preLoaded)
     {
     }
 }

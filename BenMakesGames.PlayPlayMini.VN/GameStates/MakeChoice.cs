@@ -1,5 +1,4 @@
-﻿using BenMakesGames.PlayPlayMini.GraphicsExtensions;
-using BenMakesGames.PlayPlayMini.Services;
+﻿using BenMakesGames.PlayPlayMini.Services;
 using BenMakesGames.PlayPlayMini.VN.Model;
 using BenMakesGames.PlayPlayMini.VN.Model.Buttons;
 using Microsoft.Xna.Framework;
@@ -37,7 +36,7 @@ public sealed class MakeChoice: GameState<MakeChoiceConfig>
     private ButtonCollection CreateChoiceButtons(IReadOnlyList<Choice> choices)
     {
         var font = Graphics.Fonts[VNSettings.DialogFont];
-        var longestLabel = choices.Max(c => c.Title.Length) * (font.CharacterWidth + font.HorizontalSpacing);
+        var longestLabel = choices.Max(c => font.ComputeWidth(c.Title));
         var x = (Graphics.Width - longestLabel) / 2;
         var y = (Graphics.Height - choices.Count * (font.CharacterHeight + font.VerticalSpacing + 4)) / 2;
 

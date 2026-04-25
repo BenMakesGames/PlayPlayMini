@@ -13,7 +13,7 @@ public static class StringExtensions
     /// <param name="font"></param>
     /// <param name="maxWidth"></param>
     /// <returns></returns>
-    public static string WrapText(this string text, Font font, int maxWidth)
+    public static string WrapText(this string text, FontSheet font, int maxWidth)
     {
         if (string.IsNullOrEmpty(text))
             return string.Empty;
