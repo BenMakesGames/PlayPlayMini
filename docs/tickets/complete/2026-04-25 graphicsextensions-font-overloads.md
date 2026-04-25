@@ -96,3 +96,25 @@ Run `dotnet build` from the solution root. No new warnings, no errors. The previ
 - [ ] Manual smoke (multi-sheet font, if a multi-sheet font is available): build a `Font` from two `FontSheet`s covering disjoint character ranges (e.g. ASCII + extended Latin); render mixed text — characters from each range render via the correct sheet, newlines advance by `font.LineHeight`.
 - [ ] Manual smoke (string-name overload regression): a call to `graphics.DrawText("MainFont", x, y, someSpan, color)` (where `MainFont` is registered in `Fonts`) compiles and renders correctly — confirms the latent `Font` vs `FontSheet` mismatch is resolved.
 - [ ] Manual smoke (outline regression): a call to `graphics.DrawTextWithOutline("MainFont", x, y, someSpan, fillColor, outlineColor)` compiles and renders correctly with outline.
+
+## Learnings
+
+### Architectural decisions
+- **Open Decision 1 (newline advance)** resolved to `font.LineHeight`, matching the core `GraphicsManager.DrawText(Font, …, string, …)` pattern from the prereq ticket. Consistency between core and extension multi-sheet bodies keeps cursor results identical regardless of which entry point a caller picks.
+- **Open Decision 2 (per-char dispatch)** resolved to call `graphics.DrawText(sheet, position.x, position.y, c, color)` (the existing `FontSheet` per-char overload) after `TryGetSheet` resolves the sheet — matches the core `Font`-typed `DrawText` body in `GraphicsManager.Text.cs` line 88-92. Avoids re-resolving the sheet that was just resolved.
+- **Outline forwards to core `DrawText(Font, …)` not to extension `DrawText(Font, …)`**: the `string`-text outline overload forwards to the core `GraphicsManager.DrawText(Font, …, string, …)` (added by prereq); the `ReadOnlySpan<char>`-text outline forwards to the new extension `DrawText(Font, …, ReadOnlySpan<char>, …)` from this ticket. Both outline overloads do the 5-call pattern — there is no need for the outline body to know whether it crosses an extension/core boundary.
+
+### Problems encountered
+- **Pre-existing latent compile errors in `WavyText.cs`** outside this ticket's scope: `WavyText.cs` lines 26, 27, 52, 84 access `font.CharacterWidth`/`HorizontalSpacing`/`CharacterHeight` on the result of `graphics.Fonts[fontName]`, which is `Font` (record) — those properties live on `FontSheet`, not `Font`. Same migration shape as the spans/outline files but the WavyText helpers measure horizontally based on a single character width, which assumes a single uniform sheet. A follow-up ticket should decide: (a) require single-sheet fonts for `DrawWavyText` (delegate via `font.Sheets[0]`), or (b) measure with `font.ComputeWidth` per character via `TryGetSheet`. Not fixed here.
+
+### Interesting tidbits
+- C# 14 `extension(GraphicsManager graphics) { ... }` extension blocks let multiple overloads share a single receiver binding without per-method `this GraphicsManager graphics` parameters. New overloads must go inside the existing block to keep style consistent.
+- The `Font + char[]` overload (line 121-122) needed no edit: its body is `text.AsSpan()` which now binds to the new `DrawText(Font, …, ReadOnlySpan<char>, …)` overload (or `Span<char>` — both have identical multi-sheet semantics, so overload resolution either way is correct).
+- `Font.TryGetSheet` returns a nullable `FontSheet?` even when `true` — `sheet!` null-forgiving operator needed when forwarding to the per-char `DrawText(FontSheet, …)` overload, mirroring the core `GraphicsManager.Text.cs` style.
+
+### Related areas affected
+- `BenMakesGames.PlayPlayMini.GraphicsExtensions\WavyText.cs` — same Font/FontSheet migration needed; flagged above for a follow-up ticket.
+
+### Rejected alternatives
+- **Per-char draw via core `DrawText(Font, …, char, …)`** — would re-resolve the sheet inside the per-char call after we already resolved it via `TryGetSheet`. Rejected: redundant work in the inner loop.
+- **Newline advance via current line's tallest sheet** — required tracking max-height-this-line across the loop. Rejected: inconsistent with core `Font` overloads' behavior, and `Font.LineHeight` is a sufficient pre-computed worst-case.

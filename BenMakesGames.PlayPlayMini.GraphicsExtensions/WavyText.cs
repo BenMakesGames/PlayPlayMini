@@ -23,8 +23,8 @@ public static class WavyText
         {
             var font = graphics.Fonts[fontName];
 
-            var x = (graphics.Width - text.Length * font.CharacterWidth - (text.Length - 1) * font.HorizontalSpacing) / 2;
-            var y = (graphics.Height - font.CharacterHeight) / 2;
+            var x = (graphics.Width - font.ComputeWidth(text)) / 2;
+            var y = (graphics.Height - font.MaxCharacterHeight) / 2;
 
             graphics.DrawWavyText(fontName, x, y, gameTime, text, color);
         }
@@ -49,7 +49,7 @@ public static class WavyText
         public void DrawWavyText(string fontName, int y, GameTime gameTime, string text, Color color)
         {
             var font = graphics.Fonts[fontName];
-            var x = (graphics.Width - text.Length * font.CharacterWidth - (text.Length - 1) * font.HorizontalSpacing) / 2;
+            var x = (graphics.Width - font.ComputeWidth(text)) / 2;
 
             graphics.DrawWavyText(fontName, x, y, gameTime, text, color);
         }
@@ -77,11 +77,31 @@ public static class WavyText
         {
             var font = graphics.Fonts[fontName];
 
+            if (font.Sheets.Count == 1)
+            {
+                var sheet = font.Sheets[0];
+
+                for (var i = 0; i < text.Length; i++)
+                {
+                    var yOffset = (int) (Math.Cos(gameTime.TotalGameTime.TotalSeconds * 8 + i / 3.0) * 1.95);
+
+                    graphics.DrawText(sheet, x + i * (sheet.CharacterWidth + sheet.HorizontalSpacing), y + yOffset, text[i], color);
+                }
+
+                return;
+            }
+
+            var currentX = x;
+
             for (var i = 0; i < text.Length; i++)
             {
                 var yOffset = (int) (Math.Cos(gameTime.TotalGameTime.TotalSeconds * 8 + i / 3.0) * 1.95);
 
-                graphics.DrawText(fontName, x + i * (font.CharacterWidth + font.HorizontalSpacing), y + yOffset, text[i], color);
+                if (font.TryGetSheet(text[i], out var sheet))
+                {
+                    graphics.DrawText(sheet!, currentX, y + yOffset, text[i], color);
+                    currentX += sheet!.CharacterWidth + sheet.HorizontalSpacing;
+                }
             }
         }
 

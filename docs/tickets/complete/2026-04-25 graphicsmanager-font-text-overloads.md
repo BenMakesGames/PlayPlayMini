@@ -113,3 +113,33 @@ Read each new multi-sheet body. Confirm: no LINQ, no `string.Split`, no closures
 - [ ] Manual: call `DrawText(fontName, ...)` (string-name overload) and confirm it now compiles and renders correctly (regression-of-bug check).
 - [ ] Manual: render a multi-line string containing `\n` with a `Font` whose `Sheets.Count > 1` (mock by constructing one in a test scene if needed) — confirm characters route to the correct sheet and lines advance by `font.LineHeight`.
 - [ ] Spot-check that no caller in `BenMakesGames.PlayPlayMini.GraphicsExtensions`, `.VN`, `.Performance`, `.Tests` regressed (those still call `FontSheet` overloads; they should compile and behave identically since those methods are unchanged).
+
+## Learnings
+
+### Architectural decisions
+
+- **No textual edits to existing `string fontName` overloads.** Once the `Font`-typed sibling exists, C# overload resolution picks it for `Fonts[fontName]` (which is `Font`) without any change to the call site. The pre-existing CS1503 errors at the four string-name overloads disappeared just by adding the new methods.
+- **DrawTextWithWordWrap(Font) carries `[MethodImpl(AggressiveInlining)]`** — its body is a thin ternary delegator (single-sheet → FontSheet sibling, multi-sheet → `DrawText(Font, ...)`). The multi-sheet loop body is in `DrawText(Font, ..., string, Color)`, which is *not* aggressively inlined, matching the ticket's "do not inline multi-sheet loop bodies" rule.
+- **Per Open Decisions**: glyph fallback (`TryGetSheet` miss → skip without advance), `\r`/`\n` independence preserved, multi-sheet width advance via matched sheet's `CharacterWidth + HorizontalSpacing`. All defaults taken; no deviations.
+
+### Problems encountered
+
+- **Ticket inconsistency: PretendDrawText**. Acceptance Criteria and Implementation Step 8 both list `PretendDrawText` as one of the existing `string fontName` overloads to fix, but no such overload existed in the file pre-ticket. Resolved by *adding* `PretendDrawText(string fontName, int, int, string)` as a thin `[AggressiveInlining]` delegator to the new `Font` overload — matches the ticket author's evident intent (full string-name parity across the public API) and required negligible scope expansion.
+- **GraphicsExtensions project doesn't build.** Pre-existing CS1503 / CS1061 errors in `BenMakesGames.PlayPlayMini.GraphicsExtensions` (`DrawTextWithSpans.cs`, `WavyText.cs`, `TextWithOutline.cs`) — they pass `Font` into `string`-typed parameters and read `CharacterWidth` / `CharacterHeight` / `HorizontalSpacing` directly off `Font` (which exposes none — those live on each `FontSheet`). These are Font/FontSheet-split fallout that the ticket explicitly puts out of scope ("Migrating callers across the rest of the solution... separate follow-ups"). The PlayPlayMini project itself builds clean (0 warnings, 0 errors); 20/20 tests pass.
+
+### Interesting tidbits
+
+- `ComputeDimensionsWithWordWrap(FontSheet, ...)` allocates a `string[]` via `text.WrapText(...).Split('\n')` and uses LINQ `.Max()`. The `Font` overload sidesteps both by using `Font.ComputeWidth` / `Font.ComputeHeight` directly on the wrapped string — fewer allocations on the multi-sheet path than on the single-sheet path. Not a goal, just a consequence of the `Font` measurement helpers existing.
+- `Font.TryGetSheet` uses an `out FontSheet?` so consumers see `sheet!` after a `true` return — every call site here accepts the null-forgiving operator, mirroring `Font.ComputeWidth`'s style.
+- `DrawTextWithWordWrap(Font, ...)`'s multi-sheet branch routes through `DrawText(Font, ...)` rather than re-implementing the per-char loop. The fast-path check inside `DrawText(Font)` is redundant in this branch (always false) but cheap, and avoids duplicating the loop.
+
+### Related areas affected
+
+- `BenMakesGames.PlayPlayMini.GraphicsExtensions` still calls `Font` where `FontSheet` is required and reads `Font.CharacterWidth` etc. — needs a follow-up ticket to either add `Font` overloads to those extensions or migrate them to use the new `GraphicsManager.DrawText(Font, ...)` surface.
+- `.VN` and `.Performance` projects not inspected here — ticket flagged them as separate follow-ups.
+
+### Rejected alternatives
+
+- **Unified iterator/walker abstraction** for single- vs. multi-sheet drawing — explicitly rejected by the user (per Constraints & Gotchas) to keep zero allocations on the 60fps hot path. Implementation duplicates the loop shape between `FontSheet` and `Font` paths instead.
+- **"Fixing" `\r\n` to advance one line instead of two** — Open Decision 2 said preserve existing behavior; not done.
+- **Stripping the `string fontName` overloads now that they're routed correctly** — they're a public API; additive change only.

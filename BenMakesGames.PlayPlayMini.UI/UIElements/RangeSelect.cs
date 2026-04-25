@@ -18,7 +18,7 @@ public class RangeSelect: IUIElement
     public int Width { get;}
     public int Height => Math.Max(
         UI.Graphics.SpriteSheets[UI.GetTheme().ButtonSpriteSheetName].SpriteHeight,
-        UI.Font.CharacterHeight
+        UI.Font.MaxCharacterHeight
     );
 
     private bool _enabled = true;
@@ -87,7 +87,7 @@ public class RangeSelect: IUIElement
 
     public void Draw(int xOffset, int yOffset, GameTime gameTime)
     {
-        UI.Graphics.DrawText(UI.GetFont(), X + 18 + xOffset, Y + 4 + yOffset, Label, Color.Black);
+        UI.Graphics.DrawText(UI.Font, X + 18 + xOffset, Y + 4 + yOffset, Label, Color.Black);
     }
 
     private void EnableOrDisableButtons()

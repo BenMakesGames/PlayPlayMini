@@ -48,4 +48,15 @@ public sealed class WordWrapTests
     {
         originalText.WrapText(FontSheet, maxWidth).ShouldBe(expectedText);
     }
+
+    [Theory]
+    [InlineData("Hello, world", 6, "Hello,\nworld")]
+    [InlineData("Hello, world", 7, "Hello,\nworld")]
+    [InlineData("Hello, world", 11, "Hello,\nworld")]
+    [InlineData("Hello, world", 12, "Hello, world")]
+    public void StringExtensionsWordWrap_SingleSheetFontMatchesFontSheetOverload(string originalText, int maxWidth, string expectedText)
+    {
+        var font = new Font(FontSheet);
+        originalText.WrapText(font, maxWidth).ShouldBe(expectedText);
+    }
 }

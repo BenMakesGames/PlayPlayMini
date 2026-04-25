@@ -13,6 +13,81 @@ public static class StringExtensions
     /// <param name="font"></param>
     /// <param name="maxWidth"></param>
     /// <returns></returns>
+    public static string WrapText(this string text, Font font, int maxWidth)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        if (font.Sheets.Count == 1)
+            return text.WrapText(font.Sheets[0], maxWidth);
+
+        if (!font.TryGetSheet(' ', out var spaceSheet))
+            spaceSheet = font.Sheets[0];
+
+        var spacePrependWidth = spaceSheet!.CharacterWidth + spaceSheet.HorizontalSpacing * 2;
+
+        var result = new StringBuilder();
+
+        foreach (var (line, _) in new LineSplitEnumerator(text))
+        {
+            var lineLength = 0;
+
+            if (result.Length > 0)
+                result.Append('\n');
+
+            foreach (var (word, _) in new SpaceSplitEnumerator(line))
+            {
+                var wordWidth = 0;
+                var lastSpacing = 0;
+                var hadHit = false;
+
+                for (var i = 0; i < word.Length; i++)
+                {
+                    if (font.TryGetSheet(word[i], out var sheet))
+                    {
+                        wordWidth += sheet!.CharacterWidth + sheet.HorizontalSpacing;
+                        lastSpacing = sheet.HorizontalSpacing;
+                        hadHit = true;
+                    }
+                }
+
+                if (hadHit)
+                    wordWidth -= lastSpacing;
+
+                // we might be prepending a space:
+                if (lineLength > 0)
+                    wordWidth += spacePrependWidth;
+
+                if (lineLength + wordWidth > maxWidth)
+                {
+                    result.Append('\n');
+
+                    if (lineLength > 0)
+                        wordWidth -= spacePrependWidth; // if we prepended a space, take it off again...
+
+                    lineLength = 0;
+                }
+                else if (lineLength > 0)
+                {
+                    result.Append(' ');
+                }
+
+                result.Append(word);
+
+                lineLength += wordWidth;
+            }
+        }
+
+        return result.ToString();
+    }
+
+    /// <summary>
+    /// Add newlines to a string so that it fits within a given width.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="font"></param>
+    /// <param name="maxWidth"></param>
+    /// <returns></returns>
     public static string WrapText(this string text, FontSheet font, int maxWidth)
     {
         if (string.IsNullOrEmpty(text))

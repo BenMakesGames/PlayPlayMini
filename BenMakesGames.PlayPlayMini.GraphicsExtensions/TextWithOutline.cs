@@ -34,6 +34,25 @@ public static class TextWithOutline
         /// <summary>
         /// Draws text with an outline around it.
         /// </summary>
+        /// <param name="font">The font to use.</param>
+        /// <param name="x">The x-coordinate of the text position.</param>
+        /// <param name="y">The y-coordinate of the text position.</param>
+        /// <param name="text">The text to draw.</param>
+        /// <param name="fillColor">The color of the text fill.</param>
+        /// <param name="outlineColor">The color of the outline.</param>
+        public void DrawTextWithOutline(Font font, int x, int y, string text, Color fillColor, Color outlineColor)
+        {
+            graphics.DrawText(font, x, y + 1, text, outlineColor);
+            graphics.DrawText(font, x, y - 1, text, outlineColor);
+            graphics.DrawText(font, x - 1, y, text, outlineColor);
+            graphics.DrawText(font, x + 1, y, text, outlineColor);
+
+            graphics.DrawText(font, x, y, text, fillColor);
+        }
+
+        /// <summary>
+        /// Draws text with an outline around it.
+        /// </summary>
         /// <param name="fontName">The name of the font to use.</param>
         /// <param name="x">The x-coordinate of the text position.</param>
         /// <param name="y">The y-coordinate of the text position.</param>
@@ -60,6 +79,25 @@ public static class TextWithOutline
             graphics.DrawText(fontSheet, x + 1, y, text, outlineColor);
 
             graphics.DrawText(fontSheet, x, y, text, fillColor);
+        }
+
+        /// <summary>
+        /// Draws text with an outline around it.
+        /// </summary>
+        /// <param name="font">The font to use.</param>
+        /// <param name="x">The x-coordinate of the text position.</param>
+        /// <param name="y">The y-coordinate of the text position.</param>
+        /// <param name="text">The text to draw.</param>
+        /// <param name="fillColor">The color of the text fill.</param>
+        /// <param name="outlineColor">The color of the outline.</param>
+        public void DrawTextWithOutline(Font font, int x, int y, ReadOnlySpan<char> text, Color fillColor, Color outlineColor)
+        {
+            graphics.DrawText(font, x, y + 1, text, outlineColor);
+            graphics.DrawText(font, x, y - 1, text, outlineColor);
+            graphics.DrawText(font, x - 1, y, text, outlineColor);
+            graphics.DrawText(font, x + 1, y, text, outlineColor);
+
+            graphics.DrawText(font, x, y, text, fillColor);
         }
     }
 }

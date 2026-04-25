@@ -13,8 +13,8 @@ public class Checkbox : IUIElement
 
     public int X { get; set; }
     public int Y { get; set; }
-    public int Width => CheckBox.SpriteWidth + 1 + Label.Length * UI.Font.CharacterWidth + (Label.Length - 1) * UI.Font.HorizontalSpacing;
-    public int Height => Math.Max(CheckBox.SpriteHeight, UI.Font.CharacterHeight);
+    public int Width => CheckBox.SpriteWidth + 1 + UI.Font.ComputeWidth(Label);
+    public int Height => Math.Max(CheckBox.SpriteHeight, UI.Font.MaxCharacterHeight);
     public bool Visible { get; set; } = true;
     public bool Checked { get; private set; }
     public string Label { get; private set; }

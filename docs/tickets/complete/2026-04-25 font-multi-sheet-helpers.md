@@ -62,3 +62,29 @@ Replace the inlined `foreach (var sheet in Sheets) { if (c >= sheet.FirstCharact
 - [ ] `dotnet test` — `BenMakesGames.PlayPlayMini.Tests` passes. Note: `WordWrapTests.cs` constructs `FontSheet` directly via `new FontSheet(null!, 1, 1, 0, 0, ' ')` — it does not exercise `Font` and so should be unaffected. If pre-existing test failures unrelated to this change appear (e.g., a stale `new Font(null!, 1, 1, 0, 0, ' ')` shape elsewhere), flag in the implementation note as not blocking — a future ticket will address.
 - [ ] Manual eyeball: open `Font.cs` and confirm `using System.Linq;` is **not** present, and that the only loops introduced are `foreach`/`for` over `Sheets` or `text` directly — no `.Max(...)`, `.Any(...)`, lambda expressions, or `Func<>`/`Action<>`.
 - [ ] Manual eyeball: each new public member has a `/// <summary>` block; `TryGetSheet` documents `<param>` and `<returns>`; `ComputeHeight` documents `<param>` and `<returns>` like `ComputeWidth`.
+
+## Learnings
+
+### Architectural decisions
+- **Open Decision #1 (trailing `VerticalSpacing` source)**: Resolved via the listed default. Stored as a private init-only `TrailingVerticalSpacing` property, populated by a second `foreach` scan in `ComputeTrailingVerticalSpacing(Sheets)` that picks the `VerticalSpacing` of the first sheet whose `CharacterHeight + VerticalSpacing` ties the running max. Two scans rather than one shared scan was the trade-off: keeping each `LineHeight` / `TrailingVerticalSpacing` initializer as its own simple static helper kept the record body readable. `Sheets` is small in practice (typically 1–2 entries) so the second pass cost is negligible. Returning a `(int, int)` tuple from a single helper would have required collapsing both properties into a single tuple-typed property and giving up the spec-mandated init-only `int` shape for `LineHeight`.
+- **Open Decision #2 (empty-text)**: Default kept — `ComputeHeight("")` returns `0` via an explicit early `if (text.Length == 0) return 0;` guard. Without the guard, an empty string would fall through to `1 * LineHeight - TrailingVerticalSpacing`, which is non-zero whenever `LineHeight > TrailingVerticalSpacing`.
+- **Open Decision #3 (lone `\r`)**: Mirrors `ComputeWidth` exactly — only `\n` increments `lineCount`; `\r` is silently ignored, so `\r\n` advances the count once.
+- **Open Decision #4 (helper naming)**: Kept ticket's default `ComputeLineHeight`; added a parallel `ComputeTrailingVerticalSpacing` for the companion field. Both `private static`, both `foreach`-only.
+
+### Problems encountered
+- **Build had pre-existing errors in `Services/GraphicsManager.Text.cs`** unrelated to this ticket — the file is in an in-progress state on this branch where the multi-sheet `Font` API hasn't been threaded through yet (e.g., `Font` is being passed where `string` is expected, and a `char` where a `string` is expected). Per user direction, these are not blocking — this ticket's scope is intentionally just `Font.cs`, and follow-up tickets (`graphicsmanager-font-text-overloads.md`, `wraptext-font-overload.md`, `graphicsextensions-font-overloads.md` in `docs/tickets/`) cover the caller migration that will resolve them. `Font.cs` itself compiles clean.
+
+### Interesting tidbits
+- C# records support per-property initializers in the body that reference primary-ctor parameters: `public int LineHeight { get; } = ComputeLineHeight(Sheets);`. This gives one-time-at-construction computation without writing an explicit constructor body, which records would have made awkward (no second non-primary ctor body for instance fields).
+- `foreach` over `List<T>` uses `List<T>.Enumerator` (a struct) — no allocation, no boxing. Confirmed against `Sheets` usage to keep the hot-path zero-alloc constraint.
+
+### Workarounds / limitations
+- Two `foreach` scans of `Sheets` at construction (one per init-only property) instead of a single pooled scan. Permanent given the chosen shape; revisitable only if `Sheets` ever grows large enough to matter, which is unlikely (a font with >10 sheets would already be a design smell).
+
+### Related areas affected
+- `ComputeWidth` is now the first internal consumer of `TryGetSheet`. The four follow-up tickets in `docs/tickets/` (`graphicsmanager-font-text-overloads.md`, `graphicsextensions-font-overloads.md`, `wraptext-font-overload.md`, plus the partial work already in flight in `GraphicsManager.Text.cs`) will be the external consumers — they should all route per-character sheet lookups through `TryGetSheet` rather than re-inlining the `c >= FirstCharacter && c < LastCharacter` test.
+
+### Rejected alternatives
+- **Single tuple-returning helper for both `LineHeight` and `TrailingVerticalSpacing`.** Would have required either (a) a single tuple-typed init-only property with two getter shims, breaking the spec's "init-only `int` property" shape for `LineHeight`, or (b) a private mutable backing field set from a constructor body, which fights the record's primary-constructor pattern. Two simple `static` helpers were cleaner.
+- **LINQ `sheets.Max(s => s.CharacterHeight + s.VerticalSpacing)`.** Forbidden by the zero-allocation constraint (delegate capture + enumerator boxing on `IEnumerable<T>`-typed call sites).
+- **Lazy `LineHeight` computation.** Considered and rejected — `Lazy<T>` with a closure allocates and is reachable from 60fps draw paths; the init-only-at-construction approach is strictly cheaper.

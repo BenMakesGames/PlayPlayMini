@@ -38,12 +38,12 @@ public sealed class MakeChoice: GameState<MakeChoiceConfig>
         var font = Graphics.Fonts[VNSettings.DialogFont];
         var longestLabel = choices.Max(c => font.ComputeWidth(c.Title));
         var x = (Graphics.Width - longestLabel) / 2;
-        var y = (Graphics.Height - choices.Count * (font.CharacterHeight + font.VerticalSpacing + 4)) / 2;
+        var y = (Graphics.Height - choices.Count * (font.LineHeight + 4)) / 2;
 
         var buttons = choices
             .Select(IButton (choice, i) => new TextButton(
                 x,
-                y + i * (font.CharacterHeight + font.VerticalSpacing + 6),
+                y + i * (font.LineHeight + 6),
                 () =>
                 {
                     choice.Callback(SceneController);

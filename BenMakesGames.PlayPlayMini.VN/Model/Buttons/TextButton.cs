@@ -18,7 +18,7 @@ public sealed class TextButton: IButton
         X = x;
         Y = y;
         Width = Math.Max(minWidth ?? 0, font.ComputeWidth(label) + 8);
-        Height = font.CharacterHeight + 4;
+        Height = font.MaxCharacterHeight + 4;
         Label = label;
         Click = click;
         Font = font;

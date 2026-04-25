@@ -219,7 +219,7 @@ public sealed class AnimatedDialog
         }
 
         var font = graphics.Fonts[VNSettings.DialogFont];
-        var dialogHeight = Lines * (font.CharacterHeight + font.VerticalSpacing) + 7;
+        var dialogHeight = Lines * font.LineHeight + 7;
 
         switch (DialogStyle)
         {
