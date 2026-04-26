@@ -1,3 +1,20 @@
+# Upgrading from 8.0.x to 8.1.0
+
+## New Stuff
+
+1. **Multi-lingual / multi-sheet bitmap fonts.** `FontMeta` now accepts an `IEnumerable<FontSheetMeta>`, allowing a single font to be composed of multiple sheets, each covering a different character range (for example a Latin sheet alongside a CJK sheet, or sheets that mix different glyph sizes). At draw time, the first sheet whose range contains the glyph wins — put more-specific ranges before any wider fallback.
+
+   ```c#
+   new FontMeta("Font", new[] {
+       new FontSheetMeta("Fonts/Latin", 6, 8),
+       new FontSheetMeta("Fonts/CJK",  12, 12) { FirstCharacter = '一' },
+   }),
+   ```
+
+   All text APIs on `GraphicsManager` (`DrawText`, `DrawTextWithWordWrap`, `ComputeDimensionsWithWordWrap`, `PretendDrawText`) accept the multi-sheet `Font` shape; single-sheet fonts continue to take the fast path.
+2. **New `FontMeta` convenience-ctor parameters.** The single-sheet `FontMeta` constructors now take optional `horizontalSpacing`, `verticalSpacing`, and `firstCharacter` arguments, so most fonts can be configured inline without dropping down to a `FontSheetMeta` initializer. Defaults are `1`, `1`, and `' '` — matching the `FontSheetMeta` defaults — so existing call sites are unaffected.
+3. **`IrisTransition`** has been added to `BenMakesGames.PlayPlayMini.GraphicsExtensions`. It closes a circular "iris" around a focal point, then opens it back up to reveal the next state (the kind of transition often seen at the end of cartoons or classic platformers). See the `GraphicsExtensions` README for usage.
+
 # Upgrading from 7.x to 8.0.0
 
 ## Breaking Changes

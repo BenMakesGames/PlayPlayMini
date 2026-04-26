@@ -246,6 +246,19 @@ the image.
 
 For fonts and sprite sheets, the dimensions of each individual sprite are specified in the third and fourth parameters.
 
+`FontMeta` also accepts optional `horizontalSpacing`, `verticalSpacing`, and `firstCharacter` arguments. The first two control the gap (in pixels) inserted between glyphs and lines at draw time, and default to `1`. `firstCharacter` is the character that the first cell of the sheet represents — defaults to `' '` (space), which is correct for most Latin font sheets. Set it explicitly when your sheet covers a non-Latin range (CJK, Cyrillic, custom symbols), so glyph lookup lands on the right cell.
+
+For multi-lingual fonts, or fonts whose glyphs do not all share the same cell size, use the multi-sheet `FontMeta` constructor. Each `FontSheetMeta` covers a contiguous character range, and at draw time the first sheet whose range contains the glyph wins — so put more-specific ranges before any wider fallback:
+
+```c#
+new FontMeta("Font", new[] {
+    new FontSheetMeta("Fonts/Latin", 6, 8),                           // covers ' ' onward
+    new FontSheetMeta("Fonts/CJK",  12, 12) { FirstCharacter = '一' }, // covers a CJK range
+}),
+```
+
+`PlayPlayMini`'s text APIs (`DrawText`, `DrawTextWithWordWrap`, `ComputeDimensionsWithWordWrap`, etc.) all accept multi-sheet `Font`s. Single-sheet fonts continue to take the fast path.
+
 Finally, an optional boolean specifies whether or not the asset needs to be loaded before the game's
 startup state is entered. In the example above, this is set for the "Cursor" graphic, so that 
 the mouse cursor can be shown while the rest of the assets are loading.

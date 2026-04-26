@@ -27,6 +27,29 @@ public void GoToNextScene()
 
 There are also options which let you hold on the black screen while some other process finishes (`HoldUntil`), and/or show a message (`Message` and `MessageColor`), which may be useful when performing a long-running operation, such as saving the game, loading the next level from disk, or making an web API call.
 
+## `IrisTransition`
+
+The `IrisTransition` game state closes a circular "iris" around a focal point until the screen is fully covered, then opens the iris back up to reveal the next state. This is the kind of transition often seen at the end of cartoons or classic platformers.
+
+Example usage:
+
+```c#
+public void GoToNextScene()
+{
+    GSM.ChangeState<IrisTransition, IrisTransitionConfig>(new() {
+        PreviousState = this,
+        NextState = GSM.CreateState<NextScene>(),
+        FocalPoint = new Point(Graphics.Width / 2, Graphics.Height / 2),
+        Color = Color.Black,
+        TransitionTime = 0.3, // in seconds; applied to both the close and open phases
+    });
+}
+```
+
+`FocalPoint` is the center of the iris, in screen coordinates. The closing/opening radius is automatically sized so that the iris will fully cover the screen no matter where the focal point is placed (including off-screen). For example, set `FocalPoint` to the player's position to have the iris close in on - and open back out from - the player.
+
+As with `ScreenWipe`, `IrisTransition` supports `HoldUntil`, `MinimumHoldTime`, `Message`, and `MessageColor` for pausing on a fully-closed screen while a long-running operation completes (saving, loading, web requests, etc.).
+
 # Drawing "Primitives"
 
 `PlayPlayMini.GraphicsExtensions` contains methods for drawing "basic shapes", beyond just rectangles (which `PlayPlayMini` itself already supports).
