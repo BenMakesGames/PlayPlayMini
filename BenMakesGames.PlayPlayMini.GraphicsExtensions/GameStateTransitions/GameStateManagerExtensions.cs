@@ -48,5 +48,40 @@ public static class GameStateManagerExtensions
                 Color = color ?? Color.Black,
                 Direction = direction
             });
+
+        public void ChangeStateWithIrisTransition<T>(Point focalPoint, Color? color = null)
+            where T: GameState
+        {
+            gsm.ChangeState(gsm.CreateState<IrisTransition, IrisTransitionConfig>(new()
+            {
+                PreviousState = gsm.CurrentState,
+                NextState = gsm.CreateState<T>(),
+                FocalPoint = focalPoint,
+                Color = color ?? Color.Black,
+            }));
+        }
+
+        public void ChangeStateWithIrisTransition<T, TConfig>(TConfig config, Point focalPoint, Color? color = null)
+            where T: GameState<TConfig>
+        {
+            gsm.ChangeState(gsm.CreateState<IrisTransition, IrisTransitionConfig>(new()
+            {
+                PreviousState = gsm.CurrentState,
+                NextState = gsm.CreateState<T, TConfig>(config),
+                FocalPoint = focalPoint,
+                Color = color ?? Color.Black,
+            }));
+        }
+
+        public void ChangeStateWithIrisTransition(AbstractGameState nextState, Point focalPoint, Color? color = null)
+        {
+            gsm.ChangeState(gsm.CreateState<IrisTransition, IrisTransitionConfig>(new()
+            {
+                PreviousState = gsm.CurrentState,
+                NextState = nextState,
+                FocalPoint = focalPoint,
+                Color = color ?? Color.Black,
+            }));
+        }
     }
 }
