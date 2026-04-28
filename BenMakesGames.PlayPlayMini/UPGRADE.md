@@ -1,19 +1,37 @@
 # Upgrading from 8.0.x to 8.1.0
 
+## Breaking Changes!?
+
+Sorry, I decided not to follow semantic versioning this time. It just felt silly to go up to 9.x when the only real add is multi-lingual fonts, and the upgrade path is quite easy.
+
+### Yep: Multi-lingual Fonts!
+
+`FontMeta` now accepts an `IEnumerable<FontSheetMeta>`, allowing a single font to be composed of multiple sheets, each covering a different character range (for example a Latin sheet alongside a CJK sheet, or sheets that mix different glyph sizes).
+
+```c#
+new FontMeta("Font", new[] {
+    new FontSheetMeta("Fonts/Latin", 6, 8),
+    new FontSheetMeta("Fonts/CJK", 12, 12) { FirstCharacter = '一' },
+}),
+```
+
+If you don't need to support multiple sheets, a convenience constructor is provided:
+
+```c#
+new FontMeta("Font", "Graphics/Font", 6, 8, horizontalSpacing: 1, verticalSpacing: 1, firstCharacter: ' ', preLoaded: false)
+```
+
+`horizontalSpacing`, `verticalSpacing`, `firstCharacter`, and `preLoaded` are all optional.
+
+The following pattern **no longer works**, and is the BC break that makes 8.1.0 blatantly violate semantic versioning:
+
+```c#
+new FontMeta("Font", "Graphics/Font", 6, 8, preLoaded: false) { HorizontalSpacing = 1, VerticalSpacing = 1, FirstCharacter = ' ' }
+```
+
 ## New Stuff
 
-1. **Multi-lingual / multi-sheet bitmap fonts.** `FontMeta` now accepts an `IEnumerable<FontSheetMeta>`, allowing a single font to be composed of multiple sheets, each covering a different character range (for example a Latin sheet alongside a CJK sheet, or sheets that mix different glyph sizes). At draw time, the first sheet whose range contains the glyph wins — put more-specific ranges before any wider fallback.
-
-   ```c#
-   new FontMeta("Font", new[] {
-       new FontSheetMeta("Fonts/Latin", 6, 8),
-       new FontSheetMeta("Fonts/CJK",  12, 12) { FirstCharacter = '一' },
-   }),
-   ```
-
-   All text APIs on `GraphicsManager` (`DrawText`, `DrawTextWithWordWrap`, `ComputeDimensionsWithWordWrap`, `PretendDrawText`) accept the multi-sheet `Font` shape; single-sheet fonts continue to take the fast path.
-2. **New `FontMeta` convenience-ctor parameters.** The single-sheet `FontMeta` constructors now take optional `horizontalSpacing`, `verticalSpacing`, and `firstCharacter` arguments, so most fonts can be configured inline without dropping down to a `FontSheetMeta` initializer. Defaults are `1`, `1`, and `' '` — matching the `FontSheetMeta` defaults — so existing call sites are unaffected.
-3. **`IrisTransition`** has been added to `BenMakesGames.PlayPlayMini.GraphicsExtensions`. It closes a circular "iris" around a focal point, then opens it back up to reveal the next state (the kind of transition often seen at the end of cartoons or classic platformers). See the `GraphicsExtensions` README for usage.
+**`IrisTransition`** has been added to `BenMakesGames.PlayPlayMini.GraphicsExtensions`. It closes a circular "iris" around a focal point, then opens it back up to reveal the next state.
 
 # Upgrading from 7.x to 8.0.0
 
