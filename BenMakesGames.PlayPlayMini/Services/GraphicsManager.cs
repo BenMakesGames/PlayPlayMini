@@ -1,4 +1,4 @@
-﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
+using BenMakesGames.PlayPlayMini.Attributes.DI;
 using BenMakesGames.PlayPlayMini.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
@@ -25,7 +25,6 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public bool FullyLoaded { get; private set; }
 
     public Matrix? TransformMatrix { get; private set; }
-    public Effect? PostProcessingShader { get; private set; }
     public int Zoom { get; private set; } = 2;
     public bool FullScreen { get; private set; }
     public int Width { get; private set; } = 1920 / 3;
@@ -35,7 +34,7 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
 
     public GraphicsDevice GraphicsDevice => Game.GraphicsDevice;
     private ContentManager Content => Game.Content;
-    private RenderTarget2D RenderTarget { get; set; } = null!;
+    internal RenderTarget2D RenderTarget { get; private set; } = null!;
 
     private Game Game = null!;
     private GraphicsDeviceManager Graphics = null!;
@@ -47,7 +46,10 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public IReadOnlyDictionary<string, Font> Fonts { get; private set; } = new Dictionary<string, Font>();
     public IReadOnlyDictionary<string, Effect> PixelShaders { get; private set; } = new Dictionary<string, Effect>();
 
-    internal ShaderScope? CurrentShaderScope;
+    internal IBatchScope? CurrentBatchScope;
+    internal SceneShaderScope? CurrentLayerScope;
+
+    private readonly Stack<RenderTarget2D> _layerRenderTargetPool = new();
 
     public GraphicsManager(ILogger<GraphicsManager> logger)
     {
@@ -212,16 +214,13 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public void UnloadContent()
     {
         SpriteBatch.Dispose();
+
+        while (_layerRenderTargetPool.TryPop(out var rt))
+            rt.Dispose();
     }
 
     public void SetTransformMatrix(Matrix? matrix)
         => TransformMatrix = matrix;
-
-    public void SetPostProcessingPixelShader(Effect? effect)
-        => PostProcessingShader = effect;
-
-    public void SetPostProcessingPixelShader(string pixelShaderName)
-        => SetPostProcessingPixelShader(PixelShaders[pixelShaderName]);
 
     /// <summary>
     /// "Zoom" controls how large each "pixel" is.
@@ -303,7 +302,7 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     internal void EndDraw()
     {
         Graphics.GraphicsDevice.SetRenderTarget(null);
-        SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, effect: PostProcessingShader);
+        SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
         SpriteBatch.Draw(RenderTarget, new Rectangle(0, 0, Width * Zoom, Height * Zoom), Color.White);
         SpriteBatch.End();
     }
@@ -321,6 +320,17 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => GraphicsDevice.Clear(Color.Black);
 
+    /// <summary>
+    /// Applies the given pixel shader to each individual draw call inside the using block.
+    /// The shader samples each draw's own source texture (a sprite, a font glyph, the white
+    /// pixel for primitives), so it's the right tool for per-sprite effects (color tints,
+    /// dithering, palette swaps, distortion of a single sprite's own pixels).
+    /// </summary>
+    /// <remarks>
+    /// For effects that need to sample <em>neighboring scene content</em> (ripples, blurs,
+    /// chromatic aberration, refraction), use <see cref="WithSceneShader(Effect?, Action{Effect}?)"/>
+    /// instead — that runs the shader at composite time over an assembled layer.
+    /// </remarks>
     public IDisposable WithShader(Effect? pixelShader, Action<Effect>? configure = null)
         => new ShaderScope(this, pixelShader, configure);
 
@@ -348,29 +358,81 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     /// <returns></returns>
     public IDisposable WithShader(string pixelShaderName, Action<Effect>? configure = null)
         => new ShaderScope(this, PixelShaders[pixelShaderName], configure);
+
+    /// <summary>
+    /// Renders the wrapped graphics calls into a layer-sized render target, then composites
+    /// the layer to the previous target through the given pixel shader. Use this for effects
+    /// that need to sample the assembled scene (ripples, blurs, refraction, post-process
+    /// distortion). The shader's source texture is the layer image — neighboring pixels
+    /// sample correctly across draw-call boundaries.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The layer render target is the same size as the framebuffer (<see cref="Width"/> ×
+    /// <see cref="Height"/>) and is acquired from a pool, so repeated use is cheap.
+    /// </para>
+    /// <para>
+    /// Pass <c>null</c> to group draws into an isolated layer with no shader — useful for
+    /// blend isolation. Nesting is supported: an inner <c>WithSceneShader</c> composites
+    /// into the outer layer, which composites to the previous target.
+    /// </para>
+    /// <para>
+    /// Use <see cref="WithShader(Effect?, Action{Effect}?)"/> for per-sprite effects; that
+    /// shader sees each draw's own source texture, not the composited scene.
+    /// </para>
+    /// </remarks>
+    public IDisposable WithSceneShader(Effect? pixelShader, Action<Effect>? configure = null)
+        => new SceneShaderScope(this, pixelShader, configure);
+
+    /// <summary>
+    /// Looks up a shader by name and applies it as a scene shader. See
+    /// <see cref="WithSceneShader(Effect?, Action{Effect}?)"/>.
+    /// </summary>
+    public IDisposable WithSceneShader(string pixelShaderName, Action<Effect>? configure = null)
+        => new SceneShaderScope(this, PixelShaders[pixelShaderName], configure);
+
+    internal RenderTarget2D AcquireLayerRenderTarget()
+    {
+        if (_layerRenderTargetPool.TryPop(out var rt))
+            return rt;
+
+        return new RenderTarget2D(GraphicsDevice, Width, Height);
+    }
+
+    internal void ReleaseLayerRenderTarget(RenderTarget2D rt)
+        => _layerRenderTargetPool.Push(rt);
 }
 
-internal sealed class ShaderScope : IDisposable
+internal interface IBatchScope : IDisposable
+{
+    /// <summary>
+    /// Re-opens this scope's SpriteBatch. Called by a child scope's Dispose to restore the
+    /// parent batch after the child's nested batch has ended.
+    /// </summary>
+    void BeginBatch();
+}
+
+internal sealed class ShaderScope : IBatchScope
 {
     private readonly GraphicsManager Graphics;
     private readonly Effect? Shader;
     private readonly Action<Effect>? ShaderConfigureAction;
-    private readonly ShaderScope? PreviousScope;
+    private readonly IBatchScope? PreviousScope;
 
     public ShaderScope(GraphicsManager graphics, Effect? shader, Action<Effect>? configure)
     {
         Graphics = graphics;
         Shader = shader;
         ShaderConfigureAction = configure;
-        PreviousScope = graphics.CurrentShaderScope;
+        PreviousScope = graphics.CurrentBatchScope;
 
-        if (graphics.CurrentShaderScope is not null)
+        if (PreviousScope is not null)
             Graphics.SpriteBatch.End();
 
-        Begin();
+        BeginBatch();
     }
 
-    private void Begin()
+    public void BeginBatch()
     {
         if(Shader is not null && ShaderConfigureAction is not null)
             ShaderConfigureAction.Invoke(Shader);
@@ -385,7 +447,7 @@ internal sealed class ShaderScope : IDisposable
             transformMatrix: Graphics.TransformMatrix
         );
 
-        Graphics.CurrentShaderScope = this;
+        Graphics.CurrentBatchScope = this;
     }
 
     public void Dispose()
@@ -393,8 +455,85 @@ internal sealed class ShaderScope : IDisposable
         Graphics.SpriteBatch.End();
 
         if (PreviousScope is not null)
-            PreviousScope.Begin();
+            PreviousScope.BeginBatch();
         else
-            Graphics.CurrentShaderScope = null;
+            Graphics.CurrentBatchScope = null;
+    }
+}
+
+internal sealed class SceneShaderScope : IBatchScope
+{
+    private readonly GraphicsManager Graphics;
+    private readonly Effect? Shader;
+    private readonly Action<Effect>? ShaderConfigureAction;
+    private readonly IBatchScope? PreviousScope;
+    private readonly SceneShaderScope? PreviousLayerScope;
+    private readonly RenderTarget2D PreviousRenderTarget;
+
+    internal RenderTarget2D LayerRenderTarget { get; }
+
+    public SceneShaderScope(GraphicsManager graphics, Effect? shader, Action<Effect>? configure)
+    {
+        Graphics = graphics;
+        Shader = shader;
+        ShaderConfigureAction = configure;
+        PreviousScope = graphics.CurrentBatchScope;
+        PreviousLayerScope = graphics.CurrentLayerScope;
+        PreviousRenderTarget = PreviousLayerScope?.LayerRenderTarget ?? graphics.RenderTarget;
+
+        if (PreviousScope is not null)
+            Graphics.SpriteBatch.End();
+
+        LayerRenderTarget = graphics.AcquireLayerRenderTarget();
+        Graphics.GraphicsDevice.SetRenderTarget(LayerRenderTarget);
+        Graphics.GraphicsDevice.Clear(Color.Transparent);
+
+        Graphics.CurrentLayerScope = this;
+
+        BeginBatch();
+    }
+
+    public void BeginBatch()
+    {
+        // Inside the layer the inner batch uses no shader; the layer's effect runs at
+        // composite time in Dispose.
+        Graphics.SpriteBatch.Begin(
+            SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone,
+            effect: null,
+            transformMatrix: Graphics.TransformMatrix
+        );
+
+        Graphics.CurrentBatchScope = this;
+    }
+
+    public void Dispose()
+    {
+        Graphics.SpriteBatch.End();
+
+        Graphics.GraphicsDevice.SetRenderTarget(PreviousRenderTarget);
+        Graphics.CurrentLayerScope = PreviousLayerScope;
+
+        if (Shader is not null && ShaderConfigureAction is not null)
+            ShaderConfigureAction.Invoke(Shader);
+
+        Graphics.SpriteBatch.Begin(
+            SpriteSortMode.Immediate,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            effect: Shader
+        );
+        Graphics.SpriteBatch.Draw(LayerRenderTarget, Vector2.Zero, Color.White);
+        Graphics.SpriteBatch.End();
+
+        Graphics.ReleaseLayerRenderTarget(LayerRenderTarget);
+
+        if (PreviousScope is not null)
+            PreviousScope.BeginBatch();
+        else
+            Graphics.CurrentBatchScope = null;
     }
 }

@@ -1,3 +1,41 @@
+# Upgrading from 8.1.x to 8.2.0
+
+## Breaking Changes
+
+### `SetPostProcessingPixelShader` is gone; use `WithSceneShader` instead
+
+`GraphicsManager.SetPostProcessingPixelShader` and the `PostProcessingShader` property have been removed. The replacement is a scoped API, `WithSceneShader`, that mirrors `WithShader`:
+
+```c#
+// before
+Graphics.SetPostProcessingPixelShader(myShader);
+// ... draw the whole frame ...
+Graphics.SetPostProcessingPixelShader((Effect?)null);
+```
+
+```c#
+// after
+using (Graphics.WithSceneShader(myShader, e => e.Parameters["Time"].SetValue(t)))
+{
+    // ... draw the layer you want shaded ...
+}
+// draws after this point are not shaded
+```
+
+`WithSceneShader` renders its body into a layer-sized render target, then composites the layer to the previous target through the supplied effect. Unlike `WithShader` (which runs per draw call against each draw's own source texture), `WithSceneShader` runs once at composite time against the assembled layer — so shaders that sample neighboring scene content (ripples, blurs, refraction) work correctly.
+
+To replicate the old "post-process the whole frame" behavior, wrap your entire `Draw` body. To shade only part of the frame (e.g., shade the world but leave UI untouched), wrap the world draws and place UI draws after the `using` block:
+
+```c#
+using (Graphics.WithSceneShader("Warble"))
+{
+    // background, world, etc.
+}
+// banner, HUD, mouse — drawn unshaded over the warbled layer
+```
+
+`WithSceneShader(null)` is a no-shader variant useful for blend isolation, and nesting is supported.
+
 # Upgrading from 8.0.x to 8.1.0
 
 ## Breaking Changes!?
