@@ -50,6 +50,8 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     internal SceneShaderScope? CurrentLayerScope;
 
     private readonly Stack<RenderTarget2D> _layerRenderTargetPool = new();
+    private readonly Stack<ShaderScope> _shaderScopePool = new();
+    private readonly Stack<SceneShaderScope> _sceneShaderScopePool = new();
 
     public GraphicsManager(ILogger<GraphicsManager> logger)
     {
@@ -327,12 +329,22 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     /// dithering, palette swaps, distortion of a single sprite's own pixels).
     /// </summary>
     /// <remarks>
+    /// <para>
     /// For effects that need to sample <em>neighboring scene content</em> (ripples, blurs,
     /// chromatic aberration, refraction), use <see cref="WithSceneShader(Effect?, Action{Effect}?)"/>
     /// instead — that runs the shader at composite time over an assembled layer.
+    /// </para>
+    /// <para>
+    /// The returned <see cref="IDisposable"/> is pooled and must be disposed exactly once
+    /// (use a <c>using</c> statement); do not store it beyond its scope or dispose it twice.
+    /// </para>
     /// </remarks>
     public IDisposable WithShader(Effect? pixelShader, Action<Effect>? configure = null)
-        => new ShaderScope(this, pixelShader, configure);
+    {
+        var scope = AcquireShaderScope();
+        scope.Initialize(pixelShader, configure);
+        return scope;
+    }
 
     /// <summary>
     /// Applies the given pixel shader to the wrapped graphics calls.
@@ -356,8 +368,16 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     /// <param name="pixelShaderName">Name of the shader to use.</param>
     /// <param name="configure">Optional configuration delegate.</param>
     /// <returns></returns>
+    /// <remarks>
+    /// The returned <see cref="IDisposable"/> is pooled and must be disposed exactly once
+    /// (use a <c>using</c> statement); do not store it beyond its scope or dispose it twice.
+    /// </remarks>
     public IDisposable WithShader(string pixelShaderName, Action<Effect>? configure = null)
-        => new ShaderScope(this, PixelShaders[pixelShaderName], configure);
+    {
+        var scope = AcquireShaderScope();
+        scope.Initialize(PixelShaders[pixelShaderName], configure);
+        return scope;
+    }
 
     /// <summary>
     /// Renders the wrapped graphics calls into a layer-sized render target, then composites
@@ -380,16 +400,32 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     /// Use <see cref="WithShader(Effect?, Action{Effect}?)"/> for per-sprite effects; that
     /// shader sees each draw's own source texture, not the composited scene.
     /// </para>
+    /// <para>
+    /// The returned <see cref="IDisposable"/> is pooled and must be disposed exactly once
+    /// (use a <c>using</c> statement); do not store it beyond its scope or dispose it twice.
+    /// </para>
     /// </remarks>
     public IDisposable WithSceneShader(Effect? pixelShader, Action<Effect>? configure = null)
-        => new SceneShaderScope(this, pixelShader, configure);
+    {
+        var scope = AcquireSceneShaderScope();
+        scope.Initialize(pixelShader, configure);
+        return scope;
+    }
 
     /// <summary>
     /// Looks up a shader by name and applies it as a scene shader. See
     /// <see cref="WithSceneShader(Effect?, Action{Effect}?)"/>.
     /// </summary>
+    /// <remarks>
+    /// The returned <see cref="IDisposable"/> is pooled and must be disposed exactly once
+    /// (use a <c>using</c> statement); do not store it beyond its scope or dispose it twice.
+    /// </remarks>
     public IDisposable WithSceneShader(string pixelShaderName, Action<Effect>? configure = null)
-        => new SceneShaderScope(this, PixelShaders[pixelShaderName], configure);
+    {
+        var scope = AcquireSceneShaderScope();
+        scope.Initialize(PixelShaders[pixelShaderName], configure);
+        return scope;
+    }
 
     internal RenderTarget2D AcquireLayerRenderTarget()
     {
@@ -401,6 +437,18 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
 
     internal void ReleaseLayerRenderTarget(RenderTarget2D rt)
         => _layerRenderTargetPool.Push(rt);
+
+    internal ShaderScope AcquireShaderScope()
+        => _shaderScopePool.TryPop(out var s) ? s : new ShaderScope(this);
+
+    internal void ReleaseShaderScope(ShaderScope scope)
+        => _shaderScopePool.Push(scope);
+
+    internal SceneShaderScope AcquireSceneShaderScope()
+        => _sceneShaderScopePool.TryPop(out var s) ? s : new SceneShaderScope(this);
+
+    internal void ReleaseSceneShaderScope(SceneShaderScope scope)
+        => _sceneShaderScopePool.Push(scope);
 }
 
 internal interface IBatchScope : IDisposable
@@ -415,16 +463,20 @@ internal interface IBatchScope : IDisposable
 internal sealed class ShaderScope : IBatchScope
 {
     private readonly GraphicsManager Graphics;
-    private readonly Effect? Shader;
-    private readonly Action<Effect>? ShaderConfigureAction;
-    private readonly IBatchScope? PreviousScope;
+    private Effect? Shader;
+    private Action<Effect>? ShaderConfigureAction;
+    private IBatchScope? PreviousScope;
 
-    public ShaderScope(GraphicsManager graphics, Effect? shader, Action<Effect>? configure)
+    public ShaderScope(GraphicsManager graphics)
     {
         Graphics = graphics;
+    }
+
+    public void Initialize(Effect? shader, Action<Effect>? configure)
+    {
         Shader = shader;
         ShaderConfigureAction = configure;
-        PreviousScope = graphics.CurrentBatchScope;
+        PreviousScope = Graphics.CurrentBatchScope;
 
         if (PreviousScope is not null)
             Graphics.SpriteBatch.End();
@@ -458,33 +510,43 @@ internal sealed class ShaderScope : IBatchScope
             PreviousScope.BeginBatch();
         else
             Graphics.CurrentBatchScope = null;
+
+        Shader = null;
+        ShaderConfigureAction = null;
+        PreviousScope = null;
+
+        Graphics.ReleaseShaderScope(this);
     }
 }
 
 internal sealed class SceneShaderScope : IBatchScope
 {
     private readonly GraphicsManager Graphics;
-    private readonly Effect? Shader;
-    private readonly Action<Effect>? ShaderConfigureAction;
-    private readonly IBatchScope? PreviousScope;
-    private readonly SceneShaderScope? PreviousLayerScope;
-    private readonly RenderTarget2D PreviousRenderTarget;
+    private Effect? Shader;
+    private Action<Effect>? ShaderConfigureAction;
+    private IBatchScope? PreviousScope;
+    private SceneShaderScope? PreviousLayerScope;
+    private RenderTarget2D? PreviousRenderTarget;
 
-    internal RenderTarget2D LayerRenderTarget { get; }
+    internal RenderTarget2D LayerRenderTarget { get; private set; } = null!;
 
-    public SceneShaderScope(GraphicsManager graphics, Effect? shader, Action<Effect>? configure)
+    public SceneShaderScope(GraphicsManager graphics)
     {
         Graphics = graphics;
+    }
+
+    public void Initialize(Effect? shader, Action<Effect>? configure)
+    {
         Shader = shader;
         ShaderConfigureAction = configure;
-        PreviousScope = graphics.CurrentBatchScope;
-        PreviousLayerScope = graphics.CurrentLayerScope;
-        PreviousRenderTarget = PreviousLayerScope?.LayerRenderTarget ?? graphics.RenderTarget;
+        PreviousScope = Graphics.CurrentBatchScope;
+        PreviousLayerScope = Graphics.CurrentLayerScope;
+        PreviousRenderTarget = PreviousLayerScope?.LayerRenderTarget ?? Graphics.RenderTarget;
 
         if (PreviousScope is not null)
             Graphics.SpriteBatch.End();
 
-        LayerRenderTarget = graphics.AcquireLayerRenderTarget();
+        LayerRenderTarget = Graphics.AcquireLayerRenderTarget();
         Graphics.GraphicsDevice.SetRenderTarget(LayerRenderTarget);
         Graphics.GraphicsDevice.Clear(Color.Transparent);
 
@@ -535,5 +597,14 @@ internal sealed class SceneShaderScope : IBatchScope
             PreviousScope.BeginBatch();
         else
             Graphics.CurrentBatchScope = null;
+
+        Shader = null;
+        ShaderConfigureAction = null;
+        PreviousScope = null;
+        PreviousLayerScope = null;
+        PreviousRenderTarget = null;
+        LayerRenderTarget = null!;
+
+        Graphics.ReleaseSceneShaderScope(this);
     }
 }

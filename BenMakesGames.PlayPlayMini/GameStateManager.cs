@@ -167,8 +167,10 @@ public sealed class GameStateManager: Game
 
             CurrentState.Draw(gameTime);
 
-            foreach (var s in ServiceWatcher.DrawnServices)
-                s.Draw(gameTime);
+            // ReSharper disable once ForCanBeConvertedToForeach
+            // for loop, instead of foreach, reduces allocations
+            for (var i = 0; i < ServiceWatcher.DrawnServices.Count; i++)
+                ServiceWatcher.DrawnServices[i].Draw(gameTime);
         }
 
         Graphics.EndDraw();
