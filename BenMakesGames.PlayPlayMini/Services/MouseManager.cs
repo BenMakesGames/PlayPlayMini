@@ -106,6 +106,20 @@ public sealed class MouseManager : IServiceInput
     public bool DisableOnKeyPress { get; set; } = false;
 
     /// <summary>
+    /// If true, <c>Enabled</c> will be set to false when any gamepad button is pressed, either trigger
+    /// is engaged, or either thumbstick is moved past its dead-zone (any of the four player slots).
+    /// </summary>
+    public bool DisableOnGamepadInput { get; set; } = false;
+
+    private const Buttons AnyGamepadButton =
+        Buttons.A | Buttons.B | Buttons.X | Buttons.Y
+        | Buttons.LeftShoulder | Buttons.RightShoulder
+        | Buttons.LeftTrigger | Buttons.RightTrigger
+        | Buttons.Back | Buttons.Start | Buttons.BigButton
+        | Buttons.LeftStick | Buttons.RightStick
+        | Buttons.DPadUp | Buttons.DPadDown | Buttons.DPadLeft | Buttons.DPadRight;
+
+    /// <summary>
     /// When ClampToWindow is set, <c>X</c> &amp; <c>Y</c> will be confined to the window, regardless of the mouse's physical position.
     /// </summary>
     public bool ClampToWindow { get; set; } = false;
@@ -131,6 +145,11 @@ public sealed class MouseManager : IServiceInput
         if(Enabled)
         {
             if(DisableOnKeyPress && Keyboard.AnyKeyDown())
+            {
+                Enabled = false;
+                GSM.IsMouseVisible = false;
+            }
+            else if(DisableOnGamepadInput && IsAnyGamepadActive())
             {
                 Enabled = false;
                 GSM.IsMouseVisible = false;
@@ -256,6 +275,30 @@ public sealed class MouseManager : IServiceInput
     /// </summary>
     /// <returns></returns>
     public bool IsInWindow() => X >= 0 && X < Graphics.Width && Y >= 0 && Y < Graphics.Height;
+
+    private static bool IsAnyGamepadActive()
+    {
+        for(var i = 0; i < 4; i++)
+        {
+            // Circular dead-zone zeroes stick values that haven't moved beyond it, so any
+            // non-zero stick here is real input, not drift.
+            var state = GamePad.GetState(i, GamePadDeadZone.Circular);
+
+            if(!state.IsConnected)
+                continue;
+
+            if(state.IsButtonDown(AnyGamepadButton))
+                return true;
+
+            if(state.ThumbSticks.Left != Vector2.Zero || state.ThumbSticks.Right != Vector2.Zero)
+                return true;
+
+            if(state.Triggers.Left > 0f || state.Triggers.Right > 0f)
+                return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Returns true if the mouse is currently in the specified circle.
