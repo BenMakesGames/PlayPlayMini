@@ -111,13 +111,17 @@ public sealed class MouseManager : IServiceInput
     /// </summary>
     public bool DisableOnGamepadInput { get; set; } = false;
 
-    private const Buttons AnyGamepadButton =
-        Buttons.A | Buttons.B | Buttons.X | Buttons.Y
-        | Buttons.LeftShoulder | Buttons.RightShoulder
-        | Buttons.LeftTrigger | Buttons.RightTrigger
-        | Buttons.Back | Buttons.Start | Buttons.BigButton
-        | Buttons.LeftStick | Buttons.RightStick
-        | Buttons.DPadUp | Buttons.DPadDown | Buttons.DPadLeft | Buttons.DPadRight;
+    // Each button checked individually — GamePadState.IsButtonDown with a flags-combined value
+    // requires ALL specified bits to be down, not ANY, so a single mask won't work here.
+    private static readonly Buttons[] GamepadButtons =
+    [
+        Buttons.A, Buttons.B, Buttons.X, Buttons.Y,
+        Buttons.LeftShoulder, Buttons.RightShoulder,
+        Buttons.LeftTrigger, Buttons.RightTrigger,
+        Buttons.Back, Buttons.Start, Buttons.BigButton,
+        Buttons.LeftStick, Buttons.RightStick,
+        Buttons.DPadUp, Buttons.DPadDown, Buttons.DPadLeft, Buttons.DPadRight,
+    ];
 
     /// <summary>
     /// When ClampToWindow is set, <c>X</c> &amp; <c>Y</c> will be confined to the window, regardless of the mouse's physical position.
@@ -280,15 +284,16 @@ public sealed class MouseManager : IServiceInput
     {
         for(var i = 0; i < 4; i++)
         {
-            // Circular dead-zone zeroes stick values that haven't moved beyond it, so any
-            // non-zero stick here is real input, not drift.
+            // Don't filter on state.IsConnected — MonoGame DesktopGL can report false for working
+            // controllers; a truly absent slot just returns a zeroed state, so the checks below
+            // are no-ops for it. Circular dead-zone zeroes stick drift before it reaches us.
             var state = GamePad.GetState(i, GamePadDeadZone.Circular);
 
-            if(!state.IsConnected)
-                continue;
-
-            if(state.IsButtonDown(AnyGamepadButton))
-                return true;
+            foreach(var button in GamepadButtons)
+            {
+                if(state.IsButtonDown(button))
+                    return true;
+            }
 
             if(state.ThumbSticks.Left != Vector2.Zero || state.ThumbSticks.Right != Vector2.Zero)
                 return true;
