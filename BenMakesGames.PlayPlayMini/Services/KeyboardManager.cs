@@ -1,8 +1,7 @@
 ﻿using BenMakesGames.PlayPlayMini.Attributes.DI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
@@ -52,7 +51,14 @@ public sealed class KeyboardManager : IServiceInput
     /// </summary>
     /// <param name="keys"></param>
     /// <returns></returns>
-    public bool PressedAnyKey(IList<Keys> keys) => keys.Any(PressedKey);
+    public bool PressedAnyKey(params ReadOnlySpan<Keys> keys)
+    {
+        foreach (var key in keys)
+        {
+            if (PressedKey(key)) return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// Returns true if the specified key is currently down.
@@ -66,7 +72,14 @@ public sealed class KeyboardManager : IServiceInput
     /// </summary>
     /// <param name="keys"></param>
     /// <returns></returns>
-    public bool AnyKeyDown(IList<Keys> keys) => keys.Any(KeyDown);
+    public bool AnyKeyDown(params ReadOnlySpan<Keys> keys)
+    {
+        foreach (var key in keys)
+        {
+            if (KeyDown(key)) return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// Returns true if the specified key is currently up.
@@ -80,5 +93,12 @@ public sealed class KeyboardManager : IServiceInput
     /// </summary>
     /// <param name="keys"></param>
     /// <returns></returns>
-    public bool AnyKeyUp(IList<Keys> keys) => keys.Any(KeyUp);
+    public bool AnyKeyUp(params ReadOnlySpan<Keys> keys)
+    {
+        foreach (var key in keys)
+        {
+            if (KeyUp(key)) return true;
+        }
+        return false;
+    }
 }
