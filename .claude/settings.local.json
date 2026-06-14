@@ -4,7 +4,9 @@
       "Bash(dir:*)",
       "Bash(dotnet build *)",
       "Bash(git mv *)",
-      "Bash(dotnet test *)"
+      "Bash(dotnet test *)",
+      "PowerShell(dotnet build *)",
+      "WebSearch"
     ]
   }
 }

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <PackageType>Template</PackageType>
+        <PackageVersion>8.2.0</PackageVersion>
+        <PackageId>BenMakesGames.PlayPlayMini.Templates</PackageId>
+        <Title>PlayPlayMini Templates</Title>
+        <Authors>Ben Hendel-Doying</Authors>
+        <Copyright>2022-2026 Ben Hendel-Doying</Copyright>
+        <Description>Templates for creating games with the PlayPlayMini framework.</Description>
+        <PackageTags>dotnet-new;templates;playplaymini;monogame</PackageTags>
+
+        <TargetFramework>net10.0</TargetFramework>
+
+        <IncludeContentInPack>true</IncludeContentInPack>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <ContentTargetFolders>content</ContentTargetFolders>
+        <NoWarn>NU5128</NoWarn>
+        <NoDefaultExcludes>true</NoDefaultExcludes>
+
+        <PackageProjectUrl>https://github.com/BenMakesGames/PlayPlayMini</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/BenMakesGames/PlayPlayMini</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
+        <Compile Remove="**\*" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\LICENSE.md">
+            <Pack>True</Pack>
+            <PackagePath />
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath />
+        </None>
+    </ItemGroup>
+
+</Project>

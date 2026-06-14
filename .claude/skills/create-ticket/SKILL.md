@@ -12,7 +12,7 @@ Create one or more implementation tickets from the user's feature description. T
 
 Thorough codebase research is critical — tickets referencing wrong patterns or missing existing infrastructure cause implementation friction.
 
-1. Find and read related completed tickets in `docs/tickets/complete/`.
+1. Find and read related completed tickets in `docs/tickets/complete/` for domain context, prior decisions, and known gotchas — not as a format to copy (the Phase 4 template is the authority on ticket shape).
 2. Read relevant `docs/` reference files for areas involved.
 3. Identify existing codebase patterns relevant to the feature. User may reference analogous systems (e.g., "like the inventory system", "similar to how achievements work"). Read those systems thoroughly — modules, components, data structures, helpers — for context.
 
@@ -53,14 +53,14 @@ Present proposed split to user; confirm before writing.
 
 ## Phase 4: Write Tickets
 
-Write each ticket to `docs/tickets/<ticket-name>.md`. **No** date prefix (added on completion) or numeric index (e.g., `03-vn-system.md`) — Prerequisites carries ordering, more flexible than linear sequence. Descriptive names only.
+Write each ticket to `docs/tickets/<ticket-name>.md`. **No** date prefix (added on completion) or numeric index (e.g., `03-user-auth.md`) — Prerequisites carries ordering, more flexible than linear sequence. Descriptive names only.
 
 ### Ticket Shape
 
 **Ticket shape varies by task type.** Match format to work, not the other way around:
 
 - **Implementation tickets** — full template below (numbered steps, files, test plan). Flat `## Implementation` with numbered steps in execution order. No grouping subsections (Model / Service / UI) — if ticket needs them, split it or re-sequence steps.
-- **Design tickets** (e.g., hero progression, naming decisions) — simpler format: Context, design-specific sections, minimal test plan.
+- **Design tickets** (e.g., a data-model decision, naming conventions) — simpler format: Context, design-specific sections, minimal test plan.
 - **Refactoring tickets** — flat `## Implementation` with numbered steps across the whole stack.
 
 ### Implementation Ticket Template
@@ -87,16 +87,16 @@ Explicit non-goals: things a reader might assume are included but aren't, plus d
 
 ## Relevant Docs & Anchors
 Pointers to read before coding:
-- **Design docs**: e.g., `docs/heroes.md §Ansa`, `docs/relics.md §Boss modifiers`.
-- **Analogue tickets**: completed tickets whose patterns this mirrors (e.g., `docs/tickets/complete/2026-04-19 meliono-hero.md`).
-- **Code anchors**: key symbols/methods to read first (`HeroTypeInfo.Info`, `Encounter.SpawnNextPiece`, the stack-render loop in `Playing.Draw`).
+- **Design docs**: e.g., `docs/architecture.md §Auth`, `docs/data-model.md §Users`.
+- **Related tickets**: completed tickets with relevant background or gotchas (e.g., `docs/tickets/complete/2026-04-19 user-auth.md`) — for context, not a structure to copy.
+- **Code anchors**: key symbols/methods to read first (`UserRepository.FindById`, `AuthService.Authenticate`, the request-dispatch loop in `Router.Handle`).
 
 Omit if Implementation steps already name everything needed.
 
 ## Constraints & Gotchas
 Optional. Cross-cutting hazards affecting multiple steps, easy to miss if buried inline:
-- Project reference rules (e.g., `Astromino.Data` cannot import `Astromino.UI`).
-- Expected compiler warnings (e.g., CS8509 on hero switches).
+- Project reference rules (e.g., the data layer cannot import the UI layer).
+- Expected compiler/linter warnings (e.g., a non-exhaustive-match warning on an enum switch).
 - Save-format / serialization compatibility constraints.
 - Framework quirks documented in earlier ticket Learnings.
 
@@ -106,14 +106,16 @@ Omit if none apply.
 Optional. Defer-to-implementer decisions worth surfacing — local-taste questions the implementer should call during coding (optionally raising with user) rather than pre-deciding here. Omit if none. Each point: one line, question + default if known.
 
 Example entries:
-1. **Easing curve** — linear vs. smoothstep for the per-tile tween. Default: linear; eyeball during manual testing.
-2. **Inline list vs. dedicated VFX class** — inline simpler; dedicated right if reuse is imminent. Default: inline.
+1. **Easing curve** — linear vs. smoothstep for the fade-in animation. Default: linear; eyeball during manual testing.
+2. **Inline helper vs. dedicated class** — inline simpler; dedicated right if reuse is imminent. Default: inline.
 
 ## Acceptance Criteria
-Inspectable assertions defining "done" — state, signatures, file existence, enum values, behavioral facts. Each unambiguously pass/fail by code inspection or unit test. **Distinct from Test Plan**: *what must be true*, not *how to verify*. Don't restate Test Plan steps.
+Verifiable assertions defining "done" — user-visible behavior, public API outcomes, test-observable invariants, and (when the ticket *is* about adding code shape) enum values, registry entries, or file existence. Each unambiguously pass/fail by code inspection or unit test. **Distinct from Test Plan**: *what must be true*, not *how to verify*. Don't restate Test Plan steps.
 
-- [ ] Example: "`HeroTypeInfo.Info[HeroType.Ansa]` populated with starting bag, starting Coin, portrait, and flavor fields matching `docs/heroes.md §Ansa`."
-- [ ] Example: "`Encounter.ApplyBossModifier` switch over `BossModifierType` is exhaustive: every enum value handled, no `default` fallthrough."
+**Avoid in AC**: private field names, internal state transitions, statement ordering inside a method. Those lock the implementer into one shape when other shapes satisfy the same behavior — they belong in Constraints or Implementation.
+
+- [ ] Example (registry-shape ticket — code shape *is* the deliverable): "`RoleRegistry[Role.Editor]` populated with its permission set and display label matching `docs/roles.md §Editor`."
+- [ ] Example (behavioral ticket): "With rate-limiting enabled, the 11th request within a minute returns HTTP 429; the counter resets after the window elapses."
 
 ## Implementation
 Flat numbered list. **No grouping subsections** — if ticket needs Model / Service / UI sub-headers, split it or re-sequence into one linear flow.
@@ -125,23 +127,23 @@ Why (intent) → where (anchor by symbol/pattern, never line number) → what (p
 ...
 
 ## Test Plan
-Manual + integration verification of acceptance criteria: build/test commands, in-game steps, regression spot-checks. Action-oriented ("Open settings, change theme, reload — confirm theme persists"). **Distinct from Acceptance Criteria**: *how to verify*, not *what must be true*.
+Manual + integration verification of acceptance criteria: build/test commands, manual run-through steps, regression spot-checks. Action-oriented ("Open settings, change theme, reload — confirm theme persists"). **Distinct from Acceptance Criteria**: *how to verify*, not *what must be true*.
 
-- [ ] Example: "`dotnet build -o /tmp/build-check` and `dotnet test` pass."
-- [ ] Example: "Start an Ansa run; first piece drawn is a pentomino; Coin readout shows 4."
+- [ ] Example: "The project builds and the test suite passes."
+- [ ] Example: "Sign in as a new user; the dashboard shows zero notifications."
 ```
 
 ### Writing Guidelines
 
 - **Lead with intent, follow with location**: State *why* before *where*. The why survives refactors; the where may drift.
 - **Be specific about what, directional about how**: Name exact files, entities, enums. For signatures and types, point to the method/entity to mirror rather than spelling out the full signature — transcribed signatures go stale.
-- **Don't transcribe method bodies**: Describe algorithm in prose, point to analogous method; don't paste full C# into the ticket. Transcribed bodies go stale on first refactor of surrounding conventions (field naming, helpers, idioms). Exception: tricky off-by-one math, non-obvious algorithm steps, or specific data shapes where prose is ambiguous — transcribe only the load-bearing fragment, not the whole method.
-- **No line numbers**: Never cite as `File.cs:388-395`. Line numbers rot on first edit above the region. Anchor by method name, pattern, or grep-able landmark (e.g., "the stack-render loop in `Playing.Draw`", "the `new Encounter(...)` call site in `Playing`").
+- **Don't transcribe method bodies**: Describe algorithm in prose, point to analogous method; don't paste full code into the ticket. Transcribed bodies go stale on first refactor of surrounding conventions (field naming, helpers, idioms). Exception: tricky off-by-one math, non-obvious algorithm steps, or specific data shapes where prose is ambiguous — transcribe only the load-bearing fragment, not the whole method.
+- **No line numbers**: Never cite as `File.cs:388-395`. Line numbers rot on first edit above the region. Anchor by method name, pattern, or grep-able landmark (e.g., "the request-dispatch loop in `Router.Handle`", "the `new Connection(...)` call site in `Db`").
 - **Mirror existing patterns by reference**: For analogous code, name the exemplar and call out only the *differences*. Don't transcribe the full structure — it may have changed by implementation time.
 - **Keep scope tight**: One coherent unit of work per ticket. If it feels too large, split it.
 - **Don't over-specify presentation**: Enough structure (component names, layout sketches, behavioral descriptions) to build it, but don't dictate every styling detail or exact position.
 - **Defer local-taste decisions to the implementer**: For choices between reasonable local idioms (HashSet vs. Dictionary, inline list vs. dedicated class, easing curve, exact field name), don't pre-decide. Omit or surface under "Open Decisions" with a default.
-- **Prefer symbols over paths**: Anchor by symbol name (`Encounter.SpawnNextPiece`, `BossModifierType` enum, `CoinCollectEffect` class) — durable across moves/renames, grep-able. Add a path only when the symbol is ambiguous or the implementer would have to hunt. Inline paths in the step that needs them, not in a separate sidebar.
+- **Prefer symbols over paths**: Anchor by symbol name (`AuthService.Authenticate`, `OrderStatus` enum, `RetryPolicy` class) — durable across moves/renames, grep-able. Add a path only when the symbol is ambiguous or the implementer would have to hunt. Inline paths in the step that needs them, not in a separate sidebar.
 - **Assume the implementer verifies**: Tickets read alongside current codebase. Provide enough to orient (files, patterns, analogues), don't be a frozen snapshot.
 
 ## Phase 5: Review
@@ -149,7 +151,7 @@ Manual + integration verification of acceptance criteria: build/test commands, i
 After writing, quick self-check on things Writing Guidelines don't catch:
 
 - Does each ticket's Prerequisites accurately list what must exist first, and do tickets order so dependencies flow forward (no cycles)?
-- Would an implementer running `/implement-ticket` have enough orientation (Relevant Docs & Anchors, named analogues) to start without a guess-and-grep pass?
+- Would an implementer running `/implement-ticket` have enough orientation (Relevant Docs & Anchors — design docs, related tickets, code anchors) to start without a guess-and-grep pass?
 - Are Acceptance Criteria unambiguously pass/fail by code inspection or unit test, and *disjoint* from Test Plan steps (no item restated as both)?
 - Are cross-cutting hazards (project reference rules, expected warnings, save-format compat) hoisted to Constraints & Gotchas instead of buried in a single Implementation step?
 

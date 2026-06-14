@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Ben Hendel-Doying",
+  "classifications": [ "Game", "MonoGame", "PlayPlayMini", "Steam", "Serilog" ],
+  "groupIdentity": "BenMakesGames.PlayPlayMini.Steam",
+  "identity": "BenMakesGames.PlayPlayMini.Steam",
+  "name": "PlayPlayMini with Steamworks.NET, Serilog, and more",
+  "shortName": "playplaymini.steam",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "primaryOutputs": [
+    {
+      "path": "MyNamespace.csproj"
+    }
+  ],
+  "preferNameDirectory": true,
+  "sourceName": "MyNamespace"
+}

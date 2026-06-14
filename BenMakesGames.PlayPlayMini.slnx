@@ -12,4 +12,5 @@
   <Project Path="BenMakesGames.PlayPlayMini.Tests\BenMakesGames.PlayPlayMini.Tests.csproj" Type="C#" />
   <Project Path="BenMakesGames.PlayPlayMini.VN/BenMakesGames.PlayPlayMini.VN.csproj" />
   <Project Path="BenMakesGames.PlayPlayMini\BenMakesGames.PlayPlayMini.csproj" Type="C#" />
+  <Project Path="Templates\templatepack.csproj" Type="C#" />
 </Solution>

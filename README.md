@@ -18,6 +18,6 @@ This repository contains the following libraries:
 | `PlayPlayMini.UI`                 | ⚠ABANDONED⚠ Skinnable, object-oriented UI Framework for PlayPlayMini.                                                                                     | [NuGet](https://www.nuget.org/packages/BenMakesGames.PlayPlayMini.UI)<br />[Documentation](BenMakesGames.PlayPlayMini.UI/README.md) |
 
 See also:
-* [PlayPlayMiniTemplates](https://github.com/BenMakesGames/PlayPlayMiniTemplates) for project templates.
+* [Project templates](Templates/README.md), in this repo, for scaffolding new PlayPlayMini games with `dotnet new`.
 * [Block-break](https://github.com/BenMakesGames/BlockBreak), a demo game made with PlayPlayMini, EntityFramework (for saving settings & high scores), and Serliog, and which demonstrates multiple game states, player input, font-rendering, sprite sheets, pictures, and sounds.
 * [API documentation](https://benmakesgames.github.io/PlayPlayMini/) (work-in-progress; currently documents many classes and methods in `PlayPlayMini`, `PlayPlayMini.GraphicsExtension`, and `PlayPlayMini.NAudio`)
