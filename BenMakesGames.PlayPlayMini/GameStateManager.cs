@@ -37,6 +37,15 @@ public sealed class GameStateManager: Game
     /// </summary>
     public AbstractGameState? NextState { get; private set; }
 
+    /// <summary>
+    /// When <c>true</c>, <see cref="Update"/> returns immediately without running state switches, lost-focus
+    /// handling, input, service updates, fixed updates, or state updates (including <see cref="AbstractGameState.FixedUpdate"/>).
+    /// <see cref="Draw"/> continues to run normally, so the last-rendered frame keeps being drawn. State
+    /// changes queued via <see cref="ChangeState(AbstractGameState)"/> while paused apply on the frame that
+    /// <see cref="IsPaused"/> is set back to <c>false</c>.
+    /// </summary>
+    public bool IsPaused { get; set; }
+
     private ILifetimeScope IoCContainer { get; }
     private GraphicsManager Graphics { get; }
     private ServiceWatcher ServiceWatcher { get; }
@@ -117,6 +126,9 @@ public sealed class GameStateManager: Game
     /// <inheritdoc />
     protected override void Update(GameTime gameTime)
     {
+        if (IsPaused)
+            return;
+
         SwitchState();
 
         if(!IsActive && LostFocusGameState is not null)

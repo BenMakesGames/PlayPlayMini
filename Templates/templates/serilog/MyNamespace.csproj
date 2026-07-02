@@ -29,7 +29,7 @@
         <MonoGameContentReference Include="Content\Content.mgcb" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="BenMakesGames.PlayPlayMini" Version="8.2.0" />
+        <PackageReference Include="BenMakesGames.PlayPlayMini" Version="8.3.0" />
         <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
         <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.4.1" />
         <PackageReference Include="Serilog" Version="4.3.1" />

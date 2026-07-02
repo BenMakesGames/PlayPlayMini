@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Collections.Generic;
 
 namespace BenMakesGames.PlayPlayMini.Services;
 
@@ -61,6 +62,22 @@ public sealed class KeyboardManager : IServiceInput
     }
 
     /// <summary>
+    /// Returns true if any of the specified keys were pressed this frame.
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <returns></returns>
+    public bool PressedAnyKey(params IList<Keys> keys)
+    {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for(var i = 0; i < keys.Count; i++)
+        {
+            if (PressedKey(keys[i])) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Returns true if the specified key is currently down.
     /// </summary>
     /// <param name="key"></param>
@@ -82,6 +99,22 @@ public sealed class KeyboardManager : IServiceInput
     }
 
     /// <summary>
+    /// Returns true if any of the specified keys are currently down.
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <returns></returns>
+    public bool AnyKeyDown(params IList<Keys> keys)
+    {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var i = 0; i < keys.Count; i++)
+        {
+            if (KeyDown(keys[i])) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Returns true if the specified key is currently up.
     /// </summary>
     /// <param name="key"></param>
@@ -98,6 +131,22 @@ public sealed class KeyboardManager : IServiceInput
         foreach (var key in keys)
         {
             if (KeyUp(key)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true if any of the specified keys are currently up.
+    /// </summary>
+    /// <param name="keys"></param>
+    /// <returns></returns>
+    public bool AnyKeyUp(params IList<Keys> keys)
+    {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for(var i = 0; i < keys.Count; i++)
+        {
+            if (KeyUp(keys[i])) return true;
         }
         return false;
     }
