@@ -78,10 +78,8 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
 
         Graphics.HardwareModeSwitch = false;
         Graphics.SynchronizeWithVerticalRetrace = false;
-        Graphics.PreferredBackBufferWidth = Width * Zoom;
-        Graphics.PreferredBackBufferHeight = Height * Zoom;
-        Graphics.IsFullScreen = FullScreen;
-        Graphics.ApplyChanges();
+
+        ApplyWindowMode(Width * Zoom, Height * Zoom, coverDisplay: FullScreen);
 
         SpriteBatch = new SpriteBatch(GraphicsDevice);
 
@@ -248,10 +246,8 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         FullScreen = Zoom * Width == Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width && Zoom * Height == Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height;
 
         Graphics.SynchronizeWithVerticalRetrace = false;
-        Graphics.PreferredBackBufferWidth = Zoom * Width;
-        Graphics.PreferredBackBufferHeight = Zoom * Height;
-        Graphics.IsFullScreen = FullScreen;
-        Graphics.ApplyChanges();
+
+        ApplyWindowMode(Zoom * Width, Zoom * Height, coverDisplay: FullScreen);
 
         return true;
     }
@@ -276,9 +272,30 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         }
 
         Graphics.SynchronizeWithVerticalRetrace = false;
+
+        ApplyWindowMode(desiredWidth, desiredHeight, coverDisplay: FullScreen);
+    }
+
+    private void ApplyWindowMode(int desiredWidth, int desiredHeight, bool coverDisplay)
+    {
+        Game.Window.IsBorderless = coverDisplay;
+
+        if (coverDisplay)
+        {
+            Game.Window.Position = Point.Zero;
+        }
+        else
+        {
+            var display = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode;
+            Game.Window.Position = new Point(
+                Math.Max(0, (display.Width - desiredWidth) / 2),
+                Math.Max(0, (display.Height - desiredHeight) / 2)
+            );
+        }
+
         Graphics.PreferredBackBufferWidth = desiredWidth;
         Graphics.PreferredBackBufferHeight = desiredHeight;
-        Graphics.IsFullScreen = FullScreen;
+        Graphics.IsFullScreen = false;
         Graphics.ApplyChanges();
     }
 
