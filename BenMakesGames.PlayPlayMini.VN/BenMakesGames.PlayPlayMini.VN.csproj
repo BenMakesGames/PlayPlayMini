@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<?xml version="1.0" encoding="utf-8"?><Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <Authors>Ben Hendel-Doying</Authors>
         <Company>Ben Hendel-Doying</Company>
         <Description>Add-on for PlayPlayMini to facilitate adding visual novel segments to your games.</Description>
         <Copyright>2026 Ben Hendel-Doying</Copyright>
-        <Version>1.4.0-rc2</Version>
+        <Version>1.4.0-rc3</Version>
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageTags>visual novel engine monogame</PackageTags>
@@ -40,7 +40,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.300">
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.301">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
