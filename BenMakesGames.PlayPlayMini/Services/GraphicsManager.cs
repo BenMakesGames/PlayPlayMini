@@ -27,6 +27,21 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public Matrix? TransformMatrix { get; private set; }
     public int Zoom { get; private set; } = 2;
     public bool FullScreen { get; private set; }
+
+    /// <summary>
+    /// When <c>true</c>, the graphics device synchronizes its <c>Present</c> calls with the display's
+    /// vertical retrace, capping the frame rate at the display's refresh rate and eliminating tearing.
+    /// When <c>false</c>, the graphics device presents as fast as it can, which — combined with
+    /// <see cref="Game.IsFixedTimeStep"/> set to <c>false</c> — leaves the game loop uncapped and can
+    /// pin a CPU core at 100%.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>false</c> to preserve historical behavior. Use <see cref="SetVSync(bool)"/> to
+    /// change it at runtime; direct assignment is not supported because the underlying graphics device
+    /// requires an explicit apply step for the change to take effect.
+    /// </remarks>
+    public bool VSync { get; private set; }
+
     public int Width { get; private set; } = 1920 / 3;
     public int Height { get; private set; } = 1080 / 3;
 
@@ -77,7 +92,7 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         Zoom = windowSize.Zoom;
 
         Graphics.HardwareModeSwitch = false;
-        Graphics.SynchronizeWithVerticalRetrace = false;
+        Graphics.SynchronizeWithVerticalRetrace = VSync;
 
         ApplyWindowMode(Width * Zoom, Height * Zoom, coverDisplay: FullScreen);
 
@@ -245,11 +260,29 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         Zoom = zoom < 1 ? 1 : zoom;
         FullScreen = Zoom * Width == Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width && Zoom * Height == Graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height;
 
-        Graphics.SynchronizeWithVerticalRetrace = false;
+        Graphics.SynchronizeWithVerticalRetrace = VSync;
 
         ApplyWindowMode(Zoom * Width, Zoom * Height, coverDisplay: FullScreen);
 
         return true;
+    }
+
+    /// <summary>
+    /// Sets whether the graphics device synchronizes its <c>Present</c> calls with the display's
+    /// vertical retrace. See <see cref="VSync"/> for the semantics; this is the only supported way
+    /// to change that setting because the underlying graphics device requires an explicit apply
+    /// step for the change to take effect.
+    /// </summary>
+    /// <remarks>
+    /// No-op when the requested value equals the current <see cref="VSync"/>.
+    /// </remarks>
+    public void SetVSync(bool vsync)
+    {
+        if (VSync == vsync) return;
+
+        VSync = vsync;
+        Graphics.SynchronizeWithVerticalRetrace = vsync;
+        Graphics.ApplyChanges();
     }
 
     public void SetFullscreen(bool fullscreen)
@@ -271,7 +304,7 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
             desiredHeight = Zoom * Height;
         }
 
-        Graphics.SynchronizeWithVerticalRetrace = false;
+        Graphics.SynchronizeWithVerticalRetrace = VSync;
 
         ApplyWindowMode(desiredWidth, desiredHeight, coverDisplay: FullScreen);
     }
