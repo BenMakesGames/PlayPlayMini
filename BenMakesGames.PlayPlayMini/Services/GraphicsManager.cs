@@ -64,7 +64,7 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     internal IBatchScope? CurrentBatchScope;
     internal SceneShaderScope? CurrentLayerScope;
 
-    private readonly Stack<RenderTarget2D> _layerRenderTargetPool = new();
+    private readonly Dictionary<(int Width, int Height), Stack<RenderTarget2D>> _layerRenderTargetPools = new();
     private readonly Stack<ShaderScope> _shaderScopePool = new();
     private readonly Stack<SceneShaderScope> _sceneShaderScopePool = new();
 
@@ -100,7 +100,16 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
 
         GraphicsDevice.BlendState = BlendState.AlphaBlend;
 
-        RenderTarget = new RenderTarget2D(GraphicsDevice, Width, Height);
+        // PreserveContents so mid-draw scopes that rebind (e.g. WithSceneShader with bounds) don't
+        // wipe what's already on the framebuffer when they set the render target back to it.
+        RenderTarget = new RenderTarget2D(
+            GraphicsDevice, Width, Height,
+            mipMap: false,
+            preferredFormat: SurfaceFormat.Color,
+            preferredDepthFormat: DepthFormat.None,
+            preferredMultiSampleCount: 0,
+            usage: RenderTargetUsage.PreserveContents
+        );
     }
 
     /// <inheritdoc />
@@ -230,8 +239,10 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     {
         SpriteBatch.Dispose();
 
-        while (_layerRenderTargetPool.TryPop(out var rt))
-            rt.Dispose();
+        foreach (var stack in _layerRenderTargetPools.Values)
+            while (stack.TryPop(out var rt))
+                rt.Dispose();
+        _layerRenderTargetPools.Clear();
     }
 
     public void SetTransformMatrix(Matrix? matrix)
@@ -458,7 +469,7 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public IDisposable WithSceneShader(Effect? pixelShader, Action<Effect>? configure = null)
     {
         var scope = AcquireSceneShaderScope();
-        scope.Initialize(pixelShader, configure);
+        scope.Initialize(pixelShader, bounds: null, configure);
         return scope;
     }
 
@@ -473,20 +484,82 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public IDisposable WithSceneShader(string pixelShaderName, Action<Effect>? configure = null)
     {
         var scope = AcquireSceneShaderScope();
-        scope.Initialize(PixelShaders[pixelShaderName], configure);
+        scope.Initialize(PixelShaders[pixelShaderName], bounds: null, configure);
+        return scope;
+    }
+
+    /// <summary>
+    /// Bounded variant of <see cref="WithSceneShader(Effect?, Action{Effect}?)"/>. Renders the
+    /// wrapped graphics calls into a render target sized to <paramref name="bounds"/>, then
+    /// composites that region back to the previous target through the given pixel shader at
+    /// <paramref name="bounds"/>'s position.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Draws inside the scope use their usual world-space coordinates; the scope applies a
+    /// translation transform so those coordinates land at the render target's local origin.
+    /// The composite is a single sprite draw whose UVs span the full 0..1 range, so a shader
+    /// that samples <c>input.TextureCoordinates</c> sees the bounded region as its whole
+    /// canvas (useful for effects like plasma that should "fit" a shape rather than tile).
+    /// </para>
+    /// <para>
+    /// Render targets are pooled per (width, height), so repeated use at the same size is
+    /// cheap. A small RT for each bounded region is far cheaper than the framebuffer-sized RT
+    /// used by the unbounded overload.
+    /// </para>
+    /// <para>
+    /// <paramref name="bounds"/> is interpreted in the current render target's coordinate
+    /// space (framebuffer coords, in the common case where <see cref="TransformMatrix"/> is
+    /// <c>null</c>).
+    /// </para>
+    /// <para>
+    /// The returned <see cref="IDisposable"/> is pooled and must be disposed exactly once
+    /// (use a <c>using</c> statement); do not store it beyond its scope or dispose it twice.
+    /// </para>
+    /// </remarks>
+    public IDisposable WithSceneShader(Effect? pixelShader, Rectangle bounds, Action<Effect>? configure = null)
+    {
+        var scope = AcquireSceneShaderScope();
+        scope.Initialize(pixelShader, bounds, configure);
+        return scope;
+    }
+
+    /// <summary>
+    /// Looks up a shader by name and applies it as a bounded scene shader. See
+    /// <see cref="WithSceneShader(Effect?, Rectangle, Action{Effect}?)"/>.
+    /// </summary>
+    /// <remarks>
+    /// The returned <see cref="IDisposable"/> is pooled and must be disposed exactly once
+    /// (use a <c>using</c> statement); do not store it beyond its scope or dispose it twice.
+    /// </remarks>
+    public IDisposable WithSceneShader(string pixelShaderName, Rectangle bounds, Action<Effect>? configure = null)
+    {
+        var scope = AcquireSceneShaderScope();
+        scope.Initialize(PixelShaders[pixelShaderName], bounds, configure);
         return scope;
     }
 
     internal RenderTarget2D AcquireLayerRenderTarget()
+        => AcquireLayerRenderTarget(Width, Height);
+
+    internal RenderTarget2D AcquireLayerRenderTarget(int width, int height)
     {
-        if (_layerRenderTargetPool.TryPop(out var rt))
+        if (_layerRenderTargetPools.TryGetValue((width, height), out var stack) && stack.TryPop(out var rt))
             return rt;
 
-        return new RenderTarget2D(GraphicsDevice, Width, Height);
+        return new RenderTarget2D(GraphicsDevice, width, height);
     }
 
     internal void ReleaseLayerRenderTarget(RenderTarget2D rt)
-        => _layerRenderTargetPool.Push(rt);
+    {
+        var key = (rt.Width, rt.Height);
+        if (!_layerRenderTargetPools.TryGetValue(key, out var stack))
+        {
+            stack = new Stack<RenderTarget2D>();
+            _layerRenderTargetPools[key] = stack;
+        }
+        stack.Push(rt);
+    }
 
     internal ShaderScope AcquireShaderScope()
         => _shaderScopePool.TryPop(out var s) ? s : new ShaderScope(this);
@@ -577,6 +650,8 @@ internal sealed class SceneShaderScope : IBatchScope
     private IBatchScope? PreviousScope;
     private SceneShaderScope? PreviousLayerScope;
     private RenderTarget2D? PreviousRenderTarget;
+    private Matrix? PreviousTransformMatrix;
+    private Rectangle? Bounds;
 
     internal RenderTarget2D LayerRenderTarget { get; private set; } = null!;
 
@@ -585,20 +660,30 @@ internal sealed class SceneShaderScope : IBatchScope
         Graphics = graphics;
     }
 
-    public void Initialize(Effect? shader, Action<Effect>? configure)
+    public void Initialize(Effect? shader, Rectangle? bounds, Action<Effect>? configure)
     {
         Shader = shader;
         ShaderConfigureAction = configure;
+        Bounds = bounds;
         PreviousScope = Graphics.CurrentBatchScope;
         PreviousLayerScope = Graphics.CurrentLayerScope;
         PreviousRenderTarget = PreviousLayerScope?.LayerRenderTarget ?? Graphics.RenderTarget;
+        PreviousTransformMatrix = Graphics.TransformMatrix;
 
         if (PreviousScope is not null)
             Graphics.SpriteBatch.End();
 
-        LayerRenderTarget = Graphics.AcquireLayerRenderTarget();
+        var rtWidth = bounds?.Width ?? Graphics.Width;
+        var rtHeight = bounds?.Height ?? Graphics.Height;
+        LayerRenderTarget = Graphics.AcquireLayerRenderTarget(rtWidth, rtHeight);
         Graphics.GraphicsDevice.SetRenderTarget(LayerRenderTarget);
         Graphics.GraphicsDevice.Clear(Color.Transparent);
+
+        if (bounds is { } b)
+        {
+            var translation = Matrix.CreateTranslation(-b.X, -b.Y, 0);
+            Graphics.SetTransformMatrix(PreviousTransformMatrix is { } prev ? translation * prev : translation);
+        }
 
         Graphics.CurrentLayerScope = this;
 
@@ -628,6 +713,7 @@ internal sealed class SceneShaderScope : IBatchScope
 
         Graphics.GraphicsDevice.SetRenderTarget(PreviousRenderTarget);
         Graphics.CurrentLayerScope = PreviousLayerScope;
+        Graphics.SetTransformMatrix(PreviousTransformMatrix);
 
         if (Shader is not null && ShaderConfigureAction is not null)
             ShaderConfigureAction.Invoke(Shader);
@@ -638,7 +724,11 @@ internal sealed class SceneShaderScope : IBatchScope
             SamplerState.PointClamp,
             effect: Shader
         );
-        Graphics.SpriteBatch.Draw(LayerRenderTarget, Vector2.Zero, Color.White);
+        Graphics.SpriteBatch.Draw(
+            LayerRenderTarget,
+            Bounds is { } b ? new Vector2(b.X, b.Y) : Vector2.Zero,
+            Color.White
+        );
         Graphics.SpriteBatch.End();
 
         Graphics.ReleaseLayerRenderTarget(LayerRenderTarget);
@@ -653,6 +743,8 @@ internal sealed class SceneShaderScope : IBatchScope
         PreviousScope = null;
         PreviousLayerScope = null;
         PreviousRenderTarget = null;
+        PreviousTransformMatrix = null;
+        Bounds = null;
         LayerRenderTarget = null!;
 
         Graphics.ReleaseSceneShaderScope(this);
