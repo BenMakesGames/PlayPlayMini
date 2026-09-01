@@ -61,6 +61,91 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
     public IReadOnlyDictionary<string, Font> Fonts { get; private set; } = new Dictionary<string, Font>();
     public IReadOnlyDictionary<string, Effect> PixelShaders { get; private set; } = new Dictionary<string, Effect>();
 
+    /// <summary>
+    /// An ordered list of post-process shaders applied to the whole scene every frame, wrapped
+    /// around the current game state's draw and every <see cref="IServiceDraw"/>'s draw by
+    /// <see cref="GameStateManager"/>. Populate it once (for example, in a service's
+    /// <see cref="IServiceLoadContent.LoadContent"/>, after the shaders have loaded) and every
+    /// frame — including frames drawn by game states added later — runs through it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Entries apply in list order: index 0's shader runs first, on the raw scene; each later
+    /// entry's shader runs on the previous entry's output; the last entry's output is what feeds
+    /// the final upscale blit. A chain of <c>[Bloom, CRT, Vignette]</c> therefore applies bloom,
+    /// then CRT over that, then vignette last.
+    /// </para>
+    /// <para>
+    /// Shaders here run at the game's native resolution (<see cref="Width"/> ×
+    /// <see cref="Height"/>) — one texel per game pixel, before the point-clamp upscale to
+    /// <see cref="Zoom"/>. Reach for the chain for effects that reason in game-pixel space
+    /// (color grading, palette treatment, colorblind simulation, sample-the-scene distortion).
+    /// For effects that need to see monitor-pixel space after the upscale (scanlines, phosphor
+    /// grid, CRT curvature that ignores the pixel-art grid), use
+    /// <see cref="BackbufferPostProcessChain"/> instead.
+    /// </para>
+    /// <para>
+    /// An empty chain costs nothing: <see cref="GameStateManager"/> short-circuits it, so there is
+    /// no extra render-target hop and no extra allocation per frame.
+    /// </para>
+    /// <para>
+    /// Chain iteration and the underlying <see cref="WithSceneShader(string, Action{Effect}?)"/>
+    /// scopes are allocation-free. The one thing that isn't is a
+    /// <see cref="PostProcessEntry.Configure"/> lambda written inline at registration time that
+    /// captures variables — cache such delegates in a field and hand the same instance to the
+    /// entry, so nothing is allocated on the hot path.
+    /// </para>
+    /// <para>
+    /// Names are resolved against <see cref="PixelShaders"/> at draw time, so entries may be added
+    /// before their shaders load; a name that is still unknown when the frame draws throws. Mutate
+    /// the chain from input/update code or at startup — mutating it during <c>Draw</c> is not
+    /// supported.
+    /// </para>
+    /// </remarks>
+    public IList<PostProcessEntry> PostProcessChain { get; } = new List<PostProcessEntry>();
+
+    /// <summary>
+    /// An ordered list of post-process shaders applied at physical-pixel resolution, after the
+    /// point-clamp upscale to <see cref="Zoom"/>. Populate it once (for example, in a service's
+    /// <see cref="IServiceLoadContent.LoadContent"/>, after the shaders have loaded) and every
+    /// frame runs through it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Shaders here see the scene at <c>Width × Zoom</c> by <c>Height × Zoom</c> — one texel per
+    /// monitor pixel. Reach for the chain for effects that must align to the physical grid:
+    /// scanlines, phosphor persistence, CRT curvature, chromatic aberration at monitor scale, a
+    /// pixel-sharp vignette. For effects that reason in game-pixel space (color grading, sample-
+    /// the-scene distortion of the pixel art itself), use <see cref="PostProcessChain"/> instead —
+    /// its shaders run before the upscale, at the native game resolution.
+    /// </para>
+    /// <para>
+    /// Entries apply in list order: index 0's shader runs first on an upscaled copy of the scene,
+    /// each later entry's shader runs on the previous entry's output, and the last entry's output
+    /// is what reaches the actual backbuffer. A chain of <c>[Curvature, Scanlines, Vignette]</c>
+    /// therefore curves first, then adds scanlines over that, then vignettes last.
+    /// </para>
+    /// <para>
+    /// An empty chain costs nothing: <see cref="EndDraw"/> short-circuits it, so there is no extra
+    /// render-target hop and no extra allocation per frame. A non-empty chain always adds one
+    /// initial unshaded upscale blit (so every entry sees monitor-pixel input, without exception),
+    /// plus one shaded blit per entry.
+    /// </para>
+    /// <para>
+    /// Iteration is allocation-free and reuses at most two pooled render targets (ping-ponged) at
+    /// the current scaled dimensions, so the steady-state cost is just the shader work itself.
+    /// A <see cref="PostProcessEntry.Configure"/> lambda that captures variables is the one thing
+    /// that can allocate — cache such delegates in a field, as with <see cref="PostProcessChain"/>.
+    /// </para>
+    /// <para>
+    /// Names are resolved against <see cref="PixelShaders"/> at draw time, so entries may be added
+    /// before their shaders load; a name that is still unknown when the frame draws throws. Mutate
+    /// the chain from input/update code or at startup — mutating it during <c>Draw</c> is not
+    /// supported.
+    /// </para>
+    /// </remarks>
+    public IList<PostProcessEntry> BackbufferPostProcessChain { get; } = new List<PostProcessEntry>();
+
     internal IBatchScope? CurrentBatchScope;
     internal SceneShaderScope? CurrentLayerScope;
 
@@ -355,6 +440,72 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         );
     }
 
+    private RenderTarget2D? _pendingCaptureTarget;
+
+    /// <summary>
+    /// Arms a one-shot capture of the next completed frame's fully-composited image (post-
+    /// <see cref="BackbufferPostProcessChain"/>, at <see cref="Width"/> × <see cref="Zoom"/> by
+    /// <see cref="Height"/> × <see cref="Zoom"/>) into <paramref name="target"/>. The next
+    /// <see cref="GameStateManager"/> <c>Draw</c> writes the composited pixels into <paramref name="target"/>
+    /// in addition to the normal backbuffer blit, then clears the arm — one call captures one frame.
+    /// </summary>
+    /// <param name="target">
+    /// A caller-owned <see cref="RenderTarget2D"/> whose <see cref="Texture2D.Width"/>,
+    /// <see cref="Texture2D.Height"/>, and <see cref="Texture2D.Format"/> match
+    /// <see cref="Width"/> × <see cref="Zoom"/>, <see cref="Height"/> × <see cref="Zoom"/>, and
+    /// <see cref="SurfaceFormat.Color"/> respectively. Mismatches throw immediately, not on the next
+    /// frame. PPM never disposes, resizes, or reallocates the target — the caller owns it. Allocate
+    /// with <see cref="RenderTargetUsage.PreserveContents"/> if the pixels must survive other
+    /// render-target rebinds between the capture and the read.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// Empty and populated <see cref="BackbufferPostProcessChain"/> both honor the arm: on an empty
+    /// chain the target receives the point-upscaled native <c>RenderTarget</c>; on a populated chain
+    /// it receives the last chain entry's shaded output — always the same pixels that reach the
+    /// backbuffer that frame. Anything later added to <see cref="BackbufferPostProcessChain"/>
+    /// automatically appears in captures.
+    /// </para>
+    /// <para>
+    /// Same-frame read is not supported. The compositing happens in the framework's end-of-frame
+    /// step, which runs after every <see cref="IServiceDraw"/>'s <c>Draw</c> — so an
+    /// <see cref="IServiceDraw"/> that both arms and reads in one <c>Draw</c> sees stale (or zero)
+    /// pixels. Read the target from the next frame's <c>Draw</c> or later, once the arming frame
+    /// has presented.
+    /// </para>
+    /// <para>
+    /// Arming twice in one frame silently replaces the pending target (last-writer-wins). Frames
+    /// with no arm cost nothing new: <see cref="EndDraw"/> checks the field once and short-circuits.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="target"/> is <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="target"/>'s dimensions or surface format do not match the required
+    /// <see cref="Width"/> × <see cref="Zoom"/>, <see cref="Height"/> × <see cref="Zoom"/>,
+    /// <see cref="SurfaceFormat.Color"/>.
+    /// </exception>
+    public void RequestFrameCapture(RenderTarget2D target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+
+        var expectedWidth = Width * Zoom;
+        var expectedHeight = Height * Zoom;
+
+        if (target.Width != expectedWidth || target.Height != expectedHeight)
+            throw new ArgumentException(
+                $"Capture target must be {expectedWidth}x{expectedHeight}, got {target.Width}x{target.Height}.",
+                nameof(target)
+            );
+
+        if (target.Format != SurfaceFormat.Color)
+            throw new ArgumentException(
+                $"Capture target must be SurfaceFormat.Color, got {target.Format}.",
+                nameof(target)
+            );
+
+        _pendingCaptureTarget = target;
+    }
+
     internal void BeginDraw()
     {
         DrawCalls = 0;
@@ -364,10 +515,104 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
 
     internal void EndDraw()
     {
-        Graphics.GraphicsDevice.SetRenderTarget(null);
+        var chain = BackbufferPostProcessChain;
+        var scaledWidth = Width * Zoom;
+        var scaledHeight = Height * Zoom;
+        var scaledRect = new Rectangle(0, 0, scaledWidth, scaledHeight);
+
+        if (chain.Count == 0)
+        {
+            // Fast path: byte-identical to pre-BackbufferPostProcessChain behavior. Skip the
+            // intermediate RT hop entirely so a game that never touches the chain pays nothing.
+            Graphics.GraphicsDevice.SetRenderTarget(null);
+            SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
+            SpriteBatch.Draw(RenderTarget, scaledRect, Color.White);
+            SpriteBatch.End();
+
+            if (_pendingCaptureTarget is not null)
+            {
+                // Repeat the same upscale blit into the caller's target. The two blits produce
+                // identical pixels because the input (RenderTarget) and the destination-region
+                // rectangle are the same on both.
+                Graphics.GraphicsDevice.SetRenderTarget(_pendingCaptureTarget);
+                SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
+                SpriteBatch.Draw(RenderTarget, scaledRect, Color.White);
+                SpriteBatch.End();
+                _pendingCaptureTarget = null;
+            }
+
+            return;
+        }
+
+        // Chain path: upscale the native RenderTarget to a scaled intermediate first (unshaded,
+        // PointClamp), so every entry's shader sees monitor-pixel-resolution input. Then run each
+        // entry's shader, ping-ponging between two scaled intermediates. The last entry draws
+        // straight to the actual backbuffer, so a chain of N entries costs one unshaded upscale
+        // blit plus N shaded blits, and never more than two pooled intermediate RTs regardless of
+        // chain length.
+        var intermediateA = AcquireLayerRenderTarget(scaledWidth, scaledHeight);
+        RenderTarget2D? intermediateB = null;
+
+        Graphics.GraphicsDevice.SetRenderTarget(intermediateA);
         SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
-        SpriteBatch.Draw(RenderTarget, new Rectangle(0, 0, Width * Zoom, Height * Zoom), Color.White);
+        SpriteBatch.Draw(RenderTarget, scaledRect, Color.White);
         SpriteBatch.End();
+
+        Texture2D source = intermediateA;
+
+        // for loop, instead of foreach, reduces allocations
+        for (var i = 0; i < chain.Count; i++)
+        {
+            var entry = chain[i];
+            var shader = PixelShaders[entry.ShaderName];
+            var isLast = i == chain.Count - 1;
+
+            RenderTarget2D? destination;
+            if (isLast)
+            {
+                // When a capture is armed, land the last shaded blit on the caller's target
+                // (instead of the backbuffer) and then do one plain PointClamp blit from there to
+                // the backbuffer. That way the capture and the on-screen result are the same
+                // shader's output, not two runs of it, and the whole detour costs one extra blit.
+                destination = _pendingCaptureTarget;
+            }
+            else if (ReferenceEquals(source, intermediateA))
+            {
+                intermediateB ??= AcquireLayerRenderTarget(scaledWidth, scaledHeight);
+                destination = intermediateB;
+            }
+            else
+            {
+                destination = intermediateA;
+            }
+
+            Graphics.GraphicsDevice.SetRenderTarget(destination);
+
+            if (entry.Configure is not null)
+                entry.Configure(shader);
+
+            SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp, effect: shader);
+            SpriteBatch.Draw(source, scaledRect, Color.White);
+            SpriteBatch.End();
+
+            if (!isLast)
+                source = destination!;
+        }
+
+        if (_pendingCaptureTarget is not null)
+        {
+            // The last-entry blit landed on _pendingCaptureTarget instead of the backbuffer;
+            // finish the job with an unshaded PointClamp copy to the actual backbuffer.
+            Graphics.GraphicsDevice.SetRenderTarget(null);
+            SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, SamplerState.PointClamp);
+            SpriteBatch.Draw(_pendingCaptureTarget, scaledRect, Color.White);
+            SpriteBatch.End();
+            _pendingCaptureTarget = null;
+        }
+
+        ReleaseLayerRenderTarget(intermediateA);
+        if (intermediateB is not null)
+            ReleaseLayerRenderTarget(intermediateB);
     }
 
     /// <summary>
@@ -547,7 +792,22 @@ public sealed partial class GraphicsManager: IServiceLoadContent, IServiceInitia
         if (_layerRenderTargetPools.TryGetValue((width, height), out var stack) && stack.TryPop(out var rt))
             return rt;
 
-        return new RenderTarget2D(GraphicsDevice, width, height);
+        // PreserveContents so a nested WithSceneShader that rebinds to its own smaller layer RT
+        // doesn't wipe this layer on the rebind back. Symptom without this: opening a bounded
+        // WithSceneShader inside a full-scene WithSceneShader loses every draw between the
+        // outer-open and the bounded-open — the pool RT gets DiscardContents by default, and
+        // the driver drops its content on the next SetRenderTarget. Same reason RenderTarget
+        // (the framebuffer) is PreserveContents; layer RTs need the same guarantee for nesting
+        // patterns (PostProcessChain around a state that uses bounded scene shaders — plasma
+        // highlights, per-tile shaders — is the common case).
+        return new RenderTarget2D(
+            GraphicsDevice, width, height,
+            mipMap: false,
+            preferredFormat: SurfaceFormat.Color,
+            preferredDepthFormat: DepthFormat.None,
+            preferredMultiSampleCount: 0,
+            usage: RenderTargetUsage.PreserveContents
+        );
     }
 
     internal void ReleaseLayerRenderTarget(RenderTarget2D rt)

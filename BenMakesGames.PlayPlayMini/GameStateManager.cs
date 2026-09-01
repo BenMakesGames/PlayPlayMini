@@ -175,17 +175,51 @@ public sealed class GameStateManager: Game
 
         using (Graphics.WithShader((Effect?)null))
         {
-            base.Draw(gameTime);
+            var chain = Graphics.PostProcessChain;
 
-            CurrentState.Draw(gameTime);
-
-            // ReSharper disable once ForCanBeConvertedToForeach
-            // for loop, instead of foreach, reduces allocations
-            for (var i = 0; i < ServiceWatcher.DrawnServices.Count; i++)
-                ServiceWatcher.DrawnServices[i].Draw(gameTime);
+            if (chain.Count == 0)
+                DrawSceneCore(gameTime);
+            else
+                DrawSceneThroughChain(gameTime, chain.Count - 1);
         }
 
         Graphics.EndDraw();
+    }
+
+    private void DrawSceneCore(GameTime gameTime)
+    {
+        base.Draw(gameTime);
+
+        CurrentState.Draw(gameTime);
+
+        // ReSharper disable once ForCanBeConvertedToForeach
+        // for loop, instead of foreach, reduces allocations
+        for (var i = 0; i < ServiceWatcher.DrawnServices.Count; i++)
+            ServiceWatcher.DrawnServices[i].Draw(gameTime);
+    }
+
+    /// <summary>
+    /// Opens one scene-shader scope per <see cref="GraphicsManager.PostProcessChain"/> entry, walking
+    /// from the last index down to 0, and draws the scene inside the innermost scope.
+    /// </summary>
+    /// <remarks>
+    /// Nested scopes composite innermost-first at Dispose time, so opening them last-index-first makes
+    /// entry 0's scope the innermost one, and therefore its shader the first to run — chain order is
+    /// apply order. Recursion, rather than a foreach or a rented buffer of scopes, keeps the walk
+    /// allocation-free; depth equals the chain's length, which is a handful of entries at most.
+    /// </remarks>
+    private void DrawSceneThroughChain(GameTime gameTime, int index)
+    {
+        if (index < 0)
+        {
+            DrawSceneCore(gameTime);
+            return;
+        }
+
+        var entry = Graphics.PostProcessChain[index];
+
+        using (Graphics.WithSceneShader(entry.ShaderName, entry.Configure))
+            DrawSceneThroughChain(gameTime, index - 1);
     }
 
     private void SwitchState()
